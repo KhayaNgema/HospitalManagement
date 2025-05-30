@@ -55,5 +55,16 @@ namespace HospitalManagement.Models
 
         [DataType(DataType.Date)]
         public DateTime? NextAppointmentDate { get; set; }
+
+        public string CreatedById { get; set; }
+        [ForeignKey("CreatedById")]
+        public UserBaseModel CreatedBy { get; set; }
+
+        public DateTime CreatedAt { get; set; }
+
+        public string UpdatedById { get; set; }
+        [ForeignKey("UpdatedById")]
+        public UserBaseModel ModifiedBy { get; set; }
+        public DateTime LastUpdatedAt { get; set; }
     }
 }

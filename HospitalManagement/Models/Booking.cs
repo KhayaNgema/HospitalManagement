@@ -31,6 +31,15 @@ namespace HospitalManagement.Models
         [Display(Name = "Booking Status")]
         public BookingStatus Status { get; set; } = BookingStatus.Pending;
 
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public string CreatedById { get; set; }
+        [ForeignKey("CreatedById")]
+        public UserBaseModel CreatedBy { get; set; }
+
+        public DateTime CreatedAt { get; set; }
+
+        public string UpdatedById { get; set; }
+        [ForeignKey("UpdatedById")]
+        public UserBaseModel ModifiedBy { get; set; }
+        public DateTime LastUpdatedAt { get; set; }
     }
 }

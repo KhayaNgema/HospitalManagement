@@ -41,5 +41,13 @@ namespace HospitalManagement.Data
         public DbSet<HospitalManagement.Models.Admission> Admissions { get; set; }
 
         public DbSet<HospitalManagement.Models.MedicalHistory> MedicalHistorys { get; set; }
+
+        public DbSet<HospitalManagement.Models.Medication> Medications { get; set; }
+
+        public DbSet<HospitalManagement.Models.MedicationInventory> MedicationInventory { get; set; }
+
+        public DbSet<HospitalManagement.Models.MenuItem> MenuItems { get; set; }
+
+        public DbSet<HospitalManagement.Models.MenuInventory> MenuInventory { get; set; }
     }
 }
