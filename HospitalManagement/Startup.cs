@@ -109,6 +109,9 @@ public class Startup
         services.AddRazorPages();
 
         services.AddHttpContextAccessor();
+        services.AddSession();
+
+        services.AddHttpContextAccessor();
 
         SetCulture("en-US");
 

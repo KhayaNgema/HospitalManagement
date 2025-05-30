@@ -12,7 +12,17 @@ namespace HospitalManagement.Models
 
         public string ItemDescription { get; set; }
 
+        [Required]
+        [Display(Name = "Category")]
+        public int CategoryId { get; set; }
+        public virtual Category Category { get; set; }
+
+        [Required]
+        [Display(Name = "Item image(s)")]
         public string ItemImage { get; set; }
+
+        [Display(Name = "Is selected")]
+        public bool IsSelected { get; set; }
 
         public string Price { get; set; }
 

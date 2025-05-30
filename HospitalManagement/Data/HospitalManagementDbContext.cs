@@ -49,5 +49,13 @@ namespace HospitalManagement.Data
         public DbSet<HospitalManagement.Models.MenuItem> MenuItems { get; set; }
 
         public DbSet<HospitalManagement.Models.MenuInventory> MenuInventory { get; set; }
+
+        public DbSet<HospitalManagement.Models.Cart> Carts { get; set; }
+
+        public DbSet<HospitalManagement.Models.CartItem> CartItems { get; set; }
+
+        public DbSet<HospitalManagement.Models.Order> Orders { get; set; }
+
+        public DbSet<HospitalManagement.Models.OrderItem> OrderItems { get; set; }
     }
 }

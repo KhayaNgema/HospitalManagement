@@ -1,0 +1,61 @@
+﻿@model HospitalManagement.Models.Cart
+@{
+    ViewData["Title"] = "Shopping Cart";
+    Layout = "~/Views/Shared/_PagesLayout.cshtml";
+}
+<br />
+<h2>Shopping Cart</h2>
+
+@if (Model.Items == null || !Model.Items.Any())
+{
+    <div class="d-flex justify-content-center align-items-center" style="height: 200px;">
+        <p class="text-center">Your cart is empty.</p>
+    </div>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Subtotal</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Items)
+            {
+                <tr>
+                    <td>@item.MenuItem.ItemName<td>
+                    <td>@item.MenuItem.Price</td>
+                    <td>
+                        <form asp-action="UpdateQuantity" method="post" class="form-inline">
+                            <input type="hidden" name="itemId" value="@item.MenuItem.ItemId" />
+                            <input type="number" name="quantity" value="@item.Quantity" min="1" class="form-control" style="width: 80px;" />
+                            <button type="submit" class="btn btn-sm btn-primary">Update</button>
+                        </form>
+                    </td>
+                    <td>@(Convert.ToDecimal(item.MenuItem.Price) * item.Quantity).ToString("C")</td>
+                    <td>
+                        <form asp-action="RemoveItem" method="post">
+                            <input type="hidden" name="itemId" value="@item.MenuItem.ItemId" />
+                            <button type="submit" class="btn btn-sm btn-danger">Remove</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="3" class="text-end"><strong>Total:</strong></td>
+                <td colspan="2"><strong>@Model.CalculateTotal().ToString("C")</strong></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <form asp-action="ClearCart" method="post">
+        <button type="submit" class="btn btn-warning">Clear Cart</button>
+    </form>
+}

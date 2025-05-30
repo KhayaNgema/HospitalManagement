@@ -1,9 +1,11 @@
 ﻿@{
     ViewData["Title"] = "Home";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <section class="hero-section">
     <div class="container">
+        @* <div class="hero-content-wrapper"> *@
         <div class="row align-items-center" style="margin-left: -20px; margin-right: -20px;">
             <div class="row align-items-center gx-4">
 
@@ -24,9 +26,6 @@
                             <asp:Button ID="btnRegister" runat="server" Text="Register"
                                         CssClass="btn btn-primary me-2 mb-2" OnClick="btnRegister_Click" />
 
-                            <asp:Button ID="btnBookAppointment" runat="server" Text="Book Appointment"
-                                        CssClass="btn btn-primary mb-2" OnClick="btnBookAppointment_Click" Visible="False" />
-
                             <div class="login-url mt-3">
                                 <strong>We are proud of our</strong> strong quality service.
                             </div>
@@ -41,8 +40,8 @@
                     </div>
                 </div>
             </div>
+      @*   </div> *@
         </div>
-
     </div>
 </section>
 
