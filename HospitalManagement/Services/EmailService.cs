@@ -14,10 +14,10 @@ namespace HospitalManagement.Services
 
         public EmailService()
         {
-            _smtpServer = "smtp.gmail.com";
+            _smtpServer = "22013340@dut4life.ac.za";
             _smtpPort = 587;
-            _smtpUsername = "khayalethu.ngema@xetgroup.com";
-            _smtpPassword = "Ngema@12";
+            _smtpUsername = "8e75aa002@smtp-brevo.com";
+            _smtpPassword = "HsgnU50NAOyvjhtw";
         }
 
         public async Task SendEmailAsync(string to, string subject, string body, string senderName)

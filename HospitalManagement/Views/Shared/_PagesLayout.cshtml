@@ -12,6 +12,10 @@
 @{
     var user = await UserManager.GetUserAsync(User);
 
+    var doctor = await _context.Doctors
+        .Where(d => d.Id == user.Id)
+        .FirstOrDefaultAsync();
+
     var firstName = user.FirstName;
     var lastName = user.LastName;
 
@@ -173,6 +177,103 @@
                                 <div style="font-size: 16px; font-weight: bold;">@firstName @lastName</div>
 
                                 <div style="font-size: 14px; color: #ccc;">@userRole</div>
+                            </div>
+                            <button style="background-color: transparent; border: 1px solid #48AAAD; color: #48AAAD; padding: 4px 9px; border-radius: 5px; font-size: 14px; cursor: pointer; margin-top: 10px;">
+                                <a style="color:#48AAAD" asp-controller="Users" asp-action="UserProfile" asp-route-userId="@encryptedUserId">Profile <i class="fa fa-arrow-right"></i></a>
+                            </button>
+                        </div>
+                        <ul class="sidebar-nav" style="list-style: none; padding: 0;">
+
+                            <li style="margin: 20px 0 0 30px; display: flex; align-items: center; cursor:pointer;">
+                                <i class="fa fa-home fa-lg" style="color: white; margin-right: 10px;"></i>
+                                <a asp-controller="Home" asp-action="Index" class="nav-link text-light" style="font-weight: bold;">Home</a>
+                            </li>
+
+                            <hr style="background-color: white; opacity: 0.2; margin: 15px 20px; ">
+
+                            <li style="margin-left: 30px; cursor:pointer;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;" data-toggle="collapse" data-target="#inventorySubmenu" aria-expanded="false" aria-controls="inventorySubmenu" style="cursor: pointer;">
+                                    <div style="display: flex; align-items: center;">
+                                        <i class="fa fa-pills fa-lg" style="color: white; margin-right: 10px;"></i>
+                                        <span class="nav-link text-light" style="font-weight: bold;">Inventory</span>
+                                    </div>
+                                    <i class="fa fa-chevron-down caret-rotate collapsed" style="color: white; margin-right: 15px;"></i>
+                                </div>
+                                <ul class="collapse list-unstyled collapsible-menu" id="inventorySubmenu" style="margin-left: 35px;">
+                                    <li style="margin-top: 10px;"><a asp-controller="Medications" asp-action="MedicationInventory" class="nav-link text-light">Medication</a></li>
+                                    <li style="margin-top: 10px;"><a asp-controller="Menus" asp-action="MenuItems" class="nav-link text-light">Menu items</a></li>
+                                    <li style="margin-top: 10px;"><a asp-controller="Categories" asp-action="Categories" class="nav-link text-light">Item categories</a></li>
+                                </ul>
+                            </li>
+
+                            <hr style="background-color: white; opacity: 0.2; margin: 15px 20px;">
+
+                            <li style="margin-left: 30px; cursor:pointer;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;" data-toggle="collapse" data-target="#auditsSubmenu" aria-expanded="false" aria-controls="auditsSubmenu" style="cursor: pointer;">
+                                    <div style="display: flex; align-items: center;">
+                                        <i class="fa fa-clipboard-check fa-lg" style="color: white; margin-right: 10px;"></i>
+                                        <span class="nav-link text-light" style="font-weight: bold;">Audits</span>
+                                    </div>
+                                    <i class="fa fa-chevron-down caret-rotate collapsed" style="color: white; margin-right: 15px;"></i>
+                                </div>
+                                <ul class="collapse list-unstyled collapsible-menu" id="auditsSubmenu" style="margin-left: 35px;">
+                                    <li style="margin-top: 10px;"><a asp-controller="ActivityLogs" asp-action="ActivityLogs" class="nav-link text-light">Staff</a></li>
+                                    <li style="margin-top: 10px;"><a asp-controller="ActivityLogs" asp-action="PatientsActivityLogs" class="nav-link text-light">Patients</a></li>
+                                    <li style="margin-top: 10px;"><a asp-controller="ActivityLogs" asp-action="MyActivityLogs" class="nav-link text-light">Myself</a></li>
+                                </ul>
+                            </li>
+
+                            <hr style="background-color: white; opacity: 0.2; margin: 15px 20px; cursor:pointer;">
+
+                            <li style="margin: 20px 0 0 30px; display: flex; align-items: center;">
+                                <i class="fa fa-chart-line fa-lg" style="color: white; margin-right: 10px;"></i>
+                                <a asp-controller="Reports" asp-action="Reports" class="nav-link text-light" style="font-weight: bold;">Reports & Analytics</a>
+                            </li>
+
+                            <hr style="background-color: white; opacity: 0.2; margin: 15px 20px;">
+
+                            <li style="margin-left: 30px; cursor:pointer;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;" data-toggle="collapse" data-target="#billingSubmenu" aria-expanded="false" aria-controls="billingSubmenu" style="cursor: pointer;">
+                                    <div style="display: flex; align-items: center;">
+                                        <i class="fa fa-file-invoice-dollar fa-lg" style="color: white; margin-right: 10px;"></i>
+                                        <span class="nav-link text-light" style="font-weight: bold;">Billings & Finance</span>
+                                    </div>
+                                    <i class="fa fa-chevron-down caret-rotate collapsed" style="color: white; margin-right: 15px;"></i>
+                                </div>
+                                <ul class="collapse list-unstyled collapsible-menu" id="billingSubmenu" style="margin-left: 35px;">
+                                    <li style="margin-top: 10px;"><a asp-controller="Billings" asp-action="OutboundInvoices" class="nav-link text-light">Outbound Invoices</a></li>
+                                    <li style="margin-top: 10px;"><a asp-controller="Billings" asp-action="Transactions" class="nav-link text-light">Transactions</a></li>
+                                </ul>
+                            </li>
+
+                            <hr style="background-color: white; opacity: 0.2; margin: 15px 20px;">
+
+                            <li class="nav-login-item" style="margin-left: 30px; display: flex; align-items: center; cursor:pointer;">
+                                <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                                    <i class="fa fa-sign-out-alt fa-lg" style="color: white; margin-right: 10px;"></i>
+                                    <button type="submit" class="nav-login-link" style="color: white; background-color: transparent; border: none; cursor: pointer; font-weight: bold;">Logout</button>
+                                </form>
+                            </li>
+
+                        </ul>
+
+                    </div>
+                </div>
+            }
+            else if (User.IsInRole("Doctor"))
+            {
+                <div id="wrapper">
+                    <div id="sidebar-wrapper" style="overflow-y: auto; scrollbar-width: thin; scrollbar-color: transparent transparent;">
+                        <div style="padding: 30px; margin-top:0; background-color: #022D36; color: white; position: sticky; top: 0; z-index: 1; text-align: center; object-fit:cover;">
+                            <img src="@Url.Content("~/" + user.ProfilePicture)" alt="Profile Photo" style="width: 70px; height: 70px; border-radius: 50%; margin: 0 auto; object-fit:cover">
+
+                            <div style="margin-top: 10px;">
+
+                                <div style="font-size: 16px; font-weight: bold;">@firstName @lastName</div>
+
+                                <div style="font-size: 14px; color: #ccc;">
+                                    @($"{doctor.Specialization} ({userRole})")
+                                </div>
                             </div>
                             <button style="background-color: transparent; border: 1px solid #48AAAD; color: #48AAAD; padding: 4px 9px; border-radius: 5px; font-size: 14px; cursor: pointer; margin-top: 10px;">
                                 <a style="color:#48AAAD" asp-controller="Users" asp-action="UserProfile" asp-route-userId="@encryptedUserId">Profile <i class="fa fa-arrow-right"></i></a>

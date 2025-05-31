@@ -1,0 +1,31 @@
+﻿@model HospitalManagement.Models.Category
+
+@{
+    ViewData["Title"] = "New category";
+    Layout = "~/Views/Shared/_PagesLayout.cshtml";
+}
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6">
+            <div class="card shadow rounded-4 p-4">
+                <h3 class="text-center mb-4" style="color: #022D36;">New category</h3>
+                <form asp-action="NewCategory" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="CategoryName" class="form-label fw-semibold"></label>
+                        <input asp-for="CategoryName" class="form-control rounded-3"/>
+                        <span asp-validation-for="CategoryName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn" style="background-color: #48AAAD; color: white; border-radius: 25px; font-weight: 600;">
+                            Save
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

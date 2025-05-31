@@ -35,6 +35,13 @@
                         <span asp-validation-for="MedicalCondition" class="text-danger small"></span>
                     </div>
 
+                    <div class="mb-3">
+                        <label asp-for="AdditionalNotes" class="form-label fw-semibold"></label>
+                        <textarea asp-for="AdditionalNotes" class="form-control rounded-3" style="min-height: 100px;"></textarea>
+                        <span asp-validation-for="AdditionalNotes" class="text-danger small"></span>
+                    </div>
+
+
                     <div class="d-grid">
                         <button type="submit" class="btn" style="background-color: #48AAAD; color: white; border-radius: 25px; font-weight: 600;">
                             <input asp-for="PatientId" type="hidden" />

@@ -8,31 +8,67 @@ namespace HospitalManagement.Models
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int MedicalHistoryId { get; set; }
 
-        public string PatientId{ get; set; }
+        [Required]
+        public string PatientId { get; set; }
+
         [ForeignKey("PatientId")]
-        public virtual Patient Patient { get; set; }    
+        public virtual Patient Patient { get; set; }
 
-        [Display(Name = "Allergies")]
-        public string? Allergies { get; set; }
+        public int? PatientMedicalHistoryId { get; set; }
 
-        [Display(Name = "Previous Illnesses")]
-        public string? PreviousIllnesses { get; set; }
+        [ForeignKey("PatientMedicalHistoryId")]
+        public virtual PatientMedicalHistory PatientMedicalHistory { get; set; }
 
-        [Display(Name = "Current Medications")]
-        public string? CurrentMedications { get; set; }
+        [Required]
+        [Display(Name = "Visit Date")]
+        public DateTime VisitDate { get; set; } = DateTime.Now;
 
-        [Display(Name = "Operations or Surgeries")]
-        public string? Surgeries { get; set; }
+        [Display(Name = "Chief Complaint")]
+        public string? ChiefComplaint { get; set; }
 
-        [Display(Name = "Blood Group")]
-        public BloodType BloodGroup { get; set; }
+        [Display(Name = "Symptoms")]
+        public string? Symptoms { get; set; }
 
-        [Display(Name = "Additional Notes")]
+        [Display(Name = "Diagnosis")]
+        public string? Diagnosis { get; set; }
+
+        [Display(Name = "Treatment Given")]
+        public string? Treatment { get; set; }
+
+        [Display(Name = "Medications Prescribed")]
+        public virtual ICollection<Medication>? Medications { get; set; }
+
+        [Display(Name = "Follow-Up Instructions")]
+        public List<string>? FollowUpInstructions { get; set; }
+
+        [Display(Name = "Vital Signs")]
+        public string? Vitals { get; set; } 
+
+        [Display(Name = "Lab Results Summary")]
+        public string? LabResults { get; set; }
+
+        [Display(Name = "Doctor's Notes")]
         public string? Notes { get; set; }
-        public DateTime LastUpdated { get; set; } = DateTime.Now;
 
+        [Required]
         public string DoctorId { get; set; }
+
         [ForeignKey("DoctorId")]
         public virtual Doctor Doctor { get; set; }
+
+        [Display(Name = "Recorded On")]
+        public DateTime RecordedAt { get; set; } = DateTime.Now;
+        public string CreatedById { get; set; }
+        [ForeignKey("CreatedById")]
+        public UserBaseModel CreatedBy { get; set; }
+
+        public DateTime CreatedAt { get; set; }
+
+        public string UpdatedById { get; set; }
+        [ForeignKey("UpdatedById")]
+        public UserBaseModel ModifiedBy { get; set; }
+        public DateTime LastUpdatedAt { get; set; }
     }
+
+
 }

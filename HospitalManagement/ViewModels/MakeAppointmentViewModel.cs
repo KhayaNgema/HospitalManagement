@@ -21,5 +21,8 @@ namespace HospitalManagement.ViewModels
 
         [Required(ErrorMessage = "Please select the medical condition.")]
         public CommonMedicalCondition MedicalCondition { get; set; }
+
+        [Display(Name = "Additional notes")]
+        public string? AdditionalNotes { get; set; }
     }
 }

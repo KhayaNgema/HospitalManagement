@@ -97,7 +97,7 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
             public string PhoneNumber { get; set; }
 
             [Required]
-            [Display(Name = "Phone number")]
+            [Display(Name = "Alternate phone number")]
             public string AlternatePhoneNumber { get; set; }
 
             [Required(ErrorMessage = "Medical license number is required.")]
@@ -149,27 +149,26 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
             [Required]
             [Display(Name = "Identity number")]
             public string IdNumber { get; set; }
+
+            [Required]
+            [Display(Name = "Department")]
+            public Department Department { get; set; }
         }
 
         public async Task OnGetAsync(string returnUrl = null)
         {
             ReturnUrl = returnUrl;
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
-
-            var roles = await _roleManager.Roles.Select(r => new SelectListItem { Value = r.Name, Text = r.Name }).ToListAsync();
-
-            ViewData["Roles"] = roles;
-
         }
 
-
+        [HttpPost]
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
 
             returnUrl ??= Url.Content("~/");
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 
-            if (ModelState.IsValid)
+            try
             {
                 var existingUserByPhoneNumber = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == Input.PhoneNumber);
                 if (existingUserByPhoneNumber != null)
@@ -186,7 +185,7 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
                     return Page();
                 }
 
-                var loggedInUser = await _userManager.GetUserAsync(User);
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
                 var doctor = new Doctor
                 {
@@ -195,9 +194,9 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
                     DateOfBirth = Input.DateOfBirth,
                     Email = Input.Email,
                     PhoneNumber = Input.PhoneNumber,
-                    CreatedBy = loggedInUser.Id,
+                    CreatedBy = userId,
                     CreatedDateTime = DateTime.Now,
-                    ModifiedBy = loggedInUser.Id,
+                    ModifiedBy = userId,
                     ModifiedDateTime = DateTime.Now,
                     IsActive = true,
                     IsSuspended = false,
@@ -214,7 +213,8 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
                     LicenseNumber = Input.LicenseNumber,
                     Education = Input.Education,
                     YearsOfExperience = Input.YearsOfExperience,
-                    Specialization = Input.Specialization
+                    Specialization = Input.Specialization,
+                    Department = Input.Department
                 };
 
                 if (Input.ProfilePicture != null && Input.ProfilePicture.Length > 0)
@@ -233,7 +233,7 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
                 {
                     _logger.LogInformation("Doctor a new account with password.");
 
-                    await _userManager.AddToRoleAsync(doctor, "Club Manager");
+                    await _userManager.AddToRoleAsync(doctor, "Doctor");
 
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(doctor);
                     code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
@@ -259,7 +259,7 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
 
                     BackgroundJob.Enqueue(() => _emailService.SendEmailAsync(doctor.Email, "Confirm Your Email Address", emailConfirmationEmailBody, "Diski 360"));
 
-                    await _activityLogger.Log($"Added {Input.FirstName} {Input.LastName} as MediCare {doctor.Specialization}", loggedInUser.Id);
+                    await _activityLogger.Log($"Added {Input.FirstName} {Input.LastName} as MediCare {doctor.Specialization}", userId);
 
                     TempData["Message"] = $"{doctor.FirstName} {doctor.LastName}  has been successfully added as your new {doctor.Specialization}";
                     return RedirectToAction("Doctors", "Users");
@@ -269,11 +269,13 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
                     ModelState.AddModelError(string.Empty, error.Description);
                 }
             }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, "Failed to onboard doctor: " + ex.Message);
 
-            var roles = await _roleManager.Roles
-                        .Select(r => new SelectListItem { Value = r.Name, Text = r.Name })
-                        .ToListAsync();
-            ViewData["Roles"] = roles;
+                return Page();
+            }
+
 
             return Page();
         }

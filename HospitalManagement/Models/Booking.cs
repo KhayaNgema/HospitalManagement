@@ -46,5 +46,8 @@ namespace HospitalManagement.Models
 
 
         public string BookingReference { get; set; }
+
+        [Display(Name = "Additional notes")]
+        public string? AdditionalNotes { get; set; }
     }
 }

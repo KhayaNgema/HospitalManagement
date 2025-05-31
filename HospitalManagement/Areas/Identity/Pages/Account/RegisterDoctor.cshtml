@@ -31,10 +31,10 @@
         <div class="col-12 col-md-8 col-lg-6">
             <div class="login-card shadow">
                 <h1 class="app-name text-center"><span style="color: #022D36;">Medi</span><span style="color: #48AAAD;">Connect</span></h1>
-                <h3 class="login-header">Register</h3>
+                <h3 class="login-header">Onboard Doctor</h3>
                 <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
                     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-
                     <div class="form-group text-center">
                         <div class="mb-3">
                             <div style="display: flex; justify-content: center; position: relative;">
@@ -105,10 +105,20 @@
                     </div>
 
                     <div class="mb-4">
+                        <label asp-for="Input.Department"></label>
+                        <select asp-for="Input.Department" class="form-select" asp-items="Html.GetEnumSelectList<Department>()">
+                            <option value="">-- Select Department --</option>
+                        </select>
+                        <span asp-validation-for="Input.Specialization" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-4">
                         <label asp-for="Input.Education"></label>
                         <input asp-for="Input.Education" class="form-control" />
                         <span asp-validation-for="Input.Education" class="text-danger small"></span>
                     </div>
+
+
                     <div class="mb-4">
                         <label asp-for="Input.Biography"></label>
                         <textarea asp-for="Input.Biography" class="form-control" rows="3"></textarea>
@@ -158,14 +168,9 @@
                     </div>
 
                     <div class="d-grid mb-4">
-                        <button type="submit" class="btn btn-login">Register</button>
+                        <button type="submit" class="btn btn-login">Onboard</button>
                     </div>
 
-                    <div class="text-center small">
-                        <p>
-                            <a asp-page="./Login" asp-route-returnUrl="@Model.ReturnUrl">Already have an account? Click here to login</a>
-                        </p>
-                    </div>
                 </form>
             </div>
         </div>

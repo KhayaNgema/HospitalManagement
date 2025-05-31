@@ -207,10 +207,10 @@ public class Startup
         app.UseAuthentication();
         app.UseAuthorization();
 
-/*        app.UseHangfireDashboard("/hangfire", new DashboardOptions
+        app.UseHangfireDashboard("/hangfire", new DashboardOptions
         {
             Authorization = new[] { new HangfireAuthorizationFilter() }
-        });*/
+        });
 
         app.UseSerilogRequestLogging();
 

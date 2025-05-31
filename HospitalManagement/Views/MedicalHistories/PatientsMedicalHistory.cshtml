@@ -1,0 +1,153 @@
+﻿@model IEnumerable<HospitalManagement.Models.PatientMedicalHistory>
+@inject HospitalManagement.Interfaces.IEncryptionService encryptionService
+
+@{
+    ViewData["Title"] = "Medical history";
+    Layout = "~/Views/Shared/_PagesLayout.cshtml";
+}
+
+<div class="d-flex align-items-center justify-content-between px-3 py-3 mb-4" style="background-color:#48AAAD;">
+    <h2 class="mb-0 text-white">Medical History</h2>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info text-center">
+        No appointments found.
+    </div>
+}
+else
+{
+    <div class="container-fluid my-5 px-4 text-center">
+        <div id="scanBtn">
+            <span id="openScanner" role="button" style="cursor:pointer; background-color:#48AAAD; padding: 15px; border-radius: 10px;">
+                <i class="bi bi-camera" style="font-size: 3rem; color:white;"></i>
+            </span>
+        </div>
+
+        <div id="qr-reader-wrapper" class="mt-4">
+            <div id="qr-reader" style="width: 100%;"></div>
+            <div class="scanner-line"></div>
+        </div>
+
+        <input type="hidden" id="qrSearchInput" />
+    </div>
+
+    <div class="container-fluid my-5 px-4" id="appointmentsTableContainer">
+        <div class="d-flex align-items-center justify-content-between px-3 py-3 mb-4" style="background-color:#48AAAD;">
+            <h2 class="mb-0 text-white">Medical History</h2>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-striped table-borderless" id="appointmentsTable">
+                <thead class="custom-thead">
+                    <tr>
+                        <th>Patient</th>
+                        <th>Id number</th>
+                        <th>Email address</th>
+                        <th>Phone number</th>
+                        <th>Address</th>
+                        <th>Created At</th>
+                        <th>Access code</th>
+                        <th>QR</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var medicalHistory in Model)
+                    {
+                        var encryptedMedicalHistoryId = encryptionService.Encrypt(medicalHistory.PatientMedicalHistoryId);
+
+                        <tr class="clickable-row" data-id="@encryptedMedicalHistoryId" data-access="@(medicalHistory.AccessCode?.ToLower() ?? "n/a")">
+                            <td>@($"{medicalHistory.Patient?.FirstName ?? "N/A"} {medicalHistory.Patient?.LastName ?? ""}")</td>
+                            <td>@(medicalHistory.Patient?.IdNumber ?? "N/A")</td>
+                            <td>@(medicalHistory.Patient?.Email ?? "N/A")</td>
+                            <td>@(medicalHistory.Patient?.PhoneNumber ?? "N/A")</td>
+                            <td>@(medicalHistory.Patient?.Address ?? "N/A")</td>
+                            <td>@(medicalHistory.CreatedAt.ToString("yyyy-MM-dd HH:mm"))</td>
+                            <td>@(medicalHistory.AccessCode ?? "N/A")</td>
+                            <td>
+                                @if (medicalHistory.QrCodeImage != null)
+                                {
+                                    var base64 = Convert.ToBase64String(@medicalHistory.QrCodeImage);
+                                    var imgSrc = $"data:image/png;base64,{base64}";
+                                    <img src="@imgSrc" alt="QR Code" style="width:80px; height:80px;" />
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <div id="noResultsMessage" class="alert alert-info text-center" style="display:none;">
+                No records found.
+            </div>
+        </div>
+    </div>
+
+}
+
+
+<script src="https://unpkg.com/html5-qrcode"></script>
+<script>
+    const openScanner = document.getElementById("openScanner");
+    const wrapper = document.getElementById("qr-reader-wrapper");
+    const qrReader = document.getElementById("qr-reader");
+    const tableContainer = document.getElementById("appointmentsTableContainer");
+    const qrInput = document.getElementById("qrSearchInput");
+
+    openScanner.addEventListener("click", () => {
+        wrapper.style.display = "block";
+        openScanner.style.display = "none";
+
+        const html5QrCode = new Html5Qrcode("qr-reader");
+
+        Html5Qrcode.getCameras().then(devices => {
+            if (devices && devices.length) {
+                const cameraId = devices[0].id;
+
+                html5QrCode.start(
+                    cameraId,
+                    { fps: 10, qrbox: { width: 250, height: 250 } },
+                    qrCodeMessage => {
+                        qrInput.value = qrCodeMessage.trim().toLowerCase();
+
+                        html5QrCode.stop().then(() => {
+                            wrapper.style.display = "none";
+                            qrReader.innerHTML = "";
+
+                            filterTable(qrInput.value);
+                        });
+                    },
+                    errorMessage => { }
+                );
+            }
+        }).catch(err => console.error("Camera access error:", err));
+    });
+
+    function filterTable(query) {
+        const rows = document.querySelectorAll("#appointmentsTable tbody tr");
+        let anyVisible = false;
+
+        rows.forEach(row => {
+            const accessCode = row.getAttribute("data-access");
+            if (accessCode === query) {
+                row.style.display = "";
+                anyVisible = true;
+            } else {
+                row.style.display = "none";
+            }
+        });
+
+        document.getElementById("noResultsMessage").style.display = anyVisible ? "none" : "block";
+        tableContainer.style.display = "block";
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('#appointmentsTable .clickable-row').forEach(row => {
+            row.addEventListener('click', function () {
+                const encryptedAppointmentId = this.getAttribute('data-id');
+                const url = '@Url.Action("AppointmentDetails", "Appointments")';
+                window.location.href = `${url}?appointmentId=${encodeURIComponent(encryptedAppointmentId)}`;
+            });
+        });
+    });
+</script>

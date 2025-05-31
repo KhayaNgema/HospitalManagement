@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using HospitalManagement.Models;
 using HospitalManagement.Services;
+using HospitalManagement.Data;
 
 namespace HospitalManagement.Areas.Identity.Pages.Account
 {
@@ -32,6 +33,7 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
         private readonly FileUploadService _fileUploadService;
+        private readonly HospitalManagementDbContext _context;
 
         public RegisterModel(
             UserManager<UserBaseModel> userManager,
@@ -39,7 +41,8 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
             SignInManager<UserBaseModel> signInManager,
             ILogger<RegisterModel> logger,
             IEmailSender emailSender,
-            FileUploadService fileUploadService)
+            FileUploadService fileUploadService,
+            HospitalManagementDbContext context)
         {
             _userManager = userManager;
             _userStore = userStore;
@@ -48,6 +51,7 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
             _logger = logger;
             _emailSender = emailSender;
             _fileUploadService = fileUploadService;
+            _context = context;
         }
 
         /// <summary>
@@ -216,6 +220,19 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
 
                     await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
                         $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+
+                    var medicalHistory = new PatientMedicalHistory
+                    {
+                        PatientId = newPatient.Id,
+                        AccessCode = null,
+                        MedicalHistories = null,
+                        QrCodeImage = null,
+                        CreatedAt = DateTime.Now,
+                        ExpiresAt = DateTime.Now,
+                    };
+
+                    _context.Add(medicalHistory);
+                    await _context.SaveChangesAsync();  
 
                     if (_userManager.Options.SignIn.RequireConfirmedAccount)
                     {

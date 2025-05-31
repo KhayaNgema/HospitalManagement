@@ -129,6 +129,7 @@ namespace HospitalManagement.Controllers
                     BookForDate = viewModel.BookForDate,
                     BookForTime = viewModel.BookForTime,
                     MedicalCondition = viewModel.MedicalCondition,
+                    AdditionalNotes = viewModel.AdditionalNotes,
                     Status = BookingStatus.Pending,
                     CreatedById = user.Id,
                     CreatedAt = DateTime.Now,

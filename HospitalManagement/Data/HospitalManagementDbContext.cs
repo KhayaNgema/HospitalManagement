@@ -14,6 +14,11 @@ namespace HospitalManagement.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Doctor>(entity =>
+            {
+                entity.OwnsOne(d => d.AvailableTimings);
+            });
         }
 
 
@@ -30,6 +35,8 @@ namespace HospitalManagement.Data
         public DbSet<HospitalManagement.Models.Booking> Bookings { get; set; }
 
         public DbSet<HospitalManagement.Models.Patient> Patients { get; set; }
+
+        public DbSet<HospitalManagement.Models.KitchenStaff> KitchenStaff { get; set; }
 
         public DbSet<HospitalManagement.Models.Doctor> Doctors { get; set; }
 
@@ -49,8 +56,12 @@ namespace HospitalManagement.Data
 
         public DbSet<HospitalManagement.Models.CartItem> CartItems { get; set; }
 
+        public DbSet<HospitalManagement.Models.Category> Categories { get; set; }
+
         public DbSet<HospitalManagement.Models.Order> Orders { get; set; }
 
         public DbSet<HospitalManagement.Models.OrderItem> OrderItems { get; set; }
+
+        public DbSet<HospitalManagement.Models.PatientMedicalHistory> PatientMedicalHistories { get; set; }
     }
 }

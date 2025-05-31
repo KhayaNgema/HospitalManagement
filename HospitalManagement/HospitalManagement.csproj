@@ -28,9 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Views\Categories\" />
     <Folder Include="Views\Medications\" />
-    <Folder Include="Views\Menus\" />
     <Folder Include="Views\Orders\" />
   </ItemGroup>
 
