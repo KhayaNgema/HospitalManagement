@@ -33,7 +33,7 @@ namespace HospitalManagement.Controllers
             session.SetString("Cart", JsonSerializer.Serialize(cart));
         }
 
-        public IActionResult Index()
+        public IActionResult ShoppingCart()
         {
             var cart = GetCart();
             return View(cart);
@@ -53,7 +53,7 @@ namespace HospitalManagement.Controllers
             cart.AddItem(menuItem, quantity);
             SaveCart(cart);
 
-            return RedirectToAction("Index");
+            return RedirectToAction("ShoppingCart");
         }
 
         [HttpPost]
@@ -63,7 +63,7 @@ namespace HospitalManagement.Controllers
             cart.RemoveItem(itemId, _httpContextAccessor);
             SaveCart(cart);
 
-            return RedirectToAction("Index");
+            return RedirectToAction("ShoppingCart");
         }
 
         [HttpPost]
@@ -73,7 +73,7 @@ namespace HospitalManagement.Controllers
             cart.UpdateQuantity(itemId, quantity);
             SaveCart(cart);
 
-            return RedirectToAction("Index");
+            return RedirectToAction("ShoppingCart");
         }
 
         [HttpPost]
@@ -82,7 +82,7 @@ namespace HospitalManagement.Controllers
             var cart = new Cart();
             SaveCart(cart);
 
-            return RedirectToAction("Index");
+            return RedirectToAction("ShoppingCart");
         }
     }
 }

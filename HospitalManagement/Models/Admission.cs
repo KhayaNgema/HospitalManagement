@@ -8,8 +8,8 @@ namespace HospitalManagement.Models
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int AdmissionId { get; set; }
 
-        public string UserId { get; set; }
-        [ForeignKey("UserId")]
+        public string PatientId { get; set; }
+        [ForeignKey("PatientId")]
         public virtual Patient Patient { get; set; }    
 
         [DataType(DataType.Date, ErrorMessage = "Invalid admission date format.")]
@@ -27,11 +27,9 @@ namespace HospitalManagement.Models
         [StringLength(10, ErrorMessage = "Bed number cannot exceed 10 characters.")]
         public string? BedNumber { get; set; }
 
-        public int? AttendingPhysicianId { get; set; }
-
         [StringLength(50, ErrorMessage = "Department name cannot exceed 50 characters.")]
-        public string? Department { get; set; }
-        public string? PatientStatus { get; set; }
+        public Department Department { get; set; }
+        public PatientStatus PatientStatus { get; set; }
 
         public int MedicalHistoryId { get; set; }
         public virtual MedicalHistory MedicalHistory { get; set; }

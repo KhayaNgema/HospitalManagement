@@ -1,0 +1,170 @@
+﻿@{
+    ViewData["Title"] = "Patient";
+    Layout = "~/Views/Shared/_PagesLayout.cshtml";
+}
+
+<style>
+    .card {
+        border: none;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        background: white;
+        width: 100%;
+        height: 35vh;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 6px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .sport-coordinators-card {
+        background-image: url('/UploadedFiles/food.jpeg');
+        background-size: 100% 100%; 
+        background-position: center;
+        background-repeat: no-repeat;
+        color: white;
+    }
+
+
+    .card-title {
+        color: #022D36;
+        font-size: 20px;
+    }
+
+    .card-text {
+        color: #022D36;
+    }
+
+    .sport-coordinators-card .card-title,
+    .sport-coordinators-card .card-text {
+        color: white;
+        text-shadow: 1px 1px 2px black;
+    }
+
+    .btn-primary {
+        background-color: #B0E0FC;
+        color: #022D36;
+        transition: background-color 0.3s ease;
+    }
+
+        .btn-primary:hover {
+            background-color: #48AAAD;
+        }
+
+    .btn-book {
+        background-color: #48AAAD;
+        color: white;
+        transition: background-color 0.3s ease;
+        font-weight: 500;
+        border-radius: 15px;
+    }
+
+        .btn-book:hover {
+            background-color: #022D36;
+            color: white;
+        }
+
+    .styled-button {
+        background-color: #ffffff;
+        color: #022D36;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 15px;
+        text-decoration: none;
+        border-radius:25px;
+    }
+
+    .custom-action-button {
+        background-color: transparent;
+        color: #48AAAD;
+        border: 2px solid #48AAAD;
+        padding: 10px 25px;
+        font-weight: 500;
+        border-radius: 25px;
+        transition: background-color 0.3s ease, color 0.3s ease;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+        .custom-action-button:hover {
+            background-color: #022D36;
+            color: white;
+            border-color: #022D36;
+        }
+
+
+        .styled-button span.arrow,
+        .styled-book-button span.arrow {
+            margin-left: 10px;
+        }
+
+    .center-number {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 30%;
+        margin: 0;
+    }
+
+    h2 {
+        color: #022D36;
+        font-weight: bold;
+    }
+</style>
+
+<br />
+
+<div class="container mb-3">
+    <div class="row">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <h2 class="mb-0">Are you not feeling okay?</h2>
+            <a asp-controller="Appointments" asp-action="MakeAppointment" class="custom-action-button">
+                Book an appointment
+            </a>
+        </div>
+    </div>
+</div>
+
+@if (TempData["Message"] != null)
+{
+    <div id="tempDataMessage" class="alert @(TempData["Message"].ToString().Contains("successfully") ? "alert-success" : "alert-danger")" role="alert">
+        @Html.Raw(TempData["Message"])
+        <span class="close" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </span>
+    </div>
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-sm-12 col-md-6 col-lg-6">
+            <div class="card sport-administrators-card">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title"><i class="fas fa-calendar-check"></i> Appointments</h5>
+                    <p class="card-text">Your appointments are listed here</p>
+                    <h1 class="card-text text-center center-number">@ViewBag.SportAdminsCount</h1>
+                    <a asp-controller="Appointments" asp-action="MyAppointments" class="btn btn-primary mt-auto align-self-end styled-button">
+                        <span>Appointments</span>
+                        <span class="arrow">&#10148;</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-12 col-md-12 col-lg-6">
+            <div class="card sport-coordinators-card">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title"><i class="fas fa-shopping-cart"></i> Menu</h5>
+                    <p class="card-text">Find your favourite healthy meals here</p>
+                    <a asp-controller="Users" asp-action="SportCoordinators" class="btn btn-primary mt-auto align-self-end styled-button">
+                        <span>Order now</span>
+                        <span class="arrow">&#10148;</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    setTimeout(function () {
+        document.getElementById("tempDataMessage").style.display = "none";
+    }, 7000);
+</script>

@@ -72,14 +72,6 @@ namespace HospitalManagement.Controllers
             {
                 return View("DoctorDashboard");
             }
-            else if (roles.Contains("Lab Technician"))
-            {
-                return View("LabTechnicianDashboard");
-            }
-            else if (roles.Contains("X-Ray"))
-            {
-                return View("X-RayDashboard");
-            }
             else if (roles.Contains("Paramedic"))
             {
                 return View("ParamedicDashboard");
@@ -88,13 +80,9 @@ namespace HospitalManagement.Controllers
             {
                 return View("KitchenStaffDashboard");
             }
-            else if (roles.Contains("Pharmacist"))
-            {
-                return View("PharmacistDashboard");
-            }
             else
             {
-                return View("Index");
+                return View("PatientDashboard");
             }
         }
 

@@ -40,7 +40,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>@ViewData["Title"] - Diski360</title>
+    <title>@ViewData["Title"] - MediConnect</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/MyField.styles.css" asp-append-version="true" />
@@ -51,6 +51,10 @@
     <link rel="icon" href="~/favicon.ico" type="image/x-icon" />
     <script async src="https://www.googletagmanager.com/gtag/js?id=YOUR_TRACKING_ID"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/5.0.11/signalr.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="/js/deviceInfo.js"></script>
 
@@ -67,39 +71,66 @@
 
 <style>
     .overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.7);
-        z-index: 999;
-        display: none;
-        z-index: 9998;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 999;
+    display: none;
+    z-index: 9998;
     }
 
-    #homeTabsNav-lay {
-        background-color: white;
-        color: black;
-        height: 100px;
-        border-radius: 0;
-        padding-top: 0 !important;
-        padding-bottom: 0 !important;
-        margin-bottom: 0 !important;
-        margin-top: 0 !important;
+    #page-content-wrapper {
         width: 100%;
-        position: fixed;
-        top: 0px;
-        left: 0;
-        right: 0;
-        z-index: 999;
-        transition: margin-left 0.4s ease, padding-left 0.4s ease;
+        margin: 0;
+        padding: 0;
     }
+
+    .main-content {
+        width: 100%;
+    }
+
+    .container-fluid {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
 </style>
 
 <body>
     <header>
         <div id="overlay" class="overlay"></div>
+
+        <nav class="navbar navbar-expand-sm" id="loginNav" style="color: white; background-color: #264653;">
+            <div class="container-fluid d-flex flex-wrap justify-content-between align-items-center">
+
+                <!-- Contact Info Container -->
+                <div class="d-flex flex-column flex-sm-row flex-grow-1">
+                    <div style="margin-bottom: 6px; margin-right: 10px;">
+                        <span><i class="fa fa-phone me-2"></i>+1 (234) 567-890</span>
+                    </div>
+                    <div>
+                        <span><i class="fa fa-envelope me-2"></i>info@mediconnect.com</span>
+                    </div>
+                </div>
+
+                <!-- Messages Icon Container -->
+                <div class="d-flex align-items-center" style="margin-left: 30px;">
+                    <a href="/messages" class="position-relative" style="color: white; font-size: 28px;">
+                        <i class="fa fa-envelope"></i>
+                        <span class="position-absolute bottom-0 start-100 translate-middle badge rounded-pill bg-danger"
+                              style="font-size: 15px; padding: 2px 5px;">
+                            5
+                            <span class="visually-hidden">unread messages</span>
+                        </span>
+                    </a>
+                </div>
+
+            </div>
+        </nav>
+
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm" id="homeTabsNav-lay" style="background-color:#FAFAFA;">
             <div class="container-fluid">
                 <div class="container-fluid d-flex align-items-center justify-content-between">
@@ -110,13 +141,13 @@
                             <a href="#menu-toggle" id="menu-toggle" style="font-size: 26px; color: #022D36; text-decoration: none; margin-right: 10px;">
                                 <i class="fa fa-chevron-right chevron-rotate"></i>
                             </a>                            
-                            <a class="navbar-brand" href="/Web_Forms/Home.aspx">
+                            <a class="navbar-brand" href="/">
                                 <span style="color: #022D36;font-size:36px; font-weight:bold;">Medi</span><span style="color: #48AAAD; font-size:36px; font-weight:bold;">Connect</span>
                             </a>
                         }
                         else
                         {
-                            <a class="navbar-brand" href="/Web_Forms/Home.aspx">
+                            <a class="navbar-brand" href="/">
                                 <span style="color: #022D36;font-size:36px; font-weight:bold;">Medi</span><span style="color: #48AAAD; font-size:36px; font-weight:bold;">Connect</span>
                             </a>
 
@@ -149,18 +180,18 @@
                         </div>
                         <ul class="sidebar-nav" style="list-style: none; padding: 0;">
 
-                            <li style="margin: 20px 0 0 30px; display: flex; align-items: center;">
+                            <li style="margin: 20px 0 0 30px; display: flex; align-items: center; cursor:pointer;">
                                 <i class="fa fa-home fa-lg" style="color: white; margin-right: 10px;"></i>
                                 <a asp-controller="Home" asp-action="Index" class="nav-link text-light" style="font-weight: bold;">Home</a>
                             </li>
 
-                            <hr style="background-color: white; opacity: 0.2; margin: 15px 20px;">
+                            <hr style="background-color: white; opacity: 0.2; margin: 15px 20px; ">
 
-                            <li style="margin-left: 30px;">
+                            <li style="margin-left: 30px; cursor:pointer;">
                                 <div style="display: flex; justify-content: space-between; align-items: center;" data-toggle="collapse" data-target="#inventorySubmenu" aria-expanded="false" aria-controls="inventorySubmenu" style="cursor: pointer;">
                                     <div style="display: flex; align-items: center;">
                                         <i class="fa fa-pills fa-lg" style="color: white; margin-right: 10px;"></i>
-                                        <a class="nav-link text-light" style="font-weight: bold;">Inventory</a>
+                                        <span class="nav-link text-light" style="font-weight: bold;">Inventory</span>
                                     </div>
                                     <i class="fa fa-chevron-down caret-rotate collapsed" style="color: white; margin-right: 15px;"></i>
                                 </div>
@@ -173,11 +204,11 @@
 
                             <hr style="background-color: white; opacity: 0.2; margin: 15px 20px;">
 
-                            <li style="margin-left: 30px;">
+                            <li style="margin-left: 30px; cursor:pointer;">
                                 <div style="display: flex; justify-content: space-between; align-items: center;" data-toggle="collapse" data-target="#auditsSubmenu" aria-expanded="false" aria-controls="auditsSubmenu" style="cursor: pointer;">
                                     <div style="display: flex; align-items: center;">
                                         <i class="fa fa-clipboard-check fa-lg" style="color: white; margin-right: 10px;"></i>
-                                        <a class="nav-link text-light" style="font-weight: bold;">Audits</a>
+                                        <span class="nav-link text-light" style="font-weight: bold;">Audits</span>
                                     </div>
                                     <i class="fa fa-chevron-down caret-rotate collapsed" style="color: white; margin-right: 15px;"></i>
                                 </div>
@@ -188,7 +219,7 @@
                                 </ul>
                             </li>
 
-                            <hr style="background-color: white; opacity: 0.2; margin: 15px 20px;">
+                            <hr style="background-color: white; opacity: 0.2; margin: 15px 20px; cursor:pointer;">
 
                             <li style="margin: 20px 0 0 30px; display: flex; align-items: center;">
                                 <i class="fa fa-chart-line fa-lg" style="color: white; margin-right: 10px;"></i>
@@ -197,11 +228,11 @@
 
                             <hr style="background-color: white; opacity: 0.2; margin: 15px 20px;">
 
-                            <li style="margin-left: 30px;">
+                            <li style="margin-left: 30px; cursor:pointer;">
                                 <div style="display: flex; justify-content: space-between; align-items: center;" data-toggle="collapse" data-target="#billingSubmenu" aria-expanded="false" aria-controls="billingSubmenu" style="cursor: pointer;">
                                     <div style="display: flex; align-items: center;">
                                         <i class="fa fa-file-invoice-dollar fa-lg" style="color: white; margin-right: 10px;"></i>
-                                        <a class="nav-link text-light" style="font-weight: bold;">Billings & Finance</a>
+                                        <span class="nav-link text-light" style="font-weight: bold;">Billings & Finance</span>
                                     </div>
                                     <i class="fa fa-chevron-down caret-rotate collapsed" style="color: white; margin-right: 15px;"></i>
                                 </div>
@@ -209,6 +240,70 @@
                                     <li style="margin-top: 10px;"><a asp-controller="Billings" asp-action="OutboundInvoices" class="nav-link text-light">Outbound Invoices</a></li>
                                     <li style="margin-top: 10px;"><a asp-controller="Billings" asp-action="Transactions" class="nav-link text-light">Transactions</a></li>
                                 </ul>
+                            </li>
+
+                            <hr style="background-color: white; opacity: 0.2; margin: 15px 20px;">
+
+                            <li class="nav-login-item" style="margin-left: 30px; display: flex; align-items: center; cursor:pointer;">
+                                <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                                    <i class="fa fa-sign-out-alt fa-lg" style="color: white; margin-right: 10px;"></i>
+                                    <button type="submit" class="nav-login-link" style="color: white; background-color: transparent; border: none; cursor: pointer; font-weight: bold;">Logout</button>
+                                </form>
+                            </li>
+
+                        </ul>
+
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div id="wrapper">
+                    <div id="sidebar-wrapper" style="overflow-y: auto; scrollbar-width: thin; scrollbar-color: transparent transparent;">
+                        <div style="padding: 30px; margin-top:0; background-color: #022D36; color: white; position: sticky; top: 0; z-index: 1; text-align: center; object-fit:cover;">
+                            <img src="@Url.Content("~/" + user.ProfilePicture)" alt="Profile Photo" style="width: 70px; height: 70px; border-radius: 50%; margin: 0 auto; object-fit:cover">
+
+                            <div style="margin-top: 10px;">
+
+                                <div style="font-size: 16px; font-weight: bold;">@firstName @lastName</div>
+                            </div>
+                            <button style="background-color: transparent; border: 1px solid #48AAAD; color: #48AAAD; padding: 4px 9px; border-radius: 5px; font-size: 14px; cursor: pointer; margin-top: 10px;">
+                                <a style="color:#48AAAD" asp-controller="Users" asp-action="UserProfile" asp-route-userId="@encryptedUserId">Profile <i class="fa fa-arrow-right"></i></a>
+                            </button>
+                        </div>
+                        <ul class="sidebar-nav" style="list-style: none; padding: 0;">
+
+                            <li style="margin: 20px 0 0 30px; display: flex; align-items: center;">
+                                <i class="fa fa-home fa-lg" style="color: white; margin-right: 10px;"></i>
+                                <a asp-controller="Home" asp-action="Index" class="nav-link text-light" style="font-weight: bold;">Home</a>
+                            </li>
+
+                            <hr style="background-color: white; opacity: 0.2; margin: 15px 20px;">
+
+                            <li style="margin: 20px 0 0 30px; display: flex; align-items: center;">
+                                <i class="fa fa-user-injured fa-lg" style="color: white; margin-right: 10px;"></i>
+                                <a asp-controller="Admissions" asp-action="MyAdmissions" class="nav-link text-light" style="font-weight: bold;">Admissions</a>
+                            </li>
+
+                            <hr style="background-color: white; opacity: 0.2; margin: 15px 20px;">
+
+                            <li style="margin: 20px 0 0 30px; display: flex; align-items: center;">
+                                <i class="fa fa-notes-medical fa-lg" style="color: white; margin-right: 10px;"></i>
+                                <a asp-controller="MedicalHistory" asp-action="MyMedicalHistory" class="nav-link text-light" style="font-weight: bold;">Medical history</a>
+                            </li>
+
+                            <hr style="background-color: white; opacity: 0.2; margin: 15px 20px;">
+
+                            <li style="margin: 20px 0 0 30px; display: flex; align-items: center;">
+                                <i class="fa fa-file-invoice-dollar fa-lg" style="color: white; margin-right: 10px;"></i>
+                                <a asp-controller="Billings" asp-action="MyInvoices" class="nav-link text-light" style="font-weight: bold;">Invoices</a>
+                            </li>
+
+                            <hr style="background-color: white; opacity: 0.2; margin: 15px 20px;">
+
+                            <li style="margin: 20px 0 0 30px; display: flex; align-items: center;">
+                                <i class="fa fa-exchange-alt fa-lg" style="color: white; margin-right: 10px;"></i>
+                                <a asp-controller="Billings" asp-action="MyTransactions" class="nav-link text-light" style="font-weight: bold;">Transactions</a>
                             </li>
 
                             <hr style="background-color: white; opacity: 0.2; margin: 15px 20px;">
@@ -221,10 +316,9 @@
                             </li>
 
                         </ul>
-
                     </div>
                 </div>
-            }
+                }
         }
 
     </header>
@@ -243,14 +337,16 @@
         </div>
     </div>
 
-
+    
     <div id="page-content-wrapper" class="main-content">
         <div class="container-fluid" style="padding-right:10px; padding-left:10px;">
-            <main role="main" class="pb-3">
+            <div class="col-md-12">
                 @RenderBody()
-            </main>
+            </div>
         </div>
     </div>
+    
+
     <a asp-controller="Reports" asp-action="TestFeedback" class="floating-button">
         <span class="rotate"><i class="fa fa-comment"></i> Share Feedback</span>
     </a>
@@ -393,28 +489,40 @@
         });
     });
 
-    document.addEventListener("DOMContentLoaded", function () {
-       function adjustBodyPadding() {
+      document.addEventListener("DOMContentLoaded", function () {
+        function adjustBodyPadding() {
             var loginNav = document.getElementById('loginNav');
             var homeTabsNav = document.getElementById('homeTabsNav-lay');
             var scrollTextNav = document.getElementById('scrollTextNav-lay');
             var divisionNav = document.getElementById('divisionNav');
 
-
             var loginNavHeight = loginNav ? loginNav.offsetHeight : 0;
             var homeTabsNavHeight = homeTabsNav ? homeTabsNav.offsetHeight : 0;
             var scrollTextNavHeight = scrollTextNav ? scrollTextNav.offsetHeight : 0;
-            var divisionNavNavHeight = divisionNav ? divisionNav.offsetHeight : 0;
+            var divisionNavHeight = divisionNav ? divisionNav.offsetHeight : 0;
 
-            var totalPadding = loginNavHeight + homeTabsNavHeight + scrollTextNavHeight + divisionNavNavHeight;
+            var totalPadding = loginNavHeight + homeTabsNavHeight + scrollTextNavHeight + divisionNavHeight;
             document.body.style.paddingTop = totalPadding + 'px';
         }
 
-
         adjustBodyPadding();
-
         window.addEventListener('resize', adjustBodyPadding);
+
+         function updateHomeTabsNavTop() {
+            var loginNav = document.getElementById('loginNav');
+            var homeTabsNav = document.getElementById('homeTabsNav-lay');
+
+            if (loginNav && homeTabsNav) {
+                var loginNavHeight = loginNav.offsetHeight;
+                homeTabsNav.style.top = loginNavHeight + 'px';
+            }
+        }
+
+        updateHomeTabsNavTop();
+
+        window.addEventListener('resize', updateHomeTabsNavTop);
     });
+
 
 
     $(window).on('load', function () {

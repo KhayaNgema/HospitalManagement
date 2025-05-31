@@ -20,11 +20,8 @@ public static class SeedData
 
             string[] roleNames = { "System Administrator",
                 "Doctor", 
-                "Lab Technician", 
-                "X-Ray", 
                 "Paramedic",
-                "Kitchen Staff",
-                "Pharmacist"};
+                "Kitchen Staff"};
 
             foreach (var roleName in roleNames)
             {

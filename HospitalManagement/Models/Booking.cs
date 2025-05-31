@@ -41,5 +41,10 @@ namespace HospitalManagement.Models
         [ForeignKey("UpdatedById")]
         public UserBaseModel ModifiedBy { get; set; }
         public DateTime LastUpdatedAt { get; set; }
+
+        public byte[]? QrCodeImage { get; set; }
+
+
+        public string BookingReference { get; set; }
     }
 }

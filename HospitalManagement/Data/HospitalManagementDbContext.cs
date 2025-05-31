@@ -14,11 +14,6 @@ namespace HospitalManagement.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-
-            modelBuilder.Entity<Doctor>(entity =>
-            {
-                entity.OwnsOne(d => d.AvailableTimings);
-            });
         }
 
 

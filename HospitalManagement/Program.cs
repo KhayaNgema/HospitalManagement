@@ -49,6 +49,9 @@ public class Program
 
             System.IO.File.WriteAllText("aes-keys.txt", $"AES Key (Base64): {keyBase64}\nAES IV (Base64): {ivBase64}");
 
+            System.AppContext.SetSwitch("System.Drawing.EnableUnixSupport", true);
+
+
             Console.WriteLine("AES Key (Base64): " + keyBase64);
             Console.WriteLine("AES IV (Base64): " + ivBase64);
         }

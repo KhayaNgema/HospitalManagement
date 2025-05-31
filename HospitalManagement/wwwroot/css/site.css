@@ -6,6 +6,227 @@ html, body {
     width: 100%;
 }
 
+thead.custom-thead th {
+    background-color: #48AAAD !important;
+    color: white !important;
+    border-color: #48AAAD !important;
+}
+
+#qr-reader-wrapper {
+    width: 180px;
+    height: 180px;
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    border: 2px solid #ccc;
+    background: #000;
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+    #qr-reader-wrapper video,
+    #qr-reader-wrapper canvas {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+
+.scanner-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: red;
+    animation: scan 2s infinite;
+    z-index: 10;
+    opacity: 0.85;
+    box-shadow: 0 0 5px red;
+}
+
+@keyframes scan {
+    0% {
+        top: 0%;
+    }
+
+    50% {
+        top: calc(100% - 2px);
+    }
+
+    100% {
+        top: 0%;
+    }
+}
+
+.back-link {
+    font-weight: 500;
+    color: #495057;
+    transition: color 0.2s ease;
+    font-size: 1rem;
+}
+
+    .back-link:hover {
+        color: #0d6efd;
+        text-decoration: underline;
+    }
+
+.login-card {
+    background: #ffffff;
+    border-radius: 1rem;
+    box-shadow: 0 8px 20px rgba(72, 170, 173, 0.2);
+    padding: 2.5rem 2rem;
+}
+
+
+
+.login-header {
+    color: #022D36;
+    font-weight: 700;
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    text-align: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+label.form-label {
+    font-weight: 600;
+    color: #048488;
+    font-size: 1rem;
+}
+
+input.form-control {
+    border: 2px solid #48AAAD;
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+    input.form-control:focus {
+        border-color: #036363;
+        box-shadow: 0 0 5px #48AAAD;
+        outline: none;
+    }
+
+
+
+.text-center small a {
+    color: #48AAAD;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+    .text-center small a:hover {
+        color: #036363;
+        text-decoration: underline;
+    }
+
+.checkbox label.form-label {
+    font-weight: 600;
+    color: #022D36;
+}
+
+@media (max-width: 576px) {
+    .btn-text {
+        display: none;
+    }
+    .filter-btn {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+}
+
+.text-danger {
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.form-check-input:checked {
+    background-color: #48AAAD;
+    border-color: #48AAAD;
+}
+
+.form-check-input:focus {
+    border-color: #48AAAD;
+    box-shadow: 0 0 0 0.2rem rgba(72, 170, 173, 0.25);
+}
+
+
+.appointment-card {
+    border: none;
+    border-left: 6px solid #48AAAD;
+    background-color: #ffffff;
+    transition: box-shadow 0.3s ease-in-out;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+    position: relative;
+}
+
+    .appointment-card:hover {
+        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+    }
+
+.appointment-header {
+    color: #48AAAD;
+    font-weight: 600;
+    font-size: 1.2rem;
+}
+
+.badge-status {
+    background-color: #48AAAD;
+    color: white;
+    font-weight: 500;
+}
+
+.card-actions {
+    position: absolute;
+    bottom: 1rem;
+    right: 1rem;
+}
+
+
+.modal-header-custom {
+    background-color: #48AAAD;
+    color: white;
+    border-top-left-radius: .5rem;
+    border-top-right-radius: .5rem;
+}
+
+.modal-header-cancel {
+    background-color: red;
+    color: white;
+    border-top-left-radius: .5rem;
+    border-top-right-radius: .5rem;
+}
+
+
+input[type="date"],
+input[type="time"],
+select.form-select {
+    padding: 10px 12px;
+    font-size: 1rem;
+    border: 1.5px solid #48AAAD;
+    border-radius: 8px;
+    transition: border-color 0.3s ease;
+}
+
+    input[type="date"]:focus,
+    input[type="time"]:focus,
+    select.form-select:focus {
+        outline: none;
+        border-color: #02666C;
+        box-shadow: 0 0 5px #02666C;
+    }
+
+    select.form-select option[value=""] {
+        color: #999;
+    }
+
 .hero-section {
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     padding: 1.5rem 1.5rem;
@@ -15,6 +236,47 @@ html, body {
     font-size: 1.2rem;
     color: #6c757d;
     margin-bottom: 2rem;
+}
+
+@media (max-width: 576px) {
+    #loginNav {
+        background-color: #022D36;
+        color: white;
+        min-height: 80px;
+        height: auto;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        margin-bottom: 0 !important;
+        margin-top: 0 !important;
+        width: 100%;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        transition: margin-left 0.4s ease, padding-left 0.4s ease;
+    }
+
+
+    #homeTabsNav-lay {
+        background-color: white;
+        color: black;
+        min-height: 100px;
+        height:auto;
+        border-radius: 0;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        margin-bottom: 0 !important;
+        margin-top: 0 !important;
+        width: 100%;
+        position: fixed;
+        top: 80px;
+        left: 0;
+        right: 0;
+        z-index: 999;
+        transition: margin-left 0.4s ease, padding-left 0.4s ease;
+    }
+
 }
 
 .btn-primary {
@@ -1805,6 +2067,10 @@ html {
     overflow-x: auto;
 }
 
+    .table-responsive.thead {
+        background-color: #48AAAD;
+    }
+
 
 /*Standings edit form css*/
 
@@ -1818,7 +2084,7 @@ html {
 
 #addButton {
     color: white;
-    background-color: #324260;
+    background-color: #48AAAD;
 }
 
 /*Player transfer card css*/

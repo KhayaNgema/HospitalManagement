@@ -7,13 +7,13 @@ namespace HospitalManagement.Models
         [Required(ErrorMessage = "Specialization is required.")]
         public Specialization Specialization { get; set; }
 
-        [Required]
+/*        [Required]
         [Display(Name = "Available Timings")]
         public AvailableTimeRange AvailableTimings { get; set; }
 
         [Required(ErrorMessage = "Availability status is required.")]
         [Display(Name = "Availability Status")]
-        public AvailabilityStatus AvailabilityStatus { get; set; }
+        public AvailabilityStatus AvailabilityStatus { get; set; }*/
 
         [Required(ErrorMessage = "Medical license number is required.")]
         [Display(Name = "License Number")]

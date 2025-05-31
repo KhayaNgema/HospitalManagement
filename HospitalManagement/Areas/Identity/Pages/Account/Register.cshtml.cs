@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using HospitalManagement.Models;
+using HospitalManagement.Services;
 
 namespace HospitalManagement.Areas.Identity.Pages.Account
 {
@@ -30,13 +31,15 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
         private readonly IUserEmailStore<UserBaseModel> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
+        private readonly FileUploadService _fileUploadService;
 
         public RegisterModel(
             UserManager<UserBaseModel> userManager,
             IUserStore<UserBaseModel> userStore,
             SignInManager<UserBaseModel> signInManager,
             ILogger<RegisterModel> logger,
-            IEmailSender emailSender)
+            IEmailSender emailSender,
+            FileUploadService fileUploadService)
         {
             _userManager = userManager;
             _userStore = userStore;
@@ -44,6 +47,7 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
             _signInManager = signInManager;
             _logger = logger;
             _emailSender = emailSender;
+            _fileUploadService = fileUploadService;
         }
 
         /// <summary>
@@ -77,8 +81,61 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
             /// </summary>
             [Required]
             [EmailAddress]
-            [Display(Name = "Email")]
+            [Display(Name = "Email address")]
             public string Email { get; set; }
+
+            [Required]
+            [Display(Name = "First name(s)")]
+            public string FirstName { get; set; }
+
+            [Required]
+            [Display(Name = "Last name")]
+            public string LastName { get; set; }
+
+            [Required]
+            [DataType(DataType.Date)]
+            [Display(Name = "Date of birth")]
+            public DateTime DateOfBirth{ get; set; }
+
+            [Required]
+            [Display(Name = "Profile picture")]
+            public IFormFile ProfilePicture { get; set; }
+
+            [Required]
+            [Display(Name = "Identity number")]
+            public string IdNumber { get; set; }
+
+            [Required]
+            [Display(Name = "Gender")]
+            public string Gender { get; set; }
+
+            [Display(Name = "Phone number")]
+            [Phone(ErrorMessage = "Invalid phone number format.")]
+            public string? PhoneNumber { get; set; }
+
+            [Display(Name = "Alternate phone number")]
+            [Phone(ErrorMessage = "Invalid alternate phone number format.")]
+            public string? AlternatePhoneNumber { get; set; }
+
+            [StringLength(100, ErrorMessage = "Street name cannot exceed 100 characters.")]
+            public string? Street { get; set; }
+
+            [StringLength(100, ErrorMessage = "City name cannot exceed 100 characters.")]
+            public string? City { get; set; }
+
+
+            [Required(ErrorMessage = "Province is required.")]
+            [Display(Name = "Province")]
+            public Province Province { get; set; }
+
+            [Display(Name = "Blood type")]
+            public BloodType? BloodType { get; set; }
+
+            [StringLength(20, ErrorMessage = "Postal code cannot exceed 20 characters.")]
+            public string? PostalCode { get; set; }
+
+            [StringLength(100, ErrorMessage = "Country name cannot exceed 100 characters.")]
+            public string? Country { get; set; }
 
             /// <summary>
             ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
@@ -113,18 +170,43 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
             if (ModelState.IsValid)
             {
-                var user = CreateUser();
+                var newPatient = new Patient
+                {
+                    FirstName = Input.FirstName,
+                    LastName = Input.LastName,
+                    PhoneNumber = Input.PhoneNumber,
+                    AlternatePhoneNumber = Input.AlternatePhoneNumber,
+                    Address = string.Join(", ", new[] {
+                              Input.Street, Input.City, Input.Province.ToString(), Input.PostalCode, Input.Country
+                                                       }.Where(x => !string.IsNullOrWhiteSpace(x))),
+                    IsActive = true,
+                    AccessFailedCount = 0,
+                    BloodType = Input.BloodType,
+                    DateOfBirth = Input.DateOfBirth,
+                    CreatedDateTime = DateTime.Now,
+                    IdNumber = Input.IdNumber,
+                    Gender = Input.Gender,
+                    IsSuspended = false,
+                    IsFirstTimeLogin = false,
+                    IsDeleted = false
+                };
 
-                await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
-                await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
-                var result = await _userManager.CreateAsync(user, Input.Password);
+                if (Input.ProfilePicture != null && Input.ProfilePicture.Length > 0)
+                {
+                    var playerProfilePicturePath = await _fileUploadService.UploadFileAsync(Input.ProfilePicture);
+                    newPatient.ProfilePicture = playerProfilePicturePath;
+                }
+
+                await _userStore.SetUserNameAsync(newPatient, Input.Email, CancellationToken.None);
+                await _emailStore.SetEmailAsync(newPatient, Input.Email, CancellationToken.None);
+                var result = await _userManager.CreateAsync(newPatient, Input.Password);
 
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User created a new account with password.");
 
-                    var userId = await _userManager.GetUserIdAsync(user);
-                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    var userId = await _userManager.GetUserIdAsync(newPatient);
+                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(newPatient);
                     code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
                     var callbackUrl = Url.Page(
                         "/Account/ConfirmEmail",
@@ -141,7 +223,7 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
                     }
                     else
                     {
-                        await _signInManager.SignInAsync(user, isPersistent: false);
+                        await _signInManager.SignInAsync(newPatient, isPersistent: false);
                         return LocalRedirect(returnUrl);
                     }
                 }
@@ -153,20 +235,6 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
 
             // If we got this far, something failed, redisplay form
             return Page();
-        }
-
-        private UserBaseModel CreateUser()
-        {
-            try
-            {
-                return Activator.CreateInstance<UserBaseModel>();
-            }
-            catch
-            {
-                throw new InvalidOperationException($"Can't create an instance of '{nameof(UserBaseModel)}'. " +
-                    $"Ensure that '{nameof(UserBaseModel)}' is not an abstract class and has a parameterless constructor, or alternatively " +
-                    $"override the register page in /Areas/Identity/Pages/Account/Register.cshtml");
-            }
         }
 
         private IUserEmailStore<UserBaseModel> GetEmailStore()

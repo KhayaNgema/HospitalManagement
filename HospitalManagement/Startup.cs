@@ -118,12 +118,12 @@ public class Startup
         services.AddScoped<IViewRenderService, ViewRenderService>();
         services.AddScoped<IActivityLogger, ActivityLogger>();
         services.AddScoped<FileUploadService>();
+        services.AddScoped<QrCodeService>();
         services.AddScoped<RandomPasswordGeneratorService>();
         services.AddScoped<EmailService>();
         services.AddScoped<IPaymentService, PayFastPaymentService>();
         services.AddHttpClient<DeviceInfoService>();
         services.AddHttpClient();
-
 
 
         services.AddLogging(logging =>

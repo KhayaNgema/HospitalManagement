@@ -1,0 +1,147 @@
+﻿@using System.Reflection
+@using System.ComponentModel.DataAnnotations
+@model HospitalManagement.Models.Booking
+
+@functions {
+    public string GetEnumDisplayName(Enum enumValue)
+    {
+        var displayAttr = enumValue.GetType()
+                                   .GetMember(enumValue.ToString())
+                                   .First()
+                                   .GetCustomAttribute<DisplayAttribute>();
+
+        return displayAttr?.Name ?? enumValue.ToString();
+    }
+}
+
+@{
+    ViewData["Title"] = "Appointment Details";
+    Layout = "~/Views/Shared/_PagesLayout.cshtml";
+}
+
+<a asp-controller="Appointments" asp-action="Appointments" class="text-decoration-none d-inline-flex align-items-center back-link mt-4 ms-4">
+    <i class="bi bi-chevron-left me-1"></i> Back to Appointments
+</a>
+
+<div class="container py-5">
+    <div class="card shadow-lg border-0" style="border-left: 6px solid #48AAAD; border-radius: 10px;">
+        <div class="card-header text-white" style="background-color: #48AAAD;">
+            <h3 class="mb-0">##@Model.BookingReference</h3>
+        </div>
+        <div class="card-body px-4 py-4">
+
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <label class="fw-semibold text-muted">Patient</label>
+                    <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                        @Model.CreatedBy?.FirstName @Model.CreatedBy?.LastName
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label class="fw-semibold text-muted">Email</label>
+                    <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                        @Model.CreatedBy?.Email
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <label class="fw-semibold text-muted">Appointment Date</label>
+                    <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                        @Model.BookForDate.ToString("yyyy/MM/dd")
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label class="fw-semibold text-muted">Appointment Time</label>
+                    <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                        @Model.BookForTime.ToString("hh\\:mm tt")
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <label class="fw-semibold text-muted">Medical Condition</label>
+                    <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                        @Model.MedicalCondition
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label class="fw-semibold text-muted">Assigned Team(s)</label>
+                    <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                        @{
+                            var assignedTeam = ViewBag.AssignedTeam as List<HospitalManagement.Models.Specialization>;
+                        }
+
+                        @if (assignedTeam != null && assignedTeam.Any())
+                        {
+                            <ul class="mb-0 ps-3">
+                                @foreach (var specialization in assignedTeam)
+                                {
+                                    <li>@GetEnumDisplayName(specialization)</li>
+                                }
+                            </ul>
+                        }
+                        else
+                        {
+                            <span class="text-muted">No assigned team available.</span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="fw-semibold text-muted">Status</label>
+                <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                    <span class="badge @(Model.Status == BookingStatus.Pending ? "bg-warning" : Model.Status == BookingStatus.Completed ? "bg-success" : "bg-danger")">
+                        @Model.Status
+                    </span>
+                </div>
+            </div>
+
+            @if (User.IsInRole("System Administrator"))
+            {
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label class="fw-semibold text-muted">Created By</label>
+                        <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                            @Model.CreatedBy?.FirstName @Model.CreatedBy?.LastName
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="fw-semibold text-muted">Created At</label>
+                        <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                            @Model.CreatedAt.ToString("yyyy/MM/dd HH:mm")
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label class="fw-semibold text-muted">Last Updated By</label>
+                        <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                            @Model.ModifiedBy?.FirstName @Model.ModifiedBy?.LastName
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="fw-semibold text-muted">Last Updated At</label>
+                        <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                            @Model.LastUpdatedAt.ToString("yyyy/MM/dd HH:mm")
+                        </div>
+                    </div>
+                </div>
+            }
+
+            @if (Model.QrCodeImage != null)
+            {
+                <div class="mb-4 text-center">
+                    <label class="fw-semibold text-muted">QR Code</label>
+                    <div class="border rounded p-3 shadow-sm d-inline-block" style="border-left: 5px solid #48AAAD;">
+                        <img src="data:image/png;base64,@Convert.ToBase64String(Model.QrCodeImage)" alt="QR Code" style="width:150px; height:150px;" />
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>

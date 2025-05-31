@@ -1,0 +1,202 @@
+﻿@model IEnumerable<HospitalManagement.Models.Booking>
+
+@{
+    ViewData["Title"] = "Appointments";
+    Layout = "~/Views/Shared/_PagesLayout.cshtml";
+}
+
+<head>
+    <style>
+        .btn-details,
+        .btn-cancel {
+            font-size: 1rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        .btn-details {
+            background-color: #48AAAD;
+            color: white;
+            border: none;
+            margin-right: 6px;
+        }
+
+            .btn-details:hover {
+                background-color: #3c979a;
+            }
+
+        .btn-cancel {
+            background-color: transparent;
+            border: 1px solid #ff4d4d;
+            color: #ff4d4d;
+        }
+
+            .btn-cancel:hover {
+                background-color: #ff4d4d;
+                color: white;
+            }
+
+        .filter-btn.active {
+            background-color: #022D36;
+            color: white;
+        }
+    </style>
+</head>
+
+<div class="container my-5">
+    <div class="d-flex align-items-center justify-content-between px-3 py-3 mb-4" style="background-color:#48AAAD;">
+        <h2 class="mb-0 text-white">My Appointments</h2>
+        <div>
+            <button class="btn btn-light btn-sm me-2 filter-btn" data-filter="Pending">
+                <i class="bi bi-clock-history"></i> <span class="btn-text ms-1">Pending</span>
+            </button>
+            <button class="btn btn-light btn-sm me-2 filter-btn" data-filter="Completed">
+                <i class="bi bi-check-circle" style="color:green;"></i> <span class="btn-text ms-1">Completed</span>
+            </button>
+            <button class="btn btn-light btn-sm filter-btn" data-filter="Cancelled">
+                <i class="bi bi-x-circle" style="color:red;"></i> <span class="btn-text ms-1">Cancelled</span>
+            </button>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info text-center">
+            You have no appointments booked yet.
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="appointmentsContainer">
+            @foreach (var booking in Model)
+            {
+                var cancelModalId = $"cancelModal_{booking.BookingId}";
+                var detailsModalId = $"detailsModal_{booking.BookingId}";
+
+                <div class="col appointment-card-wrapper" data-status="@booking.Status">
+                    <div class="card appointment-card rounded-4 p-3 h-100">
+                        <div class="card-body pb-5">
+                            <h5 class="appointment-header mb-3">@booking.MedicalCondition</h5>
+                            <p class="mb-1"><strong>Date:</strong> @booking.BookForDate.ToString("MMMM dd, yyyy")</p>
+                            <p class="mb-1"><strong>Time:</strong> @booking.BookForTime.ToString(@"hh\:mm tt")</p>
+                            <p class="mb-1"><strong>Status:</strong> <span class="badge badge-status">@booking.Status</span></p>
+                        </div>
+
+                        <div class="card-actions">
+                            <button class="btn btn-details" data-bs-toggle="modal" data-bs-target="#@detailsModalId">Details</button>
+                            <button class="btn btn-cancel" data-bs-toggle="modal" data-bs-target="#@cancelModalId">Cancel</button>
+                        </div>
+                    </div>
+
+
+                    <div class="modal fade" id="@cancelModalId" tabindex="-1" aria-labelledby="@($"{cancelModalId}_Label")" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content rounded-4">
+                                <div class="modal-header modal-header-cancel">
+                                    <h5 class="modal-title" id="@($"{cancelModalId}_Label")">Cancel Appointment</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <dl class="row">
+                                        <dt class="col-sm-4">Medical Condition</dt>
+                                        <dd class="col-sm-8">@booking.MedicalCondition</dd>
+
+                                        <dt class="col-sm-4">Date</dt>
+                                        <dd class="col-sm-8">@booking.BookForDate.ToString("MMMM dd, yyyy")</dd>
+
+                                        <dt class="col-sm-4">Time</dt>
+                                        <dd class="col-sm-8">@booking.BookForTime.ToString(@"hh\:mm tt")</dd>
+
+                                        <dt class="col-sm-4">Status</dt>
+                                        <dd class="col-sm-8">@booking.Status</dd>
+                                    </dl>
+                                </div>
+                                <div class="modal-footer justify-content-center">
+                                    <form asp-controller="Appointments" asp-action="CancelBooking" method="post">
+                                        <input type="hidden" name="id" value="@booking.BookingId" />
+                                        <button type="submit" class="btn btn-danger px-4">Yes, Cancel</button>
+                                    </form>
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal fade" id="@detailsModalId" tabindex="-1" aria-labelledby="@($"{detailsModalId}_Label")" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered modal-lg">
+                            <div class="modal-content rounded-4">
+                                <div class="modal-header modal-header-custom">
+                                    <h5 class="modal-title" id="@($"{detailsModalId}_Label")">Appointment Details</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <dl class="row">
+                                        <dt class="col-sm-4">Medical Condition</dt>
+                                        <dd class="col-sm-8">@booking.MedicalCondition</dd>
+
+                                        <dt class="col-sm-4">Date</dt>
+                                        <dd class="col-sm-8">@booking.BookForDate.ToString("MMMM dd, yyyy")</dd>
+
+                                        <dt class="col-sm-4">Time</dt>
+                                        <dd class="col-sm-8">@booking.BookForTime.ToString(@"hh\:mm tt")</dd>
+
+                                        <dt class="col-sm-4">Status</dt>
+                                        <dd class="col-sm-8">@booking.Status</dd>
+                                    </dl>
+                                </div>
+                                <div class="modal-footer">
+                                    <a class="btn btn-outline-primary" asp-controller="Appointments" asp-action="Update" asp-route-id="@booking.BookingId">Update</a>
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            const appointmentCards = document.querySelectorAll('.appointment-card-wrapper');
+
+            function normalize(text) {
+                return text?.toLowerCase().trim();
+            }
+
+            function filterAppointments(status) {
+                const normalizedStatus = normalize(status);
+
+                appointmentCards.forEach(card => {
+                    const cardStatus = normalize(card.getAttribute('data-status'));
+                    if (cardStatus === normalizedStatus) {
+                        card.style.display = '';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+
+                filterButtons.forEach(btn => {
+                    if (normalize(btn.getAttribute('data-filter')) === normalizedStatus) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+            }
+
+            filterAppointments('Pending');
+
+            filterButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const filter = button.getAttribute('data-filter');
+                    filterAppointments(filter);
+                });
+            });
+        });
+    </script>
+
+}
