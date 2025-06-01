@@ -38,15 +38,43 @@ namespace HospitalManagement.Controllers
         public async Task<IActionResult> Appointments()
         {
             var user = await _userManager.GetUserAsync(User);
+            var userRoles = await _userManager.GetRolesAsync(user);
 
-            var appointments = await _context.Bookings
+            IQueryable<Booking> query = _context.Bookings
                 .Include(a => a.Patient)
                 .Include(a => a.CreatedBy)
-                .Include(a => a.ModifiedBy)
-                .ToArrayAsync();
+                .Include(a => a.ModifiedBy);
 
-            return View(appointments);
+            if (userRoles.Contains("System Administrator"))
+            {
+                var allAppointments = await query.Where(ap => ap.Status == BookingStatus.Pending).ToListAsync();
+
+                return View(allAppointments);
+            }
+            else if (userRoles.Contains("Doctor"))
+            {
+
+                var doctor = await _context.Doctors
+                    .Where(d => d.Id == user.Id)
+                    .FirstOrDefaultAsync();
+
+                var doctorSpecialization = doctor.Specialization; 
+
+
+                var allowedConditions = ConditionToSpecializationsMap.Map
+                    .Where(entry => entry.Value.Contains(doctorSpecialization))
+                    .Select(entry => entry.Key)
+                    .ToList();
+
+                query = query.Where(a => allowedConditions.Contains(a.MedicalCondition));
+
+                var filteredAppointments = await query.ToListAsync();
+                return View(filteredAppointments);
+            }
+
+            return Forbid();
         }
+
 
         [HttpGet]
         public async Task<IActionResult> MyTeamAppointments()

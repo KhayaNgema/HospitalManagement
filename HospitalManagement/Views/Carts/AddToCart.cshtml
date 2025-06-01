@@ -1,0 +1,21 @@
+﻿@model IEnumerable<HospitalManagement.Models.MenuItem>
+
+@{
+    ViewData["Title"] = "Add Items to Cart";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<ul>
+    @foreach (var item in Model)
+    {
+        <li>
+            @item.ItemName - @item.Price.ToString("C") 
+            <form asp-action="AddToCart" asp-controller="Cart" method="post">
+                <input type="hidden" name="menuItemId" value="@item.ItemId" />
+                <input type="number" name="quantity" value="1" min="1" />
+                <input type="submit" value="Add to Cart" />
+            </form>
+        </li>
+    }
+</ul>

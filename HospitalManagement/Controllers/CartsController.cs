@@ -1,79 +1,116 @@
-﻿using HospitalManagement.Models;
+﻿
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
-using System.Text.Json;
-using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using System.Text;
+using System.Security.Claims;
+using System.Collections.Generic;
 using HospitalManagement.Data;
+using HospitalManagement.Helpers;
+using HospitalManagement.Models;
 
-namespace HospitalManagement.Controllers
+namespace HospitalManagementSystem.Controllers
 {
-    public class CartsController : Controller
+    public class CartController : Controller
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly HospitalManagementDbContext _context;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public CartsController(IHttpContextAccessor httpContextAccessor, HospitalManagementDbContext context)
+        public CartController(HospitalManagementDbContext context,
+            IHttpContextAccessor httpContextAccessor)
         {
-            _httpContextAccessor = httpContextAccessor;
             _context = context;
+            _httpContextAccessor = httpContextAccessor;
         }
 
-        private Cart GetCart()
-        {
-            var session = _httpContextAccessor.HttpContext!.Session;
-            var cartJson = session.GetString("Cart");
-            return string.IsNullOrEmpty(cartJson)
-                ? new Cart()
-                : JsonSerializer.Deserialize<Cart>(cartJson) ?? new Cart();
-        }
-
-        private void SaveCart(Cart cart)
-        {
-            var session = _httpContextAccessor.HttpContext!.Session;
-            session.SetString("Cart", JsonSerializer.Serialize(cart));
-        }
-
-        public IActionResult ShoppingCart()
+        public IActionResult Index()
         {
             var cart = GetCart();
             return View(cart);
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddToCart(int itemId, int quantity)
+        public IActionResult AddToCart(int menuItemId, int quantity)
         {
-            var menuItem = await _context.MenuItems.FindAsync(itemId);
-
-            if (menuItem == null)
+            var menuItem = _context.MenuItems.FirstOrDefault(m => m.ItemId == menuItemId);
+            if (menuItem != null)
             {
-                return NotFound("Menu item not found.");
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var cart = GetCart();
+
+                var existingCartItem = cart.Items.FirstOrDefault(ci => ci.MenuItemId == menuItemId);
+                if (existingCartItem != null)
+                {
+                    existingCartItem.Quantity += quantity;
+                }
+                else
+                {
+                    var newCartItem = new CartItem
+                    {
+                        PatientId = userId,
+                        MenuItemId = menuItemId,
+                        MenuItem = menuItem,
+                        Quantity = quantity
+                    };
+                    cart.Items.Add(newCartItem);
+                }
+
+                SaveCart(cart);
+
+                return Json(new
+                {
+                    cartItemCount = cart.Items.Count,
+                    total = cart.CalculateTotal()
+                });
             }
 
-            var cart = GetCart();
-            cart.AddItem(menuItem, quantity);
-            SaveCart(cart);
+            return Json(new { error = "Failed to add item to cart." });
+        }
 
-            return RedirectToAction("ShoppingCart");
+        public IActionResult GetCartItems()
+        {
+            try
+            {
+                var cartItems = GetCart().Items;
+                var html = RenderCartItemsHtml(cartItems);
+                return Content(html, "text/html");
+            }
+            catch (System.Exception ex)
+            {
+                return Content("An error occurred while fetching cart items: " + ex.Message);
+            }
         }
 
         [HttpPost]
-        public IActionResult RemoveItem(int itemId)
+        public IActionResult UpdateQuantity(int menuItemId, int quantity)
         {
-            var cart = GetCart();
-            cart.RemoveItem(itemId, _httpContextAccessor);
-            SaveCart(cart);
-
-            return RedirectToAction("ShoppingCart");
+            try
+            {
+                var cart = GetCart();
+                cart.UpdateQuantity(menuItemId, quantity);
+                SaveCart(cart);
+                return Json(new { success = true });
+            }
+            catch (System.Exception ex)
+            {
+                return Json(new { success = false, error = ex.Message });
+            }
         }
 
         [HttpPost]
-        public IActionResult UpdateQuantity(int itemId, int quantity)
+        public IActionResult RemoveFromCart(int menuItemId)
         {
-            var cart = GetCart();
-            cart.UpdateQuantity(itemId, quantity);
-            SaveCart(cart);
-
-            return RedirectToAction("ShoppingCart");
+            try
+            {
+                var cart = GetCart();
+                cart.RemoveItem(menuItemId, _httpContextAccessor);
+                SaveCart(cart);
+                return Json(new { success = true, cartItemCount = cart.Items.Count });
+            }
+            catch (System.Exception ex)
+            {
+                return Json(new { success = false, errorMessage = ex.Message });
+            }
         }
 
         [HttpPost]
@@ -81,8 +118,51 @@ namespace HospitalManagement.Controllers
         {
             var cart = new Cart();
             SaveCart(cart);
+            return RedirectToAction("Index");
+        }
 
-            return RedirectToAction("ShoppingCart");
+        private Cart GetCart()
+        {
+            var cart = HttpContext.Session.GetObject<Cart>("Cart");
+            if (cart == null)
+            {
+                cart = new Cart();
+                SaveCart(cart);
+            }
+            return cart;
+        }
+
+        private void SaveCart(Cart cart)
+        {
+            HttpContext.Session.SetObject("Cart", cart);
+        }
+
+        private string RenderCartItemsHtml(List<CartItem> cartItems)
+        {
+            var htmlBuilder = new StringBuilder();
+
+            if (cartItems != null && cartItems.Any())
+            {
+                foreach (var cartItem in cartItems)
+                {
+                    var menuItem = _context.MenuItems.FirstOrDefault(m => m.ItemId == cartItem.MenuItemId);
+                    if (menuItem != null)
+                    {
+                        htmlBuilder.Append("<tr>");
+                        htmlBuilder.Append($"<td>{menuItem.ItemName}</td>");
+                        htmlBuilder.Append($"<td><input type='number' class='quantity-input form-control form-control-sm' value='{cartItem.Quantity}' min='1' data-cartitemid='{cartItem.CartItemId}'></td>");
+                        htmlBuilder.Append($"<td>R {cartItem.Subtotal}</td>");
+                        htmlBuilder.Append($"<td class='actions'><button class='delete-item-btn btn btn-danger' data-itemid='{cartItem.CartItemId}'><i class='fas fa-trash-alt'></i></button></td>");
+                        htmlBuilder.Append("</tr>");
+                    }
+                }
+            }
+            else
+            {
+                htmlBuilder.Append("<tr><td colspan='4'>Your cart is empty</td></tr>");
+            }
+
+            return htmlBuilder.ToString();
         }
     }
 }

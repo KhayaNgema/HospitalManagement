@@ -29,7 +29,6 @@
 
   <ItemGroup>
     <Folder Include="Views\Medications\" />
-    <Folder Include="Views\Orders\" />
   </ItemGroup>
 
 </Project>

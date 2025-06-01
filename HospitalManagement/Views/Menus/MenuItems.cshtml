@@ -24,8 +24,8 @@
     .btn-create {
         border: 2px solid #e0e0e0;
         border-radius: 5px;
-        background-color:#16562b;
-        color:white;
+        background-color: #16562b;
+        color: white;
     }
 
         .btn-create:hover {
@@ -55,28 +55,13 @@
         .btn-store-view i {
             margin-right: 8px;
         }
-
-
-    .no-items-message {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-    }
-
 </style>
 
 <div class="d-flex align-items-center justify-content-between px-3 py-3 mb-4" style="background-color:#48AAAD;">
     <h2 class="mb-0 text-white">Menu Items</h2>
 </div>
 
-<div class="container">
-    
-</div>
-
-<br />
 <div class="d-flex justify-content-between align-items-center mb-4 px-3">
-
     <div class="input-group w-50 me-2">
         <input type="text" class="form-control" placeholder="Search by item name or price" id="qrSearchInput">
     </div>
@@ -91,11 +76,9 @@
         </select>
     </div>
 
-    <a asp-controller="MenuItems" asp-action="NewItem" class="btn btn-primary" id="addButton">
+    <a asp-controller="Menus" asp-action="NewItem" class="btn btn-primary" id="addButton">
         <i class="bi bi-plus-circle me-1"></i> New item
     </a>
-
-
 </div>
 
 @if (!Model.Any())
@@ -106,87 +89,68 @@
 }
 else
 {
-    <table class="table" id="itemTable">
-        <thead>
-            <tr>
-                <th>@Html.DisplayNameFor(model => model.First().ItemName)</th>
-                <th>@Html.DisplayNameFor(model => model.First().ItemDescription)</th>
-                <th>@Html.DisplayNameFor(model => model.First().Price)</th>
-                <th>Image</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model)
-            {
-                <tr data-category="@item.CategoryId">
-                    <td>@Html.DisplayFor(modelItem => item.ItemName)</td>
-                    <td>@Html.DisplayFor(modelItem => item.ItemDescription)</td>
-                    <td>@Html.DisplayFor(modelItem => item.Price)</td>
-                    <td>
-                        @if (!string.IsNullOrEmpty(item.ItemImage))
-                        {
-                            <img src="~/UploadedFiles/@item.ItemImage" alt="@item.ItemName" class="img-thumbnail img-fluid" style="max-width: 100px; max-height: 100px;" />
-                        }
-                        else
-                        {
-                            <text>No image available</text>
-                        }
-                    </td>
-                    <td>
-                        <a href="@Url.Action("Details", new { itemId = item.ItemId })" class="btn btn-details">
-                            <i class="fas fa-info-circle"></i> Details
-                        </a>
-                    </td>
+    <div class="table-responsive">
+        <table class="table table-striped table-borderless" id="appointmentsTable">
+            <thead class="custom-thead">
+                <tr>
+                    <th class="text-nowrap">Category</th>
+                    <th class="text-nowrap">Image</th>
+                    <th class="text-nowrap">@Html.DisplayNameFor(model => model.First().ItemName)</th>
+                    <th class="text-nowrap">@Html.DisplayNameFor(model => model.First().ItemDescription)</th>
+                    <th class ="text-nowrap">@Html.DisplayNameFor(model => model.First().Price)</th>
                 </tr>
-            }
-        </tbody>
-    </table>
-}
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr data-category="@item.CategoryId" class="ellipsis">
+                        <td>@Html.DisplayFor(modelItem => item.Category.CategoryName)</td>
+                        <td>
+                            <img src="~/@item.ItemImage" alt="@item.ItemName" class="img-thumbnail img-fluid" style="max-width: 100px; max-height: 100px;" />
+                        </td>
+                        <td>@Html.DisplayFor(modelItem => item.ItemName)</td>
+                        <td>@Html.DisplayFor(modelItem => item.ItemDescription)</td>
+                        <td>@Html.DisplayFor(modelItem => item.Price)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 
+    <div id="noItemsMessage" class="alert alert-info text-center" style="display:none;">
+        No menu items found for your search.
+    </div>
+}
 
 @section scripts {
     <script>
         $(document).ready(function () {
-            function filterItems(categoryId) {
-                $('#itemTable tbody tr').hide(); 
-                if (categoryId === '') {
-                    $('#itemTable tbody tr').show();
-                } else {
-                    $('#itemTable tbody tr[data-category="' + categoryId + '"]').show();
-                }
+            function filterItems() {
+                var categoryId = $('#categoryDropdown').val();
+                var searchText = $('#qrSearchInput').val().toLowerCase();
+                var hasVisible = false;
 
-                if ($('#itemTable tbody tr:visible').length === 0) {
-                    $('#noItemsMessage').show();
-                } else {
+                $('#appointmentsTable tbody tr').each(function () {
+                    var matchesCategory = categoryId === '' || $(this).data('category') == categoryId;
+                    var matchesSearch = $(this).text().toLowerCase().includes(searchText);
+
+                    if (matchesCategory && matchesSearch) {
+                        $(this).show();
+                        hasVisible = true;
+                    } else {
+                        $(this).hide();
+                    }
+                });
+
+                if (hasVisible) {
                     $('#noItemsMessage').hide();
+                } else {
+                    $('#noItemsMessage').show();
                 }
             }
 
-            $('#categoryDropdown').change(function () {
-                var categoryId = $(this).val(); 
-                filterItems(categoryId);
-            });
-
-            filterItems('');
-
-            $('#searchInput').on('input', function () {
-                var searchText = $(this).val().toLowerCase();
-                $('#itemTable tbody tr').hide();
-                $('#itemTable tbody tr').each(function () {
-                    var item = $(this).text().toLowerCase();
-                    if (item.includes(searchText)) {
-                        $(this).show();
-                    }
-                });
-                if ($('#itemTable tbody tr:visible').length === 0) {
-                    $('#noItemsMessage').show();
-                } else {
-                    $('#noItemsMessage').hide();
-                }
-            });
+            $('#categoryDropdown').on('change', filterItems);
+            $('#qrSearchInput').on('input', filterItems);
         });
     </script>
 }
-
-

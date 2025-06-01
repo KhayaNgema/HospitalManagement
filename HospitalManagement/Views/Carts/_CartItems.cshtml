@@ -1,0 +1,46 @@
+﻿@model IEnumerable<HospitalManagement.Models.CartItem>
+
+
+
+<style>
+    .cart-item {
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        padding: 10px;
+        border-radius: 5px;
+    }
+
+    .item-name {
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    .item-details {
+        display: flex;
+        justify-content: space-between;
+    }
+
+        .item-details span {
+            margin-right: 10px;
+        }
+</style>
+
+<div id="cartItems" class="cart-items">
+    @if (Model != null && Model.Any())
+    {
+        foreach (var cartItem in Model)
+        {
+            <div class="cart-item">
+                <div class="item-name">@cartItem.MenuItem.ItemName</div>
+                <div class="item-details">
+                    <span>Qty: @cartItem.Quantity</span>
+                    <span>Tot: R @cartItem.Subtotal</span>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <p>No items in cart</p>
+    }
+</div>

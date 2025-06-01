@@ -19,6 +19,7 @@ using System;
 using System.Globalization;
 using System.Security.Claims;
 using System.Threading;
+using Cafeteria.Services;
 public class Startup
 {
     public Startup(IConfiguration configuration)
@@ -119,6 +120,9 @@ public class Startup
         services.AddScoped<IActivityLogger, ActivityLogger>();
         services.AddScoped<FileUploadService>();
         services.AddScoped<QrCodeService>();
+        services.AddScoped<CartService>();
+        services.AddScoped<OrderNumberGenerator>();
+        services.AddScoped<OrderCalculationService>();
         services.AddScoped<RandomPasswordGeneratorService>();
         services.AddScoped<EmailService>();
         services.AddScoped<IPaymentService, PayFastPaymentService>();

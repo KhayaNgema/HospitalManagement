@@ -1,0 +1,32 @@
+﻿namespace HospitalManagement.Models
+{
+    public enum Ward
+    {
+        General,
+        Surgical,
+        Medical,
+        Pediatric,
+        Maternity,
+        Neonatal,
+        Orthopedic,
+        Psychiatric,
+        IntensiveCareUnit,        
+        CoronaryCareUnit,        
+        Emergency,
+        Oncology,
+        Cardiology,
+        Neurology,
+        Urology,
+        Gastroenterology,
+        ENT,                      
+        Dermatology,
+        Geriatric,
+        Rehabilitation,
+        InfectiousDiseases,
+        BurnUnit,
+        PostOperative,
+        Isolation,
+        PalliativeCare,
+        Dialysis
+    }
+}

@@ -1,0 +1,609 @@
+﻿@model HospitalManagement.ViewModels.MenuViewModel
+
+@using System.Linq
+
+
+@{
+    var successMessage = TempData["SuccessMessage"] as string;
+    ViewData["Title"] = "Menu";
+    Layout = "~/Views/Shared/_PagesLayout.cshtml";
+
+    var groupedItems = Model.MenuItems
+        .OrderBy(item => item.Category.CategoryName)
+        .GroupBy(item => item.Category.CategoryName);
+}
+
+<style>
+    .custom-card {
+        margin-bottom: 20px;
+        margin-right: -10px;
+        padding-right: 15px;
+        border-bottom-left-radius: 15px;
+        border-bottom-right-radius: 15px;
+        overflow: hidden;
+    }
+
+        .custom-card img {
+            width: 100%;
+            height: 30vh;
+            object-fit: cover;
+            margin: 0 auto;
+        }
+
+    .modal-content {
+        width: 90%;
+        margin: auto;
+    }
+
+
+    .modal {
+        overflow-y: auto;
+    }
+
+    .modal-body {
+        padding: 30px;
+    }
+
+    .modal-footer {
+    }
+
+
+    .modal-body img {
+        width: 100%;
+        height: auto;
+    }
+
+    .modal-title {
+    }
+
+    .cart-icon {
+        position: fixed;
+        top: 13px;
+        right: 250px;
+        background-color: #fff;
+        color: #2d6336;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 9999;
+        padding: 20px;
+    }
+
+        .cart-icon span {
+            font-size: 16px;
+        }
+
+    .cart-items {
+        display: none; /* Hide the cart items tab by default */
+        position: fixed;
+        top: 55px;
+        right: 426px; /* Adjusted position to the left */
+        max-width: 440px;
+        min-width: 440px;
+        background-color: #fff;
+        box-shadow: -2px 0px 5px rgba(0, 0, 0, 0.3);
+        height: calc(100vh - 50px);
+        overflow-y: auto;
+        z-index: 999;
+        transform: translateX(100%);
+        padding: 10px 20px; /* Add padding for white space on both sides */
+    }
+
+
+
+    .quantity-input {
+        width: 60px;
+    }
+
+    .tempdata-message {
+        position: fixed;
+        top: 50px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #4caf50;
+        color: white;
+        padding: 15px 30px 25px 30px;
+        border-radius: 5px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        z-index: 9999;
+        max-width: 120%; /* Added max-width to prevent the message from stretching too wide */
+        word-wrap: break-word; /* Added to break long words */
+    }
+
+    .delete-tempdata-message {
+        position: fixed;
+        top: 50px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #b60b0b;
+        color: white;
+        padding: 15px 30px 25px 30px;
+        border-radius: 5px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        z-index: 9999;
+        max-width: 120%; /* Added max-width to prevent the message from stretching too wide */
+        word-wrap: break-word; /* Added to break long words */
+    }
+
+    .cart-items {
+        display: none; /* Hide the cart items tab by default */
+    }
+
+        .cart-items.show {
+            display: block; /* Show the cart items tab when the show class is present */
+        }
+
+    .text-center {
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .custom-button {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+
+    .card-img-top {
+        width: 100%;
+        height: 15vh;
+        object-fit: cover;
+        margin: 0 auto;
+    }
+
+    .no-items-message {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    .custom-close-btn {
+        background: none;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+        color: #000;
+        font-size: 22px;
+        font-weight: bold;
+    }
+
+    .custom-close-btn-close {
+        background: #808080;
+        border: 1px;
+        padding: 7px;
+        cursor: pointer;
+        color: #ffffff;
+        font-size: 16px;
+        border-radius: 5px;
+    }
+
+    .button-container {
+        display: flex;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+    }
+
+    #checkoutButton {
+        background-color: #2d6336;
+        color: white;
+        border-radius: 5px;
+        padding: 8px 16px;
+        font-size: 14px;
+        transition: background-color 0.3s ease;
+        margin: 5px;
+    }
+
+        #checkoutButton:hover {
+            background-color: #4caf50;
+            cursor: pointer;
+        }
+
+</style>
+
+<div class="container-fluid">
+    <div class="d-flex align-items-center justify-content-between px-3 py-3 mb-4" style="background-color:#48AAAD;">
+        <h2 class="mb-0 text-white">Order your favourite healthy meals from our kitchen!</h2>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-4 px-3">
+        <div class="input-group w-50 me-2">
+            <input type="text" class="form-control" placeholder="Search by item name or price" id="qrSearchInput">
+        </div>
+
+        <div class="input-group w-25 me-2">
+            <select id="categoryDropdown" class="form-select custom-select">
+                <option value="">All Categories</option>
+                @foreach (var category in ViewBag.Categories)
+                {
+                    <option value="@category.CategoryId">@category.CategoryName</option>
+                }
+            </select>
+        </div>
+    </div>
+
+    <div class="row" id="productsContainer">
+        @if (Model != null && Model.MenuItems != null && Model.MenuItems.Any())
+        {
+            @foreach (var group in groupedItems)
+            {
+                <div class="w-100 mt-4 mb-3">
+                    <h3 class="px-3 py-2 bg-light" style="color:#48AAAD; border-left: 5px solid #48AAAD;">
+                        @group.Key's
+                    </h3>
+                </div>
+
+                <div class="row">
+                    @foreach (var menuItem in group)
+                    {
+                        <div class="col-12 col-lg-2 custom-card" data-category="@menuItem.CategoryId">
+                            <div class="card">
+                                <img src="~/@menuItem.ItemImage" alt="@menuItem.ItemName" class="img-thumbnail img-fluid card-img-top" />
+                                <div class="card-body">
+                                    <h5 class="card-title text-truncate">@menuItem.ItemName</h5>
+                                    <h6 class="card-price">Price: R @menuItem.Price</h6>
+                                    <p class="card-text text-truncate">@menuItem.ItemDescription</p>
+                                    <div class="d-flex justify-content-between">
+                                        <button class="btn btn-sm btn-primary read-more" data-toggle="modal" data-target="#productModal_@menuItem.ItemId" data-itemid="@menuItem.ItemId">
+                                            <i class="fas fa-eye"></i> More
+                                        </button>
+                                        <button class="btn btn-sm btn-success add-to-cart-card" data-toggle="modal" data-target="#addToCartModal_@menuItem.ItemId" data-itemid="@menuItem.ItemId" data-itemname="@menuItem.ItemName" data-itemprice="@menuItem.Price">
+                                            <i class="fas fa-cart-plus"></i> Cart
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="modal fade" id="productModal_@menuItem.ItemId" tabindex="-1" aria-labelledby="productModalLabel_@menuItem.ItemId" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered modal-md">
+                                    <div class="modal-content rounded-4 shadow-lg">
+                                        <div class="modal-header bg-primary text-white rounded-top-4">
+                                            <h5 class="modal-title fw-bold" id="productModalLabel_@menuItem.ItemId">@menuItem.ItemName - R @menuItem.Price</h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body d-flex flex-column align-items-center">
+                                        
+                                            <img src="~/@menuItem.ItemImage" alt="@menuItem.ItemName" class="img-fluid img-thumbnail mb-3 rounded-3" style="max-height: 250px;" />
+
+                                           
+                                            <div class="w-100">
+                                                <h6 class="fw-semibold text-secondary">Description</h6>
+                                                <p class="text-muted">@menuItem.ItemDescription</p>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer justify-content-center">
+                                            <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+
+                            <div class="modal fade" id="addToCartModal_@menuItem.ItemId" tabindex="-1" aria-labelledby="addToCartModalLabel_@menuItem.ItemId" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content rounded-4 shadow-lg">
+                                        <div class="modal-header bg-success text-white rounded-top-4">
+                                            <h5 class="modal-title fw-bold" id="addToCartModalLabel_@menuItem.ItemId">@menuItem.ItemName - R @menuItem.Price</h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            @Html.Partial("~/Views/CartItems/_CreateCartItemForm.cshtml", new HospitalManagement.ViewModels.CartItemViewModel
+                           {
+                               MenuItemId = menuItem.ItemId,
+                               MenuItemName = menuItem.ItemName,
+                               MenuItemPrice = menuItem.Price
+                           })
+                                        </div>
+                                        <div class="modal-footer justify-content-center">
+                                            <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+                                            <button type="button" class="btn btn-success px-4 add-to-cart-item" data-itemid="@menuItem.ItemId">
+                                                <i class="fas fa-cart-plus me-1"></i> Add to Cart
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+                  
+        }
+        else
+        {
+            <p>No menu items available.</p>
+        }
+    </div>
+
+<div class="cart-icon" id="cartIcon">
+    <i class="fas fa-shopping-basket"></i>
+    <span id="cartItemCount">@Model.CartItems.Count()</span>
+</div>
+
+<div class="cart-items">
+    <div class="container">
+        <br />
+        <h4 class="text-center"><i class="fas fa-shopping-cart"></i> Shopping Basket</h4>
+        <br />
+
+        <div class="Cart">
+            <div id="cartItemsBody">
+            </div>
+        </div>
+        <br />
+    </div>
+</div>
+
+
+
+
+
+@section Scripts {
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        $(document).ready(function () {
+
+            $('.modal').modal();
+            $.ajaxSetup({
+                headers: {
+                    RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                }
+            });
+
+
+
+            $(document).on('change', '.quantity-input', function () {
+                var $row = $(this).closest('tr');
+                var cartItemId = $row.data('cartitemid');
+                var quantity = parseInt($(this).val());
+                var price = parseFloat($row.find('.subtotal').data('price'));
+                var subtotal = quantity * price;
+                $row.find('.subtotal').text('R ' + subtotal.toFixed(2));
+
+                $.ajax({
+                        url: '/CartItems/UpdateQuantity',
+                    type: 'POST',
+                    data: { id: cartItemId, quantity: quantity, price: price },
+                    success: function (response) {
+                        console.log('Quantity updated successfully in the database.');
+
+                        updateTotalPrice();
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Error updating quantity:', error);
+                    }
+                });
+            });
+
+            $(document).on('click', '.delete-cart-item', function () {
+                var cartItemId = $(this).data('cartitemid');
+                var $row = $(this).closest('tr');
+                $.ajax({
+                        url: '/CartItems/Delete',
+                    type: 'POST',
+                    data: { id: cartItemId },
+                    success: function (response) {
+                        $row.remove();
+                        var currentCount = parseInt($('#cartItemCount').text());
+                        $('#cartItemCount').text(currentCount - 1);
+                        updateTotalPrice();
+                        fetchCartItems();
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Error deleting cart item:', error);
+                    }
+                });
+            });
+
+            $(document).on('click', '#cartIcon', function () {
+                console.log('Cart icon clicked');
+                $('.cart-items').toggleClass('show');
+            });
+
+
+            $(document).on('input', '.quantity-input', function () {
+                var quantityInput = $(this);
+                var addToCartButton = quantityInput.closest('.modal-content').find('.add-to-cart-item');
+
+                var quantity = parseInt(quantityInput.val());
+                if (isNaN(quantity) || quantity < 0) {
+                    quantityInput.val('');
+                    quantity = 0;
+                } else if (quantity <= 0) {
+                    quantityInput.val('0');
+                }
+
+                toggleAddToCartButton(quantityInput, addToCartButton);
+
+                // Retrieve the price from the menuItemPrice span
+                var priceString = quantityInput.closest('.modal-content').find('.menuItemPrice').text().replace('R ', '');
+                var price = parseFloat(priceString);
+
+                var subtotal = quantity * price;
+
+                // Update the subtotal display
+                quantityInput.closest('.modal-content').find('#subtotal').text('R ' + subtotal.toFixed(2));
+
+                // Update the total price if needed
+                updateTotalPrice();
+            });
+
+
+
+            function toggleAddToCartButton(quantityInput, addToCartButton) {
+                var quantity = parseInt(quantityInput.val());
+                if (isNaN(quantity) || quantity <= 0) {
+                    addToCartButton.prop('disabled', true);
+                } else {
+                    addToCartButton.prop('disabled', false);
+                }
+           }
+
+
+
+            $(document).on('click', '.read-more', function () {
+                var itemId = $(this).data('itemid');
+                var modal = $('#productModal_' + itemId);
+
+                var currentItemId = itemId;
+
+                modal.removeClass('show');
+                modal.modal('show');
+            });
+
+
+            $(document).on('click', '.read-more', function () {
+                var itemId = $(this).data('itemid');
+                var modal = $('#productModal_' + itemId);
+
+                var currentItemId = itemId;
+
+                modal.removeClass('show');
+                modal.modal('show');
+            });
+
+
+
+            $('.add-to-cart-card').click(function () {
+                var itemId = $(this).data('itemid');
+                var itemName = $(this).data('itemname');
+                var itemPrice = parseFloat($(this).data('itemprice'));
+
+                console.log("Add to Cart button clicked for item:", itemId, itemName, itemPrice);
+
+                // Reset modal content
+                var modal = $('#addToCartModal_' + itemId);
+                modal.find('#SelectedItemName').text(itemName);
+                modal.find('#SelectedItemPrice').text('R ' + itemPrice.toFixed(2));
+                modal.find('#MenuItemId').val(itemId);
+                modal.find('#MenuItemName').val(itemName);
+                modal.find('#MenuItemPrice').val(itemPrice);
+
+                // Show the modal
+                modal.modal('show');
+            });
+
+
+            $(document).on('click', '.add-to-cart-item', function (event) {
+                event.preventDefault();
+                var $form = $(this).closest('.modal-content').find('form');
+                var formData = $form.serialize();
+                var itemId = $form.find('#MenuItemId').val();
+                var itemName = $form.find('#MenuItemName').val();
+                var itemPrice = parseFloat($form.find('#MenuItemPrice').val());
+                $.ajax({
+                        url: '@Url.Action("AddCartItem", "CartItems")',
+                    type: 'POST',
+                    data: formData,
+                    success: function () {
+                        var currentCount = parseInt($('#cartItemCount').text());
+                        $('#cartItemCount').text(currentCount + 1);
+                        $('#addToCartModal_' + itemId).modal('hide');
+                        fetchCartItems();
+                    },
+                    error: function () {
+                        alert("Failed to add item to cart.");
+                    }
+                });
+            });
+
+            function updateCartItemCount(count) {
+                $('#cartItemCount').text(count);
+            }
+
+            function updateTotalPrice() {
+                var totalPrice = 0;
+                $('.subtotal').each(function () {
+                    totalPrice += parseFloat($(this).text().replace('R ', ''));
+                });
+                $('#totalPrice').text('R ' + totalPrice.toFixed(2));
+            }
+            updateTotalPrice();
+
+
+            function filterCards() {
+                var searchInput = $('#searchInput').val().toLowerCase();
+                var selectedCategory = $('#categoryDropdown').val();
+
+                $('.custom-card').each(function () {
+                    var cardName = $(this).find('.card-title').text().toLowerCase();
+                    var cardCategory = $(this).data('category').toString();
+
+                    // Check if card matches the search input and selected category
+                    if ((cardName.includes(searchInput) || searchInput === '') &&
+                        (selectedCategory === '' || cardCategory === selectedCategory)) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                });
+            }
+
+            // Function to show or hide the "No items found" message
+            function toggleNoItemsMessage() {
+                var productsContainer = $('#productsContainer');
+                var noItemsMessage = $('#noItemsMessage');
+
+                if (productsContainer.children('.custom-card:visible').length === 0) {
+                    noItemsMessage.show();
+                } else {
+                    noItemsMessage.hide();
+                }
+            }
+
+            function fetchCartItems() {
+                $.ajax({
+                      url: '@Url.Action("GetCartItems", "CartItems")',
+                    type: 'GET',
+                    success: function (data) {
+                        $('#cartItemsBody').html(data);
+                    },
+                    error: function (xhr, status, error) {
+                        console.error(xhr.responseText);
+                        alert("Failed to fetch cart items. Error: " + error);
+                    }
+
+                })
+            }
+
+            fetchCartItems();
+
+
+            // Call filterCards initially and whenever the search input or category dropdown changes
+            $('#searchInput, #categoryDropdown').on('input change', function () {
+                filterCards();
+                toggleNoItemsMessage(); // Call toggleNoItemsMessage after filtering the cards
+            });
+
+            $('.custom-close-btn').click(function () {
+                // Retrieve the item ID from the modal's ID attribute
+                var itemId = $(this).closest('.modal').attr('id').split('_')[1];
+                $('#productModal_' + itemId).modal('hide');
+            });
+
+            $('.custom-close-btn-close').click(function () {
+                // Retrieve the item ID from the modal's ID attribute
+                var itemId = $(this).closest('.modal').attr('id').split('_')[1];
+                $('#productModal_' + itemId).modal('hide');
+            });
+
+            $('.custom-close-btn').click(function () {
+                // Retrieve the item ID from the modal's ID attribute
+                var itemId = $(this).closest('.modal').attr('id').split('_')[1];
+                $('#addToCartModal_' + itemId).modal('hide');
+            });
+
+            $('.custom-close-btn-close').click(function () {
+                // Retrieve the item ID from the modal's ID attribute
+                var itemId = $(this).closest('.modal').attr('id').split('_')[1];
+                $('#addToCartModal_' + itemId).modal('hide');
+            });
+
+
+        });
+    </script>
+    }

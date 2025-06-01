@@ -66,6 +66,8 @@ namespace HospitalManagement.Controllers
                 _context.Add(category);
                 await _context.SaveChangesAsync();
 
+                TempData["Message"] = $"You have successfully created the {category.CategoryName} category.";
+
                 return RedirectToAction(nameof(Categories));
             }
             catch (Exception ex) 

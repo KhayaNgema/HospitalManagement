@@ -9,5 +9,8 @@ namespace HospitalManagement.Models
 
         [StringLength(100, ErrorMessage = "Allergies cannot exceed 100 characters.")]
         public string? Allergies { get; set; }
+
+        public int? CartId { get; set; }
+        public virtual Cart Cart { get; set; }
     }
 }

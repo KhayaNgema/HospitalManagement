@@ -6,6 +6,7 @@ namespace HospitalManagement.ViewModels
 {
     public class AdmitPatientViewModel
     {
+        public int BookingId { get; set; }
         public string PatientId { get; set; }
 
         [DataType(DataType.Date, ErrorMessage = "Invalid admission date format.")]
@@ -14,8 +15,7 @@ namespace HospitalManagement.ViewModels
         [DataType(DataType.Date, ErrorMessage = "Invalid discharge date format.")]
         public DateTime? DischargeDate { get; set; }
 
-        [StringLength(50, ErrorMessage = "Ward name cannot exceed 50 characters.")]
-        public string? Ward { get; set; }
+        public Ward Ward { get; set; }
 
         [StringLength(10, ErrorMessage = "Room number cannot exceed 10 characters.")]
         public string? RoomNumber { get; set; }
@@ -23,29 +23,42 @@ namespace HospitalManagement.ViewModels
         [StringLength(10, ErrorMessage = "Bed number cannot exceed 10 characters.")]
         public string? BedNumber { get; set; }
 
-        [StringLength(50, ErrorMessage = "Department name cannot exceed 50 characters.")]
         public Department Department { get; set; }
         public PatientStatus PatientStatus { get; set; }
-        public int MedicalHistoryId { get; set; }
-
-        [StringLength(500, ErrorMessage = "Diagnosis cannot exceed 500 characters.")]
-        public string? CurrentDiagnosis { get; set; }
-
-        [StringLength(500, ErrorMessage = "Medications cannot exceed 500 characters.")]
-        public string? CurrentMedications { get; set; }
-
-        [StringLength(500, ErrorMessage = "Surgeries description cannot exceed 500 characters.")]
-        public string? Surgeries { get; set; }
-
-        [StringLength(500, ErrorMessage = "Immunizations description cannot exceed 500 characters.")]
-        public string? Immunizations { get; set; }
-        public float? HeightCm { get; set; }
-        public float? WeightKg { get; set; }
+        public int PatientMedicalHistoryId { get; set; }
 
         [DataType(DataType.Date)]
         public DateTime? LastVisitDate { get; set; }
 
         [DataType(DataType.Date)]
         public DateTime? NextAppointmentDate { get; set; }
+
+        [StringLength(50, ErrorMessage = "First name cannot exceed 50 characters.")]
+        public string? FirstName { get; set; }
+
+        [StringLength(50, ErrorMessage = "Last name cannot exceed 50 characters.")]
+        public string? LastName { get; set; }
+
+        [DataType(DataType.Date, ErrorMessage = "Invalid date format.")]
+        public DateTime? DateOfBirth { get; set; }
+
+        [StringLength(100, ErrorMessage = "Profile picture URL cannot exceed 100 characters.")]
+        public string? ProfilePicture { get; set; }
+
+        [StringLength(20, ErrorMessage = "ID number cannot exceed 20 characters.")]
+        public string? IdNumber { get; set; }
+
+        [StringLength(10, ErrorMessage = "Gender cannot exceed 10 characters.")]
+        public string? Gender { get; set; }
+
+        public string? PhoneNumber { get; set; }
+
+        public string? AlternatePhoneNumber { get; set; }
+
+        [EmailAddress(ErrorMessage = "Invalid email address.")]
+        public string? Email { get; set; }
+
+        [StringLength(200, ErrorMessage = "Address cannot exceed 200 characters.")]
+        public string? Address { get; set; }
     }
 }

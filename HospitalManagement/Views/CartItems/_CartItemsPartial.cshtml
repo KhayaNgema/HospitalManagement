@@ -1,0 +1,91 @@
+﻿@model IEnumerable<HospitalManagement.Models.CartItem>
+
+<style>
+    .delete-icon {
+        color: red;
+        background: none;
+        border: none;
+    }
+
+    .h-delete-icon {
+        color: black;
+        background: none;
+        border: none;
+    }
+
+    .no-items-message {
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .center {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 40vh;
+    }
+</style>
+
+@if (Model != null && Model.Any())
+{
+    <table class="table" id="cartTable">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Qty</th>
+                <th>Price</th>
+                <th>Subtotal</th>
+                <th>Del.</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var cartItem in Model)
+            {
+                <tr data-cartitemid="@cartItem.CartItemId">
+                    <td>@cartItem.MenuItem?.ItemName</td>
+                    <td>
+                        <input type="number" class="quantity-input" value="@cartItem.Quantity" min="1" />
+                    </td>
+                    <td>R @cartItem.MenuItem?.Price</td>
+                    <td class="subtotal" data-price="@cartItem">
+                        R @(cartItem.Quantity * (cartItem.MenuItem?.Price))
+                    </td>
+                    <td>
+                        <button class="btn delete-cart-item" data-cartitemid="@cartItem.CartItemId">
+                            <i class="fas fa-trash-alt delete-icon"></i>
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="2" style="text-align: left;"><strong>Total Price:</strong></td>
+                <td colspan="3" style="text-align: right;">
+                    <span id="totalPrice" style="font-weight: bold; font-size: 17px;">
+                        R @(ViewBag.TotalPrice != null ? ((decimal)ViewBag.TotalPrice).ToString("0.00") : "0.00")
+                    </span>
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <br />
+    <p>Please note: Changing quantity may affect each item's subtotal as well as the total amount of all items in your basket.</p>
+
+    <div class="button-container btn-md">
+        <a href="/Orders/NewOrder">
+            <button id="checkoutButton">Checkout</button>
+        </a>
+    </div>
+
+    <br />
+}
+else
+{
+    <div class="center">
+        <i class="fas fa-shopping-cart fa-4x" style="color: #ccc;"></i>
+        <p class="no-items-message">You haven't added items in your basket.</p>
+    </div>
+}

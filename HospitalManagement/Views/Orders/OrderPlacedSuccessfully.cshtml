@@ -1,0 +1,36 @@
+﻿@{
+    ViewBag.Title = "OrderPlacedSuccessfully";
+}
+
+<style>
+    .center-content {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 80vh;
+    }
+
+    .content {
+        text-align: center;
+    }
+</style>
+
+<div class="center-content">
+    <div class="content">
+        <h3>Order Placed Successfully</h3>
+        <br />
+        <div>
+            <p>Your order was placed successfully. Thank you for shopping with us.</p>
+            <p>
+                Order number: <span id="orderNumber">@ViewBag.OrderNumber</span><br />
+                Order Status: <span id="orderStatus">@ViewBag.OrderStatus</span><br />
+                Amount paid: <span id="amountPaid">@ViewBag.AmountPaid</span><br />
+                <br />
+                Click here to download your proof of purchase
+            </p>
+            <p>
+                <a href="@Url.Action("MyInvoices", "Invoices")">Proof of purchase</a>.
+            </p>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,142 @@
+﻿@using HospitalManagement.ViewModels
+@model NewMedicalRecordViewModel
+@inject HospitalManagement.Interfaces.IEncryptionService encryptionService
+
+@{
+    ViewData["Title"] = "Admit Patient";
+    Layout = "~/Views/Shared/_PagesLayout.cshtml";
+}
+
+<a asp-controller="Appointments" asp-action="Appointments" class="text-decoration-none d-inline-flex align-items-center back-link mt-4 ms-4">
+    <i class="bi bi-chevron-left me-1"></i>Admit Patient
+</a>
+
+<div class="container py-5">
+    <div class="card shadow-lg border-0" style="border-left: 6px solid #48AAAD; border-radius: 10px;">
+        <div class="card-header text-white" style="background-color: #48AAAD;">
+            <h3 class="mb-0">New medical record</h3>
+        </div>
+        <div class="card-body px-4 py-4">
+
+            <form asp-action="NewMedicalRecord" asp-controller="MedicalHistories" method="post" novalidate>
+                <input type="hidden" asp-for="PatientId" />
+
+                <h5 class="text-muted mb-3">Patient Details</h5>
+
+                <div class="text-center mb-3">
+                    <img src="~/@Model.ProfilePicture" alt="Profile Picture" class="img-thumbnail rounded-circle" style="width: 120px; height: 120px; object-fit: cover;" />
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="FirstName" class="form-label fw-semibold text-muted"></label>
+                        <input asp-for="FirstName" class="form-control" readonly />
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="LastName" class="form-label fw-semibold text-muted"></label>
+                        <input asp-for="LastName" class="form-control" readonly />
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="DateOfBirth" class="form-label fw-semibold text-muted"></label>
+                        <input asp-for="DateOfBirth" class="form-control" type="date" readonly />
+                    </div>
+                </div>
+
+                <h5 class="text-muted mb-3 mt-4">Medical Record Details</h5>
+
+                <div class="mb-3">
+                    <label asp-for="ChiefComplaint" class="form-label fw-semibold text-muted"></label>
+                    <textarea asp-for="ChiefComplaint" class="form-control" rows="2"></textarea>
+                    <span asp-validation-for="ChiefComplaint" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Symptoms" class="form-label fw-semibold text-muted"></label>
+                    <textarea asp-for="Symptoms" class="form-control" rows="3" placeholder="Enter symptoms separated by commas"></textarea>
+                    <small class="form-text text-muted">Separate symptoms with commas.</small>
+                    <span asp-validation-for="Symptoms" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Diagnosis" class="form-label fw-semibold text-muted"></label>
+                    <textarea asp-for="Diagnosis" class="form-control" rows="2"></textarea>
+                    <span asp-validation-for="Diagnosis" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Surgeries" class="form-label fw-semibold text-muted"></label>
+                    <textarea asp-for="Surgeries" class="form-control" rows="3" placeholder="Enter surgeries separated by commas"></textarea>
+                    <small class="form-text text-muted">Separate surgeries with commas.</small>
+                    <span asp-validation-for="Surgeries" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Immunizations" class="form-label fw-semibold text-muted"></label>
+                    <textarea asp-for="Immunizations" class="form-control" rows="3" placeholder="Enter immunizations separated by commas"></textarea>
+                    <small class="form-text text-muted">Separate immunizations with commas.</small>
+                    <span asp-validation-for="Immunizations" class="text-danger"></span>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="HeightCm" class="form-label fw-semibold text-muted"></label>
+                        <input asp-for="HeightCm" class="form-control" type="number" step="0.01" />
+                        <span asp-validation-for="HeightCm" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="WeightKg" class="form-label fw-semibold text-muted"></label>
+                        <input asp-for="WeightKg" class="form-control" type="number" step="0.01" />
+                        <span asp-validation-for="WeightKg" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Treatment" class="form-label fw-semibold text-muted"></label>
+                    <textarea asp-for="Treatment" class="form-control" rows="2"></textarea>
+                    <span asp-validation-for="Treatment" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="FollowUpInstructions" class="form-label fw-semibold text-muted"></label>
+                    <textarea asp-for="FollowUpInstructions" class="form-control" rows="3" placeholder="Enter follow-up instructions separated by commas"></textarea>
+                    <small class="form-text text-muted">Separate instructions with commas.</small>
+                    <span asp-validation-for="FollowUpInstructions" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Vitals" class="form-label fw-semibold text-muted"></label>
+                    <textarea asp-for="Vitals" class="form-control" rows="2"></textarea>
+                    <span asp-validation-for="Vitals" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="LabResults" class="form-label fw-semibold text-muted"></label>
+                    <textarea asp-for="LabResults" class="form-control" rows="2"></textarea>
+                    <span asp-validation-for="LabResults" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Notes" class="form-label fw-semibold text-muted"></label>
+                    <textarea asp-for="Notes" class="form-control" rows="3"></textarea>
+                    <span asp-validation-for="Notes" class="text-danger"></span>
+                </div>
+
+                <div class="d-flex justify-content-end mt-4">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save me-1"></i> Save
+                    </button>
+                    <input asp-for="PatientMedicalHistoryId" type="hidden" />
+                    <input asp-for="PatientId" type="hidden" />
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

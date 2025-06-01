@@ -174,6 +174,16 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
             if (ModelState.IsValid)
             {
+                var cart = new Cart
+                {
+                    UserId = Guid.NewGuid().ToString(),
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                _context.Add(cart);
+
+                await _context.SaveChangesAsync();
+
                 var newPatient = new Patient
                 {
                     FirstName = Input.FirstName,
@@ -192,7 +202,8 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
                     Gender = Input.Gender,
                     IsSuspended = false,
                     IsFirstTimeLogin = false,
-                    IsDeleted = false
+                    IsDeleted = false,
+                    Id = cart.UserId
                 };
 
                 if (Input.ProfilePicture != null && Input.ProfilePicture.Length > 0)

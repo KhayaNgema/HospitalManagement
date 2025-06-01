@@ -27,10 +27,16 @@ namespace HospitalManagement.Models
         public string? ChiefComplaint { get; set; }
 
         [Display(Name = "Symptoms")]
-        public string? Symptoms { get; set; }
+        public List<string>? Symptoms { get; set; }
 
         [Display(Name = "Diagnosis")]
         public string? Diagnosis { get; set; }
+
+        public List<string>? Surgeries { get; set; }
+
+        public List<string>? Immunizations { get; set; }
+        public float? HeightCm { get; set; }
+        public float? WeightKg { get; set; }
 
         [Display(Name = "Treatment Given")]
         public string? Treatment { get; set; }

@@ -4,14 +4,14 @@
     ViewData["Title"] = "Admissions";
     Layout = "~/Views/Shared/_PagesLayout.cshtml";
 }
-<br />
-<a asp-controller="Home" asp-action="Index" class="text-decoration-none d-inline-flex align-items-center back-link">
-    <i class="bi bi-chevron-left me-1"></i> Back
-</a>
-
 <div class="container-fluid my-5 px-4">
     <div class="d-flex align-items-center justify-content-between px-3 py-3 mb-4" style="background-color:#48AAAD;">
-        <h2 class="mb-0 text-white">Admissions</h2>
+        <div class="d-flex align-items-center">
+            <a asp-controller="Home" asp-action="Index" class="text-white text-decoration-none d-inline-flex align-items-center back-link me-3">
+                <i class="bi bi-chevron-left me-1"></i> Back
+            </a>
+            <h2 class="mb-0 text-white">Admissions</h2>
+        </div>
         <div>
             <button class="btn btn-light btn-sm me-2 filter-btn" data-filter="Admitted">
                 <i class="bi bi-hospital-fill text-primary"></i> <span class="btn-text ms-1">Admitted</span>
@@ -24,7 +24,20 @@
             </button>
         </div>
     </div>
-
+    <div class="d-flex justify-content-between align-items-center mb-4 px-3">
+        <div class="input-group w-50 me-2">
+            <input type="text" class="form-control" placeholder="Search by patient name or department..." id="qrSearchInput">
+        </div>
+    </div>
+    @if (TempData["Message"] != null)
+    {
+        <div id="tempDataMessage" class="alert @(TempData["Message"].ToString().Contains("successfully") ? "alert-success" : "alert-danger")" role="alert">
+            @Html.Raw(TempData["Message"])
+            <span class="close" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </span>
+        </div>
+    }
 
     @if (!Model.Any())
     {
@@ -38,46 +51,52 @@
             <table class="table table-striped table-borderless" id="appointmentsTable">
                 <thead class="custom-thead">
                     <tr>
-                        <th class="text-nowrap">><i class="fas fa-user me-1"></i> Patient</th>
-                        <th class="text-nowrap">><i class="fas fa-calendar-plus me-1"></i> Admission Date</th>
-                        <th class="text-nowrap">><i class="fas fa-calendar-minus me-1"></i> Discharge Date</th>
-                        <th class="text-nowrap">><i class="fas fa-hospital me-1"></i> Ward</th>
-                        <th class="text-nowrap">><i class="fas fa-door-open me-1"></i> Room No.</th>
-                        <th class="text-nowrap">><i class="fas fa-bed me-1"></i> Bed No.</th>
-                        <th class="text-nowrap">><i class="fas fa-stethoscope me-1"></i> Department</th>
-                        <th class="text-nowrap">><i class="fas fa-info-circle me-1"></i> Status</th>
+                        <th class="text-nowrap"><i class="fas fa-user me-1"></i> Patient</th>
+                        <th class="text-nowrap"><i class="fas fa-calendar-plus me-1"></i> Admission Date</th>
+                        <th class="text-nowrap"><i class="fas fa-calendar-minus me-1"></i> Discharge Date</th>
+                        <th class="text-nowrap"><i class="fas fa-stethoscope me-1"></i> Department</th>
+                        <th class="text-nowrap"><i class="fas fa-hospital me-1"></i> Ward</th>
+                        <th class="text-nowrap"><i class="fas fa-door-open me-1"></i> Room No.</th>
+                        <th class="text-nowrap"><i class="fas fa-bed me-1"></i> Bed No.</th>
+                        <th class="text-nowrap"><i class="fas fa-info-circle me-1"></i> Status</th>
                         @if (User.IsInRole("System Administrator"))
                         {
-                            <th><i class="fas fa-user-shield me-1"></i> Created By</th>
-                            <th><i class="fas fa-calendar-plus me-1"></i> Created At</th>
-                            <th><i class="fas fa-user-edit me-1"></i> Updated By</th>
-                            <th><i class="fas fa-calendar-check me-1"></i> Last Updated At</th>
+                            <th class="text-nowrap"><i class="fas fa-user-shield me-1"></i> Created By</th>
+                            <th class="text-nowrap"><i class="fas fa-calendar-plus me-1"></i> Created At</th>
+                            <th class="text-nowrap"><i class="fas fa-user-edit me-1"></i> Updated By</th>
+                            <th class="text-nowrap"><i class="fas fa-calendar-check me-1"></i> Last Updated At</th>
                         }
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var booking in Model)
+                    @foreach (var admission in Model)
                     {
-                        <tr>
-                            <td>@booking.CreatedBy.FirstName @booking.CreatedBy.LastName</td>
-                            <td>@booking.AdmissionDate</td>
-                            <td>@booking.DischargeDate</td>
-                            <td>@booking.Ward</td>
-                            <td>@booking.RoomNumber</td>
-                            <td>@booking.BedNumber</td>
-                            <td>@booking.Department</td>
-                            <td>@booking.PatientStatus</td>
+                        <tr class="ellipsis">
+                            <td>@(admission.Patient?.FirstName ?? "N/A") @(admission.Patient?.LastName ?? "")</td>
+                            <td>@admission.AdmissionDate</td>
+                            <td>@admission.DischargeDate</td>
+                            <td>@(admission.Department)</td>
+                            <td>@(admission.Ward)</td>
+                            <td>@(string.IsNullOrEmpty(admission.RoomNumber) ? "N/A" : admission.RoomNumber)</td>
+                            <td>@(string.IsNullOrEmpty(admission.BedNumber) ? "N/A" : admission.BedNumber)</td>
+                            <td>@(admission.PatientStatus)</td>
                             @if (User.IsInRole("System Administrator"))
                             {
-                                <td>@booking.CreatedBy.FirstName @booking.CreatedBy.LastName</td>
-                                <td>@booking.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
-                                <td>@booking.ModifiedBy.FirstName @booking.ModifiedBy.LastName</td>
-                                <td>@booking.LastUpdatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td>@(admission.CreatedBy?.FirstName ?? "N/A") @(admission.CreatedBy?.LastName ?? "")</td>
+                                <td>@admission.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td>@(admission.ModifiedBy?.FirstName ?? "N/A") @(admission.ModifiedBy?.LastName ?? "")</td>
+                                <td>@admission.LastUpdatedAt.ToString("yyyy-MM-dd HH:mm")</td>
                             }
                         </tr>
+
                     }
                 </tbody>
             </table>
         </div>
     }
 </div>
+<script>
+    setTimeout(function () {
+        document.getElementById("tempDataMessage").style.display = "none";
+    }, 7000);
+</script>

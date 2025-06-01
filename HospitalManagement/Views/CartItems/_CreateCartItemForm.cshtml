@@ -1,0 +1,35 @@
+﻿@model HospitalManagement.ViewModels.CartItemViewModel
+
+@{
+    ViewData["Title"] = "Add to Cart";
+}
+
+<form asp-action="AddCartItem" asp-controller="CartItems" method="post" id="createCartItemForm">
+    @Html.AntiForgeryToken()
+
+    <input type="hidden" asp-for="MenuItemId" />
+    <input type="hidden" asp-for="MenuItemName" />
+    <input type="hidden" asp-for="MenuItemPrice" />
+
+    <div class="card shadow rounded-4 p-4">
+        <h5 class="mb-4 text-center fw-bold" style="color: #022D36;">Add @Model.MenuItemName to Cart</h5>
+
+
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Price</label>
+            <div class="form-control rounded-3 bg-light fw-bold">R @Model.MenuItemPrice</div>
+        </div>
+
+
+        <div class="mb-3">
+            <label asp-for="Quantity" class="form-label fw-semibold">Select Quantity</label>
+            <input asp-for="Quantity" class="form-control rounded-3" id="quantityInput_@Model.MenuItemId" />
+            <span asp-validation-for="Quantity" class="text-danger small"></span>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Subtotal</label>
+            <div id="subtotal" class="form-control rounded-3 bg-light">R @Model.MenuItemPrice</div>
+        </div>
+    </div>
+</form>

@@ -8,8 +8,12 @@ namespace HospitalManagement.Models
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int ItemId { get; set; }
 
+        [Required]
+        [Display(Name = "Item name")]
         public string ItemName { get; set; }
 
+        [Required]
+        [Display(Name = "Item description")]
         public string ItemDescription { get; set; }
 
         [Required]
@@ -21,10 +25,13 @@ namespace HospitalManagement.Models
         [Display(Name = "Item image(s)")]
         public string ItemImage { get; set; }
 
+        [Required]
+        [Display(Name = "Item price")]
+        public decimal Price { get; set; }
+
         [Display(Name = "Is selected")]
         public bool IsSelected { get; set; }
 
-        public string Price { get; set; }
 
         public string CreatedById { get; set; }
         [ForeignKey("CreatedById")]

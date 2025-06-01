@@ -7,6 +7,23 @@ html, body {
     width: 100%;
 }
 
+.custom-card {
+    margin-bottom: 20px;
+    padding: 0 10px;
+}
+
+.card-img-top {
+    width: 100%;
+    height: 25vh; 
+    object-fit: cover;
+}
+
+@media (min-width: 1200px) {
+    .col-xl-5th {
+        flex: 0 0 20%;
+        max-width: 20%;
+    }
+}
 
 
 thead.custom-thead th {
@@ -1821,6 +1838,24 @@ html {
     justify-content: center;
     position: relative;
 }
+
+.menuItem-container {
+    border: 1px solid #ccc;
+    padding: 0;
+    border-radius: 5%;
+    width: 200px;
+    height: 200px;
+    overflow: hidden;
+    position: relative;
+}
+
+.menuItem-image {
+    border-radius: 5%;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
 
 .profile-picture-container {
     border: 1px solid #ccc;

@@ -70,6 +70,9 @@ namespace HospitalManagement.Services
                 Console.WriteLine($"Error retrieving location information: {ex.Message}");
             }
 
+            _context.DeviceInfos.Add(deviceInfo);
+            await _context.SaveChangesAsync();
+
             return deviceInfo;
         }
 

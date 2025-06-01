@@ -45,7 +45,12 @@
 
 <div class="container my-5">
     <div class="d-flex align-items-center justify-content-between px-3 py-3 mb-4" style="background-color:#48AAAD;">
-        <h2 class="mb-0 text-white">My Appointments</h2>
+        <div class="d-flex align-items-center">
+            <a asp-controller="Home" asp-action="Index" class="text-white text-decoration-none d-inline-flex align-items-center back-link me-3">
+                <i class="bi bi-chevron-left me-1"></i> Back
+            </a>
+            <h2 class="mb-0 text-white">My appointments</h2>
+        </div>
         <div>
             <button class="btn btn-light btn-sm me-2 filter-btn" data-filter="Pending">
                 <i class="bi bi-clock-history"></i> <span class="btn-text ms-1">Pending</span>
@@ -80,7 +85,6 @@
                             <p class="mb-1"><strong>Date:</strong> @booking.BookForDate.ToString("MMMM dd, yyyy")</p>
                             <p class="mb-1"><strong>Time:</strong> @booking.BookForTime.ToString(@"hh\:mm tt")</p>
                             <p class="mb-1"><strong>Status:</strong> <span class="badge badge-status">@booking.Status</span></p>
-                            <p class="mb-1"><strong>Notes:</strong> <span>@booking.AdditionalNotes</span></p>
                         </div>
 
                         <div class="card-actions">
@@ -146,10 +150,13 @@
 
                                         <dt class="col-sm-4">Status</dt>
                                         <dd class="col-sm-8">@booking.Status</dd>
+
+                                        <dt class="col-sm-4">Notes</dt>
+                                        <dd class="col-sm-8">@booking.AdditionalNotes</dd>
                                     </dl>
                                 </div>
                                 <div class="modal-footer">
-                                    <a class="btn btn-outline-primary" asp-controller="Appointments" asp-action="Update" asp-route-id="@booking.BookingId">Update</a>
+                                    <a class="btn btn-outline-primary" asp-controller="Appointments" asp-action="RescheduleAppointment" asp-route-id="@booking.BookingId">Reschedule</a>
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                                 </div>
                             </div>

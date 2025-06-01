@@ -1,0 +1,120 @@
+﻿@model IEnumerable<HospitalManagement.Models.Order>
+
+<style>
+    .order-card {
+        display: flex;
+        flex-direction: column;
+        border: 1px solid #ccc;
+        border-left: 6px solid #48AAAD;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+        margin-bottom: 20px;
+        transition: transform 0.2s;
+        cursor: pointer;
+        height: 100%;
+    }
+
+        .order-card:hover {
+            background-color: #f9f9f9;
+            transform: translateY(-2px);
+        }
+
+    .order-header {
+        background-color: red;
+        color: white;
+        padding: 10px 15px;
+        font-size: 25px;
+        font-weight: 700;
+        border-top-left-radius: 5px;
+        border-top-right-radius: 5px;
+    }
+
+    .order-body {
+        padding: 15px;
+        flex-grow: 1;
+    }
+
+        .order-body p {
+            margin-bottom: 6px;
+            color: #555;
+        }
+
+    .order-footer {
+        padding: 10px;
+        margin: 10px;
+        margin-top: auto;
+    }
+
+        .order-footer button {
+            width: 100%;
+        }
+</style>
+
+<body>
+    <br />
+    <div class="d-flex align-items-center justify-content-between px-3 py-3 mb-4" style="background-color:red;">
+        <div class="d-flex align-items-center">
+            <a asp-controller="Home" asp-action="Index" class="text-white text-decoration-none d-inline-flex align-items-center back-link me-3">
+                <i class="bi bi-chevron-left me-1"></i> Back
+            </a>
+            <h2 class="mb-0 text-white">READY FOR COLLECTION:</h2>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <div class="row">
+            @foreach (var order in Model)
+            {
+                <div class="col-12 col-md-6 col-lg-3 mb-4">
+                    <div class="order-card" data-id="@order.OrderId">
+                        <div class="order-header">
+                            #@(order.OrderNumber?.Length >= 4 ? order.OrderNumber.Substring(order.OrderNumber.Length - 4) : order.OrderNumber)
+                        </div>
+                        <div class="order-body">
+                            <div class="order-info">
+                                <strong>Status:</strong> @order.Status
+                            </div>
+                            <div class="order-items">
+                                <strong>Order Items:</strong>
+                                <ul>
+                                    @foreach (var orderItem in order.OrderItems)
+                                    {
+                                        <li>@orderItem.Quantity @orderItem.MenuItem?.ItemName (s)</li>
+                                    }
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="order-footer">
+                            <button class="btn btn-info order-ready-btn" data-order-id="@order.OrderId">Ready</button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</body>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $(".order-ready-btn").click(function () {
+            var orderId = $(this).data("order-id");
+            var buttonClicked = $(this);
+
+            $.ajax({
+                url: "@Url.Action("MoveToReadyForCollection", "Orders")",
+                type: "POST",
+                data: { orderId: orderId },
+                dataType: "json",
+                headers: {
+                    RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function (response) {
+                    buttonClicked.closest('.order-card').remove();
+                },
+                error: function (xhr, status, error) {
+                    alert("An error occurred while processing the request: " + error);
+                }
+            });
+        });
+    });
+</script>

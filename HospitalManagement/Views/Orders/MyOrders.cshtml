@@ -1,0 +1,98 @@
+﻿@model IEnumerable<HospitalManagement.Models.Order>
+
+@{
+    ViewData["Title"] = "My Orders";
+    Layout = "~/Views/Shared/_PagesLayout.cshtml";
+}
+
+<style>
+    .order-card {
+        border: 1px solid #ccc;
+        border-left: 6px solid #48AAAD;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+        margin-bottom: 20px;
+        transition: transform 0.2s;
+        cursor: pointer;
+    }
+
+        .order-card:hover {
+            background-color: #f9f9f9;
+            transform: translateY(-2px);
+        }
+
+    .order-header {
+        background-color: #48AAAD;
+        color: white;
+        padding: 10px 15px;
+        font-size: 25px;
+        font-weight: 700;
+        border-top-left-radius: 5px;
+        border-top-right-radius: 5px;
+    }
+
+    .order-body {
+        padding: 15px;
+    }
+
+        .order-body p {
+            margin-bottom: 6px;
+            color: #555;
+        }
+</style>
+
+<div class="d-flex align-items-center justify-content-between px-3 py-3 mb-4" style="background-color:#48AAAD;">
+    <h2 class="mb-0 text-white">My Orders</h2>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-4 px-3">
+    <div class="input-group w-50 me-2">
+        <input type="text" class="form-control" placeholder="Search by item name or price" id="qrSearchInput">
+    </div>
+</div>
+@if (TempData["Message"] != null)
+{
+    <div id="tempDataMessage" class="alert @(TempData["Message"].ToString().Contains("successfully") ? "alert-success" : "alert-danger")" role="alert">
+        @Html.Raw(TempData["Message"])
+        <span class="close" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </span>
+    </div>
+}
+
+<div class="container-fluid">
+    <div class="row">
+        @foreach (var item in Model)
+        {
+            <div class="col-sm-12 col-md-4 col-lg-3">
+                <div class="order-card" data-id="@item.OrderId">
+                    <div class="order-header">
+                        #@item.LastFourDigitsOfOrderNumber
+                    </div>
+                    <div class="order-body">
+                        <p><strong>Date:</strong> @item.OrderDate.ToString("yyyy-MM-dd HH:mm")</p>
+                        <p><strong>Total:</strong> @item.TotalPrice.ToString("C")</p>
+                        <p><strong>Status:</strong> @item.Status</p>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.order-card').forEach(card => {
+            card.addEventListener('click', function () {
+                const rawId = card.getAttribute('data-id');
+                if (rawId) {
+                    const encodedId = encodeURIComponent(rawId);
+                    window.location.href = `/Orders/Details/${encodedId}`;
+                }
+            });
+        });
+    });
+    setTimeout(function () {
+        document.getElementById("tempDataMessage").style.display = "none";
+    }, 7000);
+</script>
