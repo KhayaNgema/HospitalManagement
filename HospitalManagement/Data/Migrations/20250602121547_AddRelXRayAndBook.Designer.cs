@@ -4,6 +4,7 @@ using HospitalManagement.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HospitalManagement.Data.Migrations
 {
     [DbContext(typeof(HospitalManagementDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250602121547_AddRelXRayAndBook")]
+    partial class AddRelXRayAndBook
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -975,7 +978,11 @@ namespace HospitalManagement.Data.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.PrimitiveCollection<string>("Instructions")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("OriginalAppointmentBookingId")
+                        .HasColumnType("int");
 
                     b.Property<int>("OriginalBookingId")
                         .HasColumnType("int");
@@ -985,7 +992,7 @@ namespace HospitalManagement.Data.Migrations
 
                     b.HasIndex("DoctorId");
 
-                    b.HasIndex("OriginalBookingId");
+                    b.HasIndex("OriginalAppointmentBookingId");
 
                     b.HasDiscriminator().HasValue("X_RayAppointment");
                 });
@@ -1474,7 +1481,7 @@ namespace HospitalManagement.Data.Migrations
 
                     b.HasOne("HospitalManagement.Models.Booking", "Booking")
                         .WithMany()
-                        .HasForeignKey("OriginalBookingId")
+                        .HasForeignKey("OriginalAppointmentBookingId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

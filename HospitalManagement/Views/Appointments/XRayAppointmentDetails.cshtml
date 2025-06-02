@@ -1,0 +1,238 @@
+﻿@using System.Reflection
+@using System.ComponentModel.DataAnnotations
+@model HospitalManagement.ViewModels.XRayAppointmentDetailsViewModel
+@inject HospitalManagement.Interfaces.IEncryptionService encryptionService
+
+@functions {
+    public string GetEnumDisplayName(Enum enumValue)
+    {
+        var displayAttr = enumValue.GetType()
+                                   .GetMember(enumValue.ToString())
+                                   .First()
+                                   .GetCustomAttribute<DisplayAttribute>();
+
+        return displayAttr?.Name ?? enumValue.ToString();
+    }
+}
+
+@{
+    ViewData["Title"] = "Appointment Details";
+    Layout = "~/Views/Shared/_PagesLayout.cshtml";
+    var encryptedAppointmentId = encryptionService.Encrypt(Model.BookingId);
+}
+
+<a asp-controller="Appointments" asp-action="X_RayAppointments" class="text-decoration-none d-inline-flex align-items-center back-link mt-4 ms-4">
+    <i class="bi bi-chevron-left me-1"></i> Back to Appointments
+</a>
+
+<form asp-controller="Appointments" asp-action="UpdateStatusRedirect" method="post" enctype="multipart/form-data">
+    @Html.AntiForgeryToken()
+
+    <input type="hidden" name="appointmentId" value="@Model.BookingId" />
+
+    <div class="container py-5">
+        <div class="card shadow-lg border-0" style="border-left: 6px solid #48AAAD; border-radius: 10px;">
+            <div class="card-header text-white" style="background-color: #48AAAD;">
+                <h3 class="mb-0">##@Model.BookingReference</h3>
+            </div>
+
+            <div class="card-body px-4 py-4">
+                @if (TempData["Message"] != null)
+                {
+                    <div id="tempDataMessage" class="alert @(TempData["Message"].ToString().Contains("successfully") ? "alert-success" : "alert-danger")" role="alert">
+                        @Html.Raw(TempData["Message"])
+                        <span class="close" aria-label="Close"><span aria-hidden="true">&times;</span></span>
+                    </div>
+                }
+
+                <div class="text-center mb-4">
+                    <img src="~/@Model.PatientProfilePicture" alt="Profile Picture" class="img-thumbnail rounded-circle" style="width: 120px; height: 120px; object-fit: cover;" />
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6 mb-3">
+                        <label class="fw-semibold text-muted">Patient</label>
+                        <div class="info-box">@Model.PatientFullNames</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="fw-semibold text-muted">Email</label>
+                        <div class="info-box">@Model.PatientEmail</div>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6 mb-3">
+                        <label class="fw-semibold text-muted">Appointment Date</label>
+                        <div class="info-box">@Model.BookForDate.ToString("yyyy/MM/dd")</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="fw-semibold text-muted">Appointment Time</label>
+                        <div class="info-box">@Model.BookForTime.ToString("hh\\:mm tt")</div>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6 mb-3">
+                        <label class="fw-semibold text-muted">Medical Condition</label>
+                        <div class="info-box">@Model.MedicalCondition</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="fw-semibold text-muted">Assigned Team(s)</label>
+                        <div class="info-box">
+                            @{
+                                var assignedTeam = ViewBag.AssignedTeam as List<HospitalManagement.Models.Specialization>;
+                            }
+
+                            @if (assignedTeam != null && assignedTeam.Any())
+                            {
+                                <ul class="mb-0 ps-3">
+                                    @foreach (var specialization in assignedTeam)
+                                    {
+                                        <li>@GetEnumDisplayName(specialization)</li>
+                                    }
+                                </ul>
+                            }
+                            else
+                            {
+                                <span class="text-muted">No assigned team available.</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6 mb-3">
+                        <label class="fw-semibold text-muted">Doctor</label>
+                        <div class="info-box">@Model.DoctorFullNames</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="fw-semibold text-muted">Sent Date</label>
+                        <div class="info-box">@Model.CreatedAt.ToString("yyyy/MM/dd HH:mm")</div>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Status" class="fw-semibold text-muted">Status</label>
+                        <select asp-for="Status" class="form-select rounded-3" asp-items="Html.GetEnumSelectList<HospitalManagement.Models.BookingStatus>()">
+                            <option value="">-- Select Status --</option>
+                        </select>
+                        <span asp-validation-for="Status" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="fw-semibold text-muted">Additional Notes</label>
+                        <div class="info-box">@Model.AdditionalNotes</div>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6 mb-3">
+                        <label class="fw-semibold text-muted">Instructions</label>
+                        <div class="info-box">
+                            @if (Model.Instructions != null && Model.Instructions.Any())
+                            {
+                                <ul class="mb-0 ps-3">
+                                    @foreach (var instruction in Model.Instructions)
+                                    {
+                                        <li>@instruction</li>
+                                    }
+                                </ul>
+                            }
+                            else
+                            {
+                                <span class="text-muted">No instructions available.</span>
+                            }
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="fw-semibold text-muted">Upload X-Ray Image</label>
+                        <div class="d-flex justify-content-center">
+                            <div class="x_rayImage-container position-relative">
+                                @if (!string.IsNullOrEmpty(Model.XRayImage))
+                                {
+                                    <img id="profile-image-preview" src="~/@Model.XRayImage" alt="x-ray image" class="x_rayImage-image position-absolute top-0 start-0 w-100 h-100" style="object-fit: cover;" />
+                                }
+                                else
+                                {
+                                    <i class="bi bi-cup-straw" id="profile-image-placeholder" style="font-size: 200px; color: #f0f0f0;"></i>
+                                }
+                                <label for="Input_ProfilePicture" class="camera-icon position-absolute bottom-0 end-0 m-2">
+                                    <i class="fa fa-camera" style="font-size: 40px; cursor: pointer;"></i>
+                                </label>
+                            </div>
+                        </div>
+                        <input asp-for="XRayImages" type="file" accept="image/*" onchange="previewProfilePicture(event)" style="display: none;" id="Input_ProfilePicture" />
+                        <span asp-validation-for="XRayImages" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                @if (User.IsInRole("System Administrator"))
+                {
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="fw-semibold text-muted">Last Updated By</label>
+                            <div class="info-box">@Model.DoctorFullNames</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="fw-semibold text-muted">Last Updated At</label>
+                            <div class="info-box">@Model.LastUpdatedAt.ToString("yyyy/MM/dd HH:mm")</div>
+                        </div>
+                    </div>
+                }
+
+                <div class="d-flex justify-content-end mt-4 gap-2">
+                    <a asp-controller="Appointments" asp-action="X_RayAppointment" asp-route-appointmentId="@encryptedAppointmentId" class="btn btn-success">
+                        <i class="fas fa-x-ray me-1"></i> X-Ray
+                    </a>
+                    <a asp-controller="Admissions" asp-action="AdmitPatient" asp-route-appointmentId="@encryptedAppointmentId" class="btn btn-success">
+                        <i class="fas fa-procedures me-1"></i> Admit
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save2 me-1"></i> Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<style>
+    .info-box {
+        border-left: 5px solid #48AAAD;
+        border: 1px solid #dee2e6;
+        padding: 1rem;
+        border-radius: 0.375rem;
+        background-color: #f9f9f9;
+        box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.03);
+    }
+</style>
+
+<script>
+    function previewProfilePicture(event) {
+        var reader = new FileReader();
+        reader.onload = function () {
+            var output = document.getElementById('profile-image-preview');
+            if (output) {
+                output.src = reader.result;
+                output.style.display = 'block';
+            } else {
+                var img = document.createElement("img");
+                img.id = 'profile-image-preview';
+                img.src = reader.result;
+                img.className = 'x_rayImage-image position-absolute top-0 start-0 w-100 h-100';
+                img.style.objectFit = 'cover';
+                var container = document.querySelector('.x_rayImage-container');
+                container.appendChild(img);
+            }
+            var placeholder = document.getElementById('profile-image-placeholder');
+            if (placeholder) placeholder.style.display = 'none';
+        };
+        reader.readAsDataURL(event.target.files[0]);
+    }
+
+
+    setTimeout(function () {
+        var msg = document.getElementById("tempDataMessage");
+        if (msg) msg.style.display = "none";
+    }, 7000);
+</script>

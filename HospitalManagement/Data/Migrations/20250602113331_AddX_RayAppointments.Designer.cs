@@ -4,6 +4,7 @@ using HospitalManagement.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HospitalManagement.Data.Migrations
 {
     [DbContext(typeof(HospitalManagementDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250602113331_AddX_RayAppointments")]
+    partial class AddX_RayAppointments
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -974,18 +977,10 @@ namespace HospitalManagement.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.PrimitiveCollection<string>("Instructions")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("OriginalBookingId")
-                        .HasColumnType("int");
-
                     b.Property<string>("ScannerImage")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasIndex("DoctorId");
-
-                    b.HasIndex("OriginalBookingId");
 
                     b.HasDiscriminator().HasValue("X_RayAppointment");
                 });
@@ -1471,14 +1466,6 @@ namespace HospitalManagement.Data.Migrations
                         .HasForeignKey("DoctorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("HospitalManagement.Models.Booking", "Booking")
-                        .WithMany()
-                        .HasForeignKey("OriginalBookingId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Booking");
 
                     b.Navigation("Doctor");
                 });

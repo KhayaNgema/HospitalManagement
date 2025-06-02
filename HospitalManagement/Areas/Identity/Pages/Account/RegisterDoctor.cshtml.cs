@@ -214,7 +214,7 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
                     Education = Input.Education,
                     YearsOfExperience = Input.YearsOfExperience,
                     Specialization = Input.Specialization,
-                    Department = Input.Department
+                    Department = Input.Department,
                 };
 
                 if (Input.ProfilePicture != null && Input.ProfilePicture.Length > 0)
@@ -259,8 +259,8 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
 
                     BackgroundJob.Enqueue(() => _emailService.SendEmailAsync(doctor.Email, "Confirm Your Email Address", emailConfirmationEmailBody, "Diski 360"));
 
-                    await _activityLogger.Log($"Added {Input.FirstName} {Input.LastName} as MediCare {doctor.Specialization}", userId);
-
+/*                    await _activityLogger.Log($"Added {Input.FirstName} {Input.LastName} as MediCare {doctor.Specialization}", userId);
+*/
                     TempData["Message"] = $"{doctor.FirstName} {doctor.LastName}  has been successfully added as your new {doctor.Specialization}";
                     return RedirectToAction("Doctors", "Users");
                 }
@@ -271,10 +271,18 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError(string.Empty, "Failed to onboard doctor: " + ex.Message);
-
-                return Page();
+                return new JsonResult(new
+                {
+                    success = false,
+                    message = "Failed to onboard doctor: " + ex.Message,
+                    errorDetails = new
+                    {
+                        innerException = ex.InnerException?.Message,
+                        stackTrace = ex.StackTrace
+                    }
+                });
             }
+
 
 
             return Page();

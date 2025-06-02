@@ -19,6 +19,12 @@ namespace HospitalManagement.Data
             {
                 entity.OwnsOne(d => d.AvailableTimings);
             });
+
+            modelBuilder.Entity<Booking>()
+                .HasDiscriminator<string>("Discriminator")
+                .HasValue<Booking>("Booking")
+                .HasValue<X_RayAppointment>("X_RayAppointment");
+
         }
 
 
@@ -63,5 +69,7 @@ namespace HospitalManagement.Data
         public DbSet<HospitalManagement.Models.OrderItem> OrderItems { get; set; }
 
         public DbSet<HospitalManagement.Models.PatientMedicalHistory> PatientMedicalHistories { get; set; }
+
+        public DbSet<HospitalManagement.Models.X_RayAppointment> X_RayAppointments { get; set; }
     }
 }

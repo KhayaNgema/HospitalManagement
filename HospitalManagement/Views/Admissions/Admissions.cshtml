@@ -73,8 +73,8 @@
                     {
                         <tr class="ellipsis">
                             <td>@(admission.Patient?.FirstName ?? "N/A") @(admission.Patient?.LastName ?? "")</td>
-                            <td>@admission.AdmissionDate</td>
-                            <td>@admission.DischargeDate</td>
+                            <td>@admission.AdmissionDate?.ToString("dd/MM/yyyy")</td>
+                            <td>@(admission.DischargeDate?.ToString("dd/MM/yyyy") ?? "N/A")</td>
                             <td>@(admission.Department)</td>
                             <td>@(admission.Ward)</td>
                             <td>@(string.IsNullOrEmpty(admission.RoomNumber) ? "N/A" : admission.RoomNumber)</td>

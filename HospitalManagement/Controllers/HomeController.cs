@@ -70,6 +70,14 @@ namespace HospitalManagement.Controllers
             }
             else if (roles.Contains("Doctor"))
             {
+                var doctor = await _context.Doctors
+                    .Where(d => d.Id == user.Id)
+                    .FirstOrDefaultAsync();
+
+                var doctorSpecialization = doctor.Specialization;
+
+                ViewBag.Specialization = doctorSpecialization;
+
                 return View("DoctorDashboard");
             }
             else if (roles.Contains("Paramedic"))
@@ -82,6 +90,33 @@ namespace HospitalManagement.Controllers
             }
             else
             {
+                var patientAdmission = await _context.Admissions
+                    .Where(a => a.PatientId == user.Id)
+                    .OrderByDescending(a => a.AdmissionDate)
+                    .Include(a => a.Patient)
+                    .FirstOrDefaultAsync();
+
+                if (patientAdmission != null)
+                {
+                    ViewBag.PatientAdmissionStatus = patientAdmission.PatientStatus;
+
+                    if (patientAdmission.AdmissionDate.HasValue && patientAdmission.DischargeDate.HasValue)
+                    {
+                        ViewBag.NumberOfDays = (patientAdmission.DischargeDate.Value - patientAdmission.AdmissionDate.Value).Days;
+                    }
+                    else
+                    {
+                        ViewBag.NumberOfDays = 0;
+                    }
+                }
+                else
+                {
+                    ViewBag.PatientAdmissionStatus = PatientStatus.Discharged;
+                    ViewBag.NumberOfDays = 0;
+                }
+
+
+
                 return View("PatientDashboard");
             }
         }

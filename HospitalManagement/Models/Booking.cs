@@ -44,7 +44,6 @@ namespace HospitalManagement.Models
 
         public byte[]? QrCodeImage { get; set; }
 
-
         public string BookingReference { get; set; }
 
         [Display(Name = "Additional notes")]

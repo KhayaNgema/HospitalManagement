@@ -1,0 +1,134 @@
+﻿@using HospitalManagement.ViewModels
+@model BookXRayViewModel
+@inject HospitalManagement.Interfaces.IEncryptionService encryptionService
+
+
+@{
+    ViewData["Title"] = "X-Ray Appointment";
+    Layout = "~/Views/Shared/_PagesLayout.cshtml";
+    var encryptedAppointmentId = encryptionService.Encrypt(Model.BookingId);
+}
+
+<a asp-controller="Appointments"
+   asp-action="AppointmentDetails"
+   asp-route-appointmentId="@encryptedAppointmentId"
+   class="text-decoration-none d-inline-flex align-items-center back-link mt-4 ms-4">
+    <i class="bi bi-chevron-left me-1"></i>Appointment details
+</a>
+
+<div class="container py-5">
+    <div class="card shadow-lg border-0" style="border-left: 6px solid #48AAAD; border-radius: 10px;">
+        <div class="card-header text-white" style="background-color: #48AAAD;">
+            <h3 class="mb-0">Book X-Ray Appointment</h3>
+        </div>
+        <div class="card-body px-4 py-4">
+            <form asp-action="X_RayAppointment" asp-controller="Appointments" method="post" enctype="multipart/form-data" novalidate>
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" asp-for="BookingId" />
+                <input type="hidden" asp-for="PatientId" />
+
+                <h5 class="text-muted mb-3">Patient Details</h5>
+
+                <div class="text-center mb-3">
+                    <img src="~/@Model.ProfilePicture" alt="Profile Picture" class="img-thumbnail rounded-circle" style="width: 120px; height: 120px; object-fit: cover;" />
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="FirstName" class="form-label fw-semibold text-muted"></label>
+                        <input asp-for="FirstName" class="form-control" readonly />
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="LastName" class="form-label fw-semibold text-muted"></label>
+                        <input asp-for="LastName" class="form-control" readonly />
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="DateOfBirth" class="form-label fw-semibold text-muted"></label>
+                        <input asp-for="DateOfBirth" class="form-control" type="date" readonly />
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Gender" class="form-label fw-semibold text-muted"></label>
+                        <input asp-for="Gender" class="form-control" readonly />
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label asp-for="IdNumber" class="form-label fw-semibold text-muted"></label>
+                        <input asp-for="IdNumber" class="form-control" readonly />
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="PhoneNumber" class="form-label fw-semibold text-muted"></label>
+                        <input asp-for="PhoneNumber" class="form-control" readonly />
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="AlternatePhoneNumber" class="form-label fw-semibold text-muted"></label>
+                        <input asp-for="AlternatePhoneNumber" class="form-control" readonly />
+                    </div>
+                </div>
+
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="Email" class="form-label fw-semibold text-muted"></label>
+                        <input asp-for="Email" class="form-control" readonly />
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="MedicalCondition" class="form-label fw-semibold text-muted"></label>
+                        <input asp-for="MedicalCondition" class="form-control" readonly />
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="AdditionalNotes" class="form-label fw-semibold text-muted"></label>
+                    <textarea asp-for="AdditionalNotes" class="form-control" rows="6" readonly></textarea>
+                </div>
+
+                <h5 class="text-muted mb-3">Appointment details</h5>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="BookForDate" class="form-label fw-semibold text-muted"></label>
+                        <input asp-for="BookForDate" type="date" class="form-control" />
+                        <span asp-validation-for="BookForDate" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="BookForTime" class="form-label fw-semibold"></label>
+                        <input asp-for="BookForTime" class="form-control rounded-3" type="time"
+                               value="@Model.BookForTime.ToString("HH:mm")" />
+                        <span asp-validation-for="BookForTime" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="BodyParts" class="form-label fw-semibold text-muted"></label>
+                    <select asp-for="BodyParts" class="form-select" asp-items="Html.GetEnumSelectList<BodyParts>()">
+                        <option value="">-- Select Body Part --</option>
+                    </select>
+                    <span asp-validation-for="BodyParts" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="InstructionsInput" class="form-label fw-semibold text-muted"></label>
+                    <textarea asp-for="InstructionsInput" class="form-control" rows="6"></textarea>
+                    <span asp-validation-for="InstructionsInput" class="text-danger"></span>
+                </div>
+
+
+                <div class="d-flex justify-content-end mt-4">
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-calendar-plus me-1"></i> Book Appointment
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

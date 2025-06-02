@@ -17,6 +17,7 @@ using Cafeteria.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Hangfire;
+using System.Diagnostics;
 
 namespace Cafeteria.Controllers
 {
@@ -106,6 +107,8 @@ namespace Cafeteria.Controllers
             var orders = await _context.Orders
                 .Where(o => o.Status == OrderStatus.Ready_For_Collection)
                 .Include(o => o.User)
+                .Include(o => o.OrderItems)
+                .ThenInclude(o => o.MenuItem)
                 .ToListAsync();
 
             return View(orders);
@@ -441,5 +444,77 @@ namespace Cafeteria.Controllers
             return $"{year}{month}{day}{randomNumbers}{fineLetters}";
         }
 
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public JsonResult MoveToReadyForCollection(int orderId)
+        {
+            try
+            {
+
+                var order = _context.Orders
+                               .Include(o => o.OrderItems)
+                               .SingleOrDefault(o => o.OrderId == orderId);
+
+                if (order == null)
+                {
+                    Debug.WriteLine("Order not found.");
+                    return Json(new { success = false, message = "Order not found." });
+                }
+
+                Debug.WriteLine("Order found: " + order.OrderNumber);
+
+                order.Status = OrderStatus.Ready_For_Collection;
+                order.LastUpdated = DateTime.Now;
+                _context.SaveChanges();
+
+                Debug.WriteLine("Order status updated to Ready For Collection.");
+
+                return Json(new { success = true, message = "Order status updated to Ready For Collection." });
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("Error: " + ex.Message);
+                return Json(new { success = false, message = "Failed to update order status. See logs for details." });
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public JsonResult MoveToCollected(int orderId)
+        {
+            try
+            {
+                Debug.WriteLine("MoveToCollected action method started...");
+                Debug.WriteLine("Received orderId: " + orderId);
+
+                var order = _context.Orders
+                               .Include(o => o.OrderItems)
+                               .SingleOrDefault(o => o.OrderId == orderId);
+
+                if (order == null)
+                {
+                    Debug.WriteLine("Order not found.");
+                    return Json(new { success = false, message = "Order not found." });
+                }
+
+                Debug.WriteLine("Order found: " + order.OrderNumber);
+
+                order.Status = OrderStatus.Collected;
+                order.LastUpdated = DateTime.Now;
+                _context.SaveChanges();
+
+                Debug.WriteLine("Order status updated to Collected.");
+
+                return Json(new { success = true, message = "Order status updated to Collected." });
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("Error: " + ex.Message);
+                return Json(new { success = false, message = "Failed to update order status. See logs for details." });
+            }
+        }
     }
+
 }
+

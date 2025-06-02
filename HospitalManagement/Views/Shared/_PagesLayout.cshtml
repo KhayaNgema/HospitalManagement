@@ -207,9 +207,19 @@
 
                             <hr style="background-color: white; opacity: 0.2; margin: 15px 20px;">
 
-                            <li style="margin: 20px 0 0 30px; display: flex; align-items: center; cursor:pointer;">
-                                <i class="fa fa-history fa-lg" style="color: white; margin-right: 10px;"></i>
-                                <a asp-controller="Orders" asp-action="Orders" class="nav-link text-light" style="font-weight: bold;">Previous Orders</a>
+                            <li style="margin-left: 30px; cursor:pointer;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;" data-toggle="collapse" data-target="#auditsSubmenu" aria-expanded="false" aria-controls="auditsSubmenu" style="cursor: pointer;">
+                                    <div style="display: flex; align-items: center;">
+                                        <i class="fa fa-clipboard-check fa-lg" style="color: white; margin-right: 10px;"></i>
+                                        <span class="nav-link text-light" style="font-weight: bold;">Audits</span>
+                                    </div>
+                                    <i class="fa fa-chevron-down caret-rotate collapsed" style="color: white; margin-right: 15px;"></i>
+                                </div>
+                                <ul class="collapse list-unstyled collapsible-menu" id="auditsSubmenu" style="margin-left: 35px;">
+                                    <li style="margin-top: 10px;"><a asp-controller="ActivityLogs" asp-action="ActivityLogs" class="nav-link text-light">Staff</a></li>
+                                    <li style="margin-top: 10px;"><a asp-controller="ActivityLogs" asp-action="PatientsActivityLogs" class="nav-link text-light">Patients</a></li>
+                                    <li style="margin-top: 10px;"><a asp-controller="ActivityLogs" asp-action="MyActivityLogs" class="nav-link text-light">Myself</a></li>
+                                </ul>
                             </li>
                             <hr style="background-color: white; opacity: 0.2; margin: 15px 20px; cursor:pointer;">
 
@@ -380,26 +390,16 @@
                                     <i class="fa fa-chevron-down caret-rotate collapsed" style="color: white; margin-right: 15px;"></i>
                                 </div>
                                 <ul class="collapse list-unstyled collapsible-menu" id="inventorySubmenu" style="margin-left: 35px;">
-                                    <li style="margin-top: 10px;"><a asp-controller="Medications" asp-action="MedicationInventory" class="nav-link text-light">Meals</a></li>
+                                    <li style="margin-top: 10px;"><a asp-controller="Menus" asp-action="MenuItems" class="nav-link text-light">Meals</a></li>
                                     <li style="margin-top: 10px;"><a asp-controller="Categories" asp-action="Categories" class="nav-link text-light">Meals categories</a></li>
                                 </ul>
                             </li>
 
                             <hr style="background-color: white; opacity: 0.2; margin: 15px 20px;">
 
-                            <li style="margin-left: 30px; cursor:pointer;">
-                                <div style="display: flex; justify-content: space-between; align-items: center;" data-toggle="collapse" data-target="#auditsSubmenu" aria-expanded="false" aria-controls="auditsSubmenu" style="cursor: pointer;">
-                                    <div style="display: flex; align-items: center;">
-                                        <i class="fa fa-clipboard-check fa-lg" style="color: white; margin-right: 10px;"></i>
-                                        <span class="nav-link text-light" style="font-weight: bold;">Audits</span>
-                                    </div>
-                                    <i class="fa fa-chevron-down caret-rotate collapsed" style="color: white; margin-right: 15px;"></i>
-                                </div>
-                                <ul class="collapse list-unstyled collapsible-menu" id="auditsSubmenu" style="margin-left: 35px;">
-                                    <li style="margin-top: 10px;"><a asp-controller="ActivityLogs" asp-action="ActivityLogs" class="nav-link text-light">Staff</a></li>
-                                    <li style="margin-top: 10px;"><a asp-controller="ActivityLogs" asp-action="PatientsActivityLogs" class="nav-link text-light">Patients</a></li>
-                                    <li style="margin-top: 10px;"><a asp-controller="ActivityLogs" asp-action="MyActivityLogs" class="nav-link text-light">Myself</a></li>
-                                </ul>
+                            <li style="margin: 20px 0 0 30px; display: flex; align-items: center; cursor:pointer;">
+                                <i class="fa fa-history fa-lg" style="color: white; margin-right: 10px;"></i>
+                                <a asp-controller="Orders" asp-action="Orders" class="nav-link text-light" style="font-weight: bold;">Previous Orders</a>
                             </li>
 
                             <hr style="background-color: white; opacity: 0.2; margin: 15px 20px; cursor:pointer;">

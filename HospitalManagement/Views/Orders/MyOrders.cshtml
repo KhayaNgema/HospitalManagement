@@ -5,6 +5,19 @@
     Layout = "~/Views/Shared/_PagesLayout.cshtml";
 }
 
+@functions {
+    string GetStatusClass(HospitalManagement.Models.OrderStatus status)
+    {
+        return status switch
+        {
+            HospitalManagement.Models.OrderStatus.Pending => "status-pending",
+            HospitalManagement.Models.OrderStatus.Ready_For_Collection => "status-ready",
+            HospitalManagement.Models.OrderStatus.Collected => "status-collected",
+            _ => ""
+        };
+    }
+}
+
 <style>
     .order-card {
         border: 1px solid #ccc;
@@ -39,10 +52,51 @@
             margin-bottom: 6px;
             color: #555;
         }
+
+    .status-indicator {
+        padding: 2px 8px;
+        border-radius: 4px;
+        color: #333;
+        font-weight: bold;
+    }
+
+    .status-pending {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+
+    .status-ready {
+        background-color: #cce5ff;
+        color: #004085;
+    }
+
+    .status-collected {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+
 </style>
 
 <div class="d-flex align-items-center justify-content-between px-3 py-3 mb-4" style="background-color:#48AAAD;">
     <h2 class="mb-0 text-white">My Orders</h2>
+    <div>
+        <button class="btn btn-light btn-sm me-2 filter-btn" data-filter="Pending">
+            <i class="bi bi-hourglass-split text-warning"></i>
+            <span class="btn-text ms-1">Pending</span>
+        </button>
+
+        <button class="btn btn-light btn-sm me-2 filter-btn" data-filter="Ready_For_Collection">
+            <i class="bi bi-box-seam text-primary"></i>
+            <span class="btn-text ms-1">Ready for Collection</span>
+        </button>
+
+        <button class="btn btn-light btn-sm filter-btn" data-filter="Collected">
+            <i class="bi bi-bag-check-fill text-success"></i>
+            <span class="btn-text ms-1">Collected</span>
+        </button>
+    </div>
+
 </div>
 
 <div class="d-flex justify-content-between align-items-center mb-4 px-3">
@@ -61,38 +115,66 @@
 }
 
 <div class="container-fluid">
-    <div class="row">
+    <div class="d-flex flex-wrap gap-3" id="ordersContainer">
         @foreach (var item in Model)
         {
-            <div class="col-sm-12 col-md-4 col-lg-3">
-                <div class="order-card" data-id="@item.OrderId">
-                    <div class="order-header">
-                        #@item.LastFourDigitsOfOrderNumber
-                    </div>
-                    <div class="order-body">
-                        <p><strong>Date:</strong> @item.OrderDate.ToString("yyyy-MM-dd HH:mm")</p>
-                        <p><strong>Total:</strong> @item.TotalPrice.ToString("C")</p>
-                        <p><strong>Status:</strong> @item.Status</p>
-                    </div>
+            <div class="order-card" data-id="@item.OrderId" data-status="@item.Status" style="flex: 0 0 22%;">
+                <div class="order-header">
+                    #@item.LastFourDigitsOfOrderNumber
+                </div>
+                <div class="order-body">
+                    <p><strong>Date:</strong> @item.OrderDate.ToString("yyyy-MM-dd HH:mm")</p>
+                    <p><strong>Total:</strong> @item.TotalPrice.ToString("C")</p>
+                    <p>
+                        <strong>Status:</strong>
+                        <span class="status-indicator @GetStatusClass(item.Status)">@item.Status</span>
+                    </p>
                 </div>
             </div>
         }
     </div>
 </div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        document.querySelectorAll('.order-card').forEach(card => {
-            card.addEventListener('click', function () {
-                const rawId = card.getAttribute('data-id');
-                if (rawId) {
-                    const encodedId = encodeURIComponent(rawId);
-                    window.location.href = `/Orders/Details/${encodedId}`;
-                }
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const cards = document.querySelectorAll('.order-card');
+            const filterButtons = document.querySelectorAll('.filter-btn');
+
+            cards.forEach(card => {
+                card.addEventListener('click', function () {
+                    const rawId = card.getAttribute('data-id');
+                    if (rawId) {
+                        const encodedId = encodeURIComponent(rawId);
+                        window.location.href = `/Orders/Details/${encodedId}`;
+                    }
+                });
             });
+
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function () {
+                    const selectedStatus = this.getAttribute('data-filter');
+
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+
+                    cards.forEach(card => {
+                        const cardStatus = card.getAttribute('data-status');
+                        card.style.display = (selectedStatus === cardStatus) ? '' : 'none';
+                    });
+                });
+            });
+
+
+            const defaultBtn = document.querySelector('.filter-btn[data-filter="Pending"]');
+            if (defaultBtn) {
+                defaultBtn.click();
+            }
+
+            setTimeout(function () {
+                const msg = document.getElementById("tempDataMessage");
+                if (msg) msg.style.display = "none";
+            }, 7000);
         });
-    });
-    setTimeout(function () {
-        document.getElementById("tempDataMessage").style.display = "none";
-    }, 7000);
-</script>
+    </script>
+
+

@@ -4,6 +4,7 @@ using HospitalManagement.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HospitalManagement.Data.Migrations
 {
     [DbContext(typeof(HospitalManagementDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250602081555_NewUpdates")]
+    partial class NewUpdates
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -160,11 +163,6 @@ namespace HospitalManagement.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("Discriminator")
-                        .IsRequired()
-                        .HasMaxLength(21)
-                        .HasColumnType("nvarchar(21)");
-
                     b.Property<DateTime>("LastUpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -197,10 +195,6 @@ namespace HospitalManagement.Data.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Bookings");
-
-                    b.HasDiscriminator().HasValue("Booking");
-
-                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("HospitalManagement.Models.Cart", b =>
@@ -963,33 +957,6 @@ namespace HospitalManagement.Data.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("HospitalManagement.Models.X_RayAppointment", b =>
-                {
-                    b.HasBaseType("HospitalManagement.Models.Booking");
-
-                    b.Property<int>("BodyParts")
-                        .HasColumnType("int");
-
-                    b.Property<string>("DoctorId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.PrimitiveCollection<string>("Instructions")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("OriginalBookingId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ScannerImage")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasIndex("DoctorId");
-
-                    b.HasIndex("OriginalBookingId");
-
-                    b.HasDiscriminator().HasValue("X_RayAppointment");
-                });
-
             modelBuilder.Entity("HospitalManagement.Models.UserBaseModel", b =>
                 {
                     b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityUser");
@@ -1462,25 +1429,6 @@ namespace HospitalManagement.Data.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("HospitalManagement.Models.X_RayAppointment", b =>
-                {
-                    b.HasOne("HospitalManagement.Models.Doctor", "Doctor")
-                        .WithMany()
-                        .HasForeignKey("DoctorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("HospitalManagement.Models.Booking", "Booking")
-                        .WithMany()
-                        .HasForeignKey("OriginalBookingId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Booking");
-
-                    b.Navigation("Doctor");
                 });
 
             modelBuilder.Entity("HospitalManagement.Models.Doctor", b =>

@@ -28,17 +28,37 @@ namespace HospitalManagement.Controllers
             _emailService = emailService;
         }
 
-        [HttpGet]
         public async Task<IActionResult> Admissions()
         {
-            var admissions = await _context.Admissions
-                .Include(a => a.Patient)
-                .Include(a => a.CreatedBy)
-                .Include(a => a.ModifiedBy)
-                .ToListAsync(); 
+            var user = await _userManager.GetUserAsync(User);
+            var roles = await _userManager.GetRolesAsync(user);
+
+            List<Admission> admissions;
+
+            if (roles.Contains("System Administrator"))
+            {
+
+                admissions = await _context.Admissions
+                    .Include(pa => pa.Patient)
+                    .Include(pa => pa.CreatedBy)
+                    .ToListAsync();
+            }
+            else if (roles.Contains("Doctor"))
+            {
+                admissions = await _context.Admissions
+                    .Include(pa => pa.Patient)
+                    .Include(pa => pa.CreatedBy)
+                    .Where(pa => pa.CreatedById == user.Id) 
+                    .ToListAsync();
+            }
+            else
+            {
+                return Forbid();
+            }
 
             return View(admissions);
         }
+
 
         [HttpGet]
         public async Task<IActionResult> AdmissionDetails()
