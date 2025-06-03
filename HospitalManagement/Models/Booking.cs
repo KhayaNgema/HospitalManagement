@@ -10,7 +10,7 @@ namespace HospitalManagement.Models
         public int BookingId { get; set; }
 
         [Required]
-        public string PatientId { get; set; } 
+        public string PatientId { get; set; }
 
         [ForeignKey("UserId")]
         public virtual Patient Patient { get; set; }
@@ -20,10 +20,9 @@ namespace HospitalManagement.Models
         [Display(Name = "Appointment Date")]
         public DateTime BookForDate { get; set; }
 
-        [Required(ErrorMessage = "Please select a time for the appointment.")]
-        [DataType(DataType.Time)]
-        [Display(Name = "Appointment Time")]
-        public DateTime BookForTime { get; set; }
+        [Required(ErrorMessage = "Please select a time slot for the appointment.")]
+        [Display(Name = "Appointment Time Slot")]
+        public string BookForTimeSlot { get; set; }  
 
         [Required(ErrorMessage = "Please select the medical condition.")]
         public CommonMedicalCondition MedicalCondition { get; set; }
@@ -48,5 +47,9 @@ namespace HospitalManagement.Models
 
         [Display(Name = "Additional notes")]
         public string? AdditionalNotes { get; set; }
+
+        public string? AssignedUserId { get; set; }
+        [ForeignKey("AssignedUserId")]
+        public virtual UserBaseModel AssignedTo { get; set; }
     }
 }

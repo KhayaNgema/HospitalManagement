@@ -16,7 +16,7 @@
     <i class="bi bi-chevron-left me-1"></i>Appointment details
 </a>
 
-<div class="container py-5">
+<div class="container-fluid">
     <div class="card shadow-lg border-0" style="border-left: 6px solid #48AAAD; border-radius: 10px;">
         <div class="card-header text-white" style="background-color: #48AAAD;">
             <h3 class="mb-0">Book X-Ray Appointment</h3>
@@ -96,11 +96,12 @@
                         <input asp-for="BookForDate" type="date" class="form-control" />
                         <span asp-validation-for="BookForDate" class="text-danger"></span>
                     </div>
-                    <div class="col-md-6">
-                        <label asp-for="BookForTime" class="form-label fw-semibold"></label>
-                        <input asp-for="BookForTime" class="form-control rounded-3" type="time"
-                               value="@Model.BookForTime.ToString("HH:mm")" />
-                        <span asp-validation-for="BookForTime" class="text-danger small"></span>
+                    <div class="mb-3">
+                        <label asp-for="BookForTimeSlot" class="form-label fw-semibold"></label>
+                        <select asp-for="BookForTimeSlot" class="form-select rounded-3" asp-items="Model.AvailableTimeSlots">
+                            <option value="">-- Select Time Slot --</option>
+                        </select>
+                        <span asp-validation-for="BookForTimeSlot" class="text-danger small"></span>
                     </div>
                 </div>
 
@@ -129,6 +130,31 @@
     </div>
 </div>
 
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-}
+<script>
+    document.getElementById('BookForDate').addEventListener('change', function () {
+        var selectedDate = this.value;
+        if (!selectedDate) {
+
+            var timeSlotDropdown = document.getElementById('BookForTimeSlot');
+            timeSlotDropdown.innerHTML = '<option value="">-- Select Time Slot --</option>';
+            return;
+        }
+
+        fetch('/Appointments/GetAvailableTimeSlots?date=' + selectedDate)
+            .then(response => response.json())
+            .then(data => {
+                var timeSlotDropdown = document.getElementById('BookForTimeSlot');
+                timeSlotDropdown.innerHTML = '<option value="">-- Select Time Slot --</option>';
+
+                data.forEach(function(slot) {
+                    var option = document.createElement('option');
+                    option.value = slot.value;
+                    option.text = slot.text;
+                    timeSlotDropdown.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching time slots:', error);
+            });
+    });
+</script>

@@ -20,6 +20,8 @@ namespace HospitalManagement.Models
         [DisplayName("Body parts require scanning")]
         public BodyParts BodyParts { get; set; }
 
+        public decimal BookingAmount { get; set; }
+
         [Display(Name = "Instructions/Notes")]
         public ICollection<string>? Instructions { get; set; } = new List<string>();
 

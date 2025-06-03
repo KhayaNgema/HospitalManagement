@@ -1857,6 +1857,10 @@ html {
 }
 
 
+.equal-width-group > * {
+    min-width: 180px; 
+}
+
 .x_rayImage-container {
     border: 1px solid #ccc;
     padding: 0;

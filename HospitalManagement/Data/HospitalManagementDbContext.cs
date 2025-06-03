@@ -71,5 +71,12 @@ namespace HospitalManagement.Data
         public DbSet<HospitalManagement.Models.PatientMedicalHistory> PatientMedicalHistories { get; set; }
 
         public DbSet<HospitalManagement.Models.X_RayAppointment> X_RayAppointments { get; set; }
+
+        public DbSet<HospitalManagement.Models.Pharmacist> Pharmacists { get; set; }
+
+
+        public DbSet<HospitalManagement.Models.PatientBill> PatientBills { get; set; }
+
+        public DbSet<HospitalManagement.Models.PatientBillServices> PatientBillServices { get; set; }
     }
 }

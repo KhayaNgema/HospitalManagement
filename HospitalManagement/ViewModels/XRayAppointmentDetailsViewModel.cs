@@ -1,4 +1,6 @@
 ﻿using HospitalManagement.Models;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using System.ComponentModel.DataAnnotations;
 
 namespace HospitalManagement.ViewModels
 {
@@ -12,6 +14,8 @@ namespace HospitalManagement.ViewModels
 
         public string PatientId { get; set; }
         public string PatientFullNames{ get; set; }
+
+        public string IdNumber { get; set; }
 
         public string PatientProfilePicture {  get; set; }
 
@@ -28,7 +32,7 @@ namespace HospitalManagement.ViewModels
 
         public DateTime BookForDate { get; set; }
 
-        public DateTime BookForTime { get; set; }
+        public string BookForTimeSlot { get; set; }  
 
         public DateTime CreatedAt { get; set; }
 

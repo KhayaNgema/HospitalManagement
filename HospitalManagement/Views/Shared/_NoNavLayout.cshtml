@@ -203,8 +203,8 @@
                 </div>
             </div>
             <hr style="border-color: white; margin: 20px 0;">
-            <div class="text-center mt-3">
-                <p>&copy; @DateTime.Now.Year Diski360. All rights reserved.</p>
+            <div class="t   <p>&copy; @DateTime.Now.Year MediConnect. All rights reserved.</p>ext-center mt-3">
+                <p>&copy; @DateTime.Now.Year MediConnect. All rights reserved.</p>
             </div>
         </div>
     </footer>
@@ -304,71 +304,6 @@
 
         window.addEventListener('resize', updateHomeTabsNavTop);
     });
-
-
-    function loadTab(tabName) {
-
-        $('.nav-link').removeClass('active');
-        $('.tab-pane').removeClass('show active');
-
-        $('#' + tabName + '-tab').addClass('active');
-        $('#' + tabName).addClass('show active');
-
-        if ($('#' + tabName).html().trim() === '') {
-            var url;
-            switch (tabName) {
-                case 'sportnews':
-                    url = '@Url.Action("SportNewsIndex", "SportNews")';
-                    break;
-                case 'soccer':
-                    url = '@Url.Action("SoccerDivisions", "Divisions")';
-                    break;
-                case 'netball':
-                    url = '@Url.Action("NetballDivisions", "Divisions")';
-                    break;
-                case 'allFixtures':
-                    url = '@Url.Action("AllLeaguesFixtures", "Fixtures")';
-                    break;
-                default:
-                    console.error('Unknown tab:', tabName);
-                    return;
-            }
-
-            $.ajax({
-                url: url,
-                type: 'GET',
-                success: function (data) {
-                    $('#' + tabName).html(data);
-                },
-                error: function (xhr, textStatus, errorThrown) {
-                    console.error("Error:", errorThrown);
-                }
-            });
-        }
-    }
-
-    $(document).ready(function () {
-
-        const path = window.location.pathname;
-        const pathSegments = path.split('/').filter(Boolean);
-        const pathTab = pathSegments.length > 0 ? pathSegments[pathSegments.length - 1] : '';
-
-        const urlParams = new URLSearchParams(window.location.search);
-
-        let initialTab = 'sportnews';
-
-        if (pathTab && ['soccer', 'netball', 'allFixtures'].includes(pathTab)) {
-            initialTab = pathTab;
-        } else if (urlParams.has('tab')) {
-            const tabValue = urlParams.get('tab');
-            if (['soccer', 'netball', 'allFixtures'].includes(tabValue)) {
-                initialTab = tabValue;
-            }
-        }
-
-        loadTab(initialTab);
-    });
-
 
 
     $(window).on('load', function () {

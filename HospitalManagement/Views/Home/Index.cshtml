@@ -3,51 +3,49 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<section class="hero-section">
+<section class="hero-section py-5">
     <div class="container">
-        @* <div class="hero-content-wrapper"> *@
-        <div class="row align-items-center" style="margin-left: -20px; margin-right: -20px;">
-            <div class="row align-items-center gx-4">
+        <div class="row align-items-center text-center text-md-start">
 
-                <div class="row gx-2 align-items-start">
-
-                    <div class="col-12 col-md-6 d-flex justify-content-end px-1 mb-4 mb-md-0">
-                        <div style="width: 500px; height: 500px; overflow: hidden;">
-                            <img src="~/UploadedFiles/hospital_image.jpg"
-                                 class="img-fluid hero-main-image w-100 h-100 object-fit-cover" alt="Hospital Icon" />
-                        </div>
-                    </div>
-
-                    <div class="col-12 col-md-6 px-4">
-                        <div class="hero-text-content text-center text-md-start">
-                            <h1 class="app-name"><span style="color: #022D36;">MEDI</span><span style="color: #48AAAD;">CONNECT</span></h1>
-                            <p class="hero-subtitle">Connecting people from the outside world.</p>
-
-                            <div class="mt-3">
-                                <a href="/Identity/Account/Register" class="btn" style="background-color: #48AAAD; color: white; border-radius: 25px; padding: 10px 20px; width: 200px; font-size: 1.1rem; display: inline-block; text-align: center;">
-                                    Register
-                                </a>
-                            </div>
-
-                            <div class="login-url mt-3">
-                                <strong>We are proud of our</strong> strong quality service.
-                            </div>
-
-                            <div class="social-icons mt-3">
-                                <p>Follow <strong>MediConnect</strong></p>
-                                <a href="#"><i class="fab fa-facebook"></i></a>
-                                <a href="#"><i class="fab fa-twitter"></i></a>
-                                <a href="#"><i class="fab fa-instagram"></i></a>
-                            </div>
-                        </div>
-                    </div>
-
+            <div class="col-12 col-md-6 mb-4 mb-md-0 d-flex justify-content-center">
+                <div style="width: 100%; max-width: 500px; height: 500px; overflow: hidden;">
+                    <img src="~/UploadedFiles/hospital_image.jpg"
+                         class="img-fluid w-100 h-100 object-fit-cover"
+                         alt="Hospital Icon" />
                 </div>
             </div>
-      @*   </div> *@
+
+            <div class="col-12 col-md-6">
+                <div class="hero-text-content">
+                    <h1 class="app-name">
+                        <span style="color: #022D36;">MEDI</span>
+                        <span style="color: #48AAAD;">CONNECT</span>
+                    </h1>
+                    <p class="hero-subtitle">Connecting people from the outside world.</p>
+
+                    <div class="mt-3">
+                        <a href="/Identity/Account/Register" class="btn"
+                           style="background-color: #48AAAD; color: white; border-radius: 25px; padding: 10px 20px; width: 200px; font-size: 1.1rem;">
+                            Register
+                        </a>
+                    </div>
+
+                    <div class="login-url mt-3">
+                        <strong>We are proud of our</strong> strong quality service.
+                    </div>
+
+                    <div class="social-icons mt-3">
+                        <p>Follow <strong>MediConnect</strong></p>
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </section>
+
 
 
 <section class="services-section">

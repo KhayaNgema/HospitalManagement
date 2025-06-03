@@ -9,6 +9,7 @@ using HospitalManagement.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using System.Web;
@@ -44,6 +45,7 @@ namespace HospitalManagement.Controllers
 
         }
 
+        [Authorize(Roles = "Doctor, System Administrator")]
         [HttpGet]
         public async Task<IActionResult> Appointments()
         {
@@ -53,15 +55,16 @@ namespace HospitalManagement.Controllers
             IQueryable<Booking> query = _context.Bookings
                 .Include(a => a.Patient)
                 .Include(a => a.CreatedBy)
+                .Include(a => a.AssignedTo)
                 .Include(a => a.ModifiedBy);
 
             if (userRoles.Contains("System Administrator"))
             {
                 var allAppointments = await query
-                    .Where(ap => ap.Status == BookingStatus.Awaiting||
+                    .Where(ap => ap.Status == BookingStatus.Awaiting ||
                     ap.Status == BookingStatus.Assigned)
                     .OrderBy(ap => ap.BookForDate)
-                    .ThenBy(ap => ap.BookForTime)
+                    .ThenBy(ap => ap.BookForTimeSlot)
                     .ToListAsync();
 
                 return View(allAppointments);
@@ -82,9 +85,10 @@ namespace HospitalManagement.Controllers
                 var filteredAppointments = await query
                     .Where(a => allowedConditions.Contains(a.MedicalCondition) &&
                     a.Status == BookingStatus.Awaiting ||
-                    a.Status == BookingStatus.Assigned)
+                    a.Status == BookingStatus.Assigned &&
+                    a.AssignedUserId == user.Id)
                     .OrderBy(a => a.BookForDate)
-                    .ThenBy(a => a.BookForTime)
+                    .ThenBy(a => a.BookForTimeSlot)
                     .ToListAsync();
 
                 return View(filteredAppointments);
@@ -93,10 +97,17 @@ namespace HospitalManagement.Controllers
             return Forbid();
         }
 
+        [Authorize(Roles = "Doctor, System Administrator")]
         [HttpGet]
-        public async Task<IActionResult> X_RayAppointments()
+        public async Task<IActionResult> MyXRayRequests()
         {
+            var user = await _userManager.GetUserAsync(User);
+
             var appointments = await _context.X_RayAppointments
+                 .Where(a => a.Status == BookingStatus.Awaiting ||
+                 a.Status == BookingStatus.Assigned ||
+                  a.Status == BookingStatus.Completed && 
+                  a.DoctorId == user.Id)
                 .Include(a => a.CreatedBy)
                 .Include(a => a.Doctor)
                 .Include(a => a.ModifiedBy)
@@ -106,12 +117,39 @@ namespace HospitalManagement.Controllers
             return View(appointments);
         }
 
+        [Authorize(Roles = "Doctor, System Administrator")]
         [HttpGet]
-        public async Task<IActionResult> MyTeamAppointments()
+        public async Task<IActionResult> X_RayAppointments()
         {
-            return View();
+            var appointments = await _context.X_RayAppointments
+                 .Where(a => a.Status == BookingStatus.Awaiting ||
+                 a.Status == BookingStatus.Assigned)
+                .Include(a => a.CreatedBy)
+                .Include(a => a.Doctor)
+                .Include(a => a.ModifiedBy)
+                .Include(a => a.Booking)
+                .ToListAsync();
+
+            return View(appointments);
         }
 
+
+        [Authorize(Roles = "Doctor, System Administrator")]
+        [HttpGet]
+        public async Task<IActionResult> CompletedX_RayAppointments()
+        {
+            var appointments = await _context.X_RayAppointments
+                .Where(a => a.Status == BookingStatus.Completed)
+                .Include(a => a.CreatedBy)
+                .Include(a => a.Doctor)
+                .Include(a => a.ModifiedBy)
+                .Include(a => a.Booking)
+                .ToListAsync();
+
+            return View(appointments);
+        }
+
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> MyAppointments()
         {
@@ -125,6 +163,7 @@ namespace HospitalManagement.Controllers
             return View(myAppointments);
         }
 
+        [Authorize(Roles = "Patient, Doctor, System Administrator")]
         [HttpGet]
         public async Task<IActionResult> AppointmentDetails(string appointmentId)
         {
@@ -156,7 +195,7 @@ namespace HospitalManagement.Controllers
             return View(appointment);
         }
 
-
+        [Authorize(Roles = "Doctor, System Administrator")]
         [HttpGet]
         public async Task<IActionResult> XRayAppointmentDetails(string appointmentId)
         {
@@ -193,7 +232,7 @@ namespace HospitalManagement.Controllers
                 BookingId = appointment.BookingId,
                 CreatedAt = appointment.CreatedAt,
                 LastUpdatedAt = appointment.LastUpdatedAt,
-                BookForTime = appointment.BookForTime,
+                BookForTimeSlot = appointment.BookForTimeSlot,
                 BookForDate = appointment.BookForDate,
                 Status = appointment.Status,
                 AdditionalNotes = appointment.AdditionalNotes,
@@ -207,30 +246,34 @@ namespace HospitalManagement.Controllers
                 PatientProfilePicture = appointment.CreatedBy.ProfilePicture,
                 PhoneNumber = appointment.CreatedBy.PhoneNumber,
                 Specialization = specializations,
-                XRayImage = appointment.ScannerImage
+                XRayImage = appointment.ScannerImage,
+                IdNumber = appointment.CreatedBy.IdNumber
             };
 
             return View(viewModel);
         }
 
-
-
+        [Authorize]
         [HttpGet]
-        public async Task<IActionResult> MakeAppointment()
+        public async Task<IActionResult> MakeAppointment(DateTime? date)
         {
             var user = await _userManager.GetUserAsync(User);
+            var selectedDate = date ?? DateTime.Today;
+
+            var availableSlots = new List<SelectListItem>();
 
             var viewModel = new MakeAppointmentViewModel
             {
                 PatientId = user.Id,
-                BookForDate = DateTime.Today,
-                BookForTime = DateTime.Today.Add(DateTime.Now.TimeOfDay)
+                BookForDate = selectedDate,
             };
 
             return View(viewModel);
         }
 
+        [Authorize]
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> MakeAppointment(MakeAppointmentViewModel viewModel)
         {
             try
@@ -239,11 +282,41 @@ namespace HospitalManagement.Controllers
                 var bookingReference = GenerateBookingReferenceNumber();
                 var deviceInfo = await _deviceInfoService.GetDeviceInfo();
 
+                var condition = viewModel.MedicalCondition;
+
+                if (!ConditionToSpecializationsMap.Map.TryGetValue(condition, out var requiredSpecializations))
+                {
+                    viewModel.AvailableTimeSlots = GetTimeSlotsByDate(viewModel.BookForDate);
+                    return Json(new
+                    {
+                        success = false,
+                        message = "No specialization mapped to the selected condition."
+                    });
+                }
+
+                var availableDoctor = await _context.Doctors
+                    .Where(d => requiredSpecializations.Contains(d.Specialization)
+                        && !_context.Bookings.Any(b =>
+                            b.AssignedUserId == d.Id &&
+                            b.BookForDate == viewModel.BookForDate &&
+                            b.BookForTimeSlot == viewModel.BookForTimeSlot))
+                    .FirstOrDefaultAsync();
+
+                if (availableDoctor == null)
+                {
+                    viewModel.AvailableTimeSlots = GetTimeSlotsByDate(viewModel.BookForDate);
+                    return Json(new
+                    {
+                        success = false,
+                        message = "No available doctor found for the selected condition and time slot."
+                    });
+                }
+
+
                 var newAppointment = new Booking
                 {
                     PatientId = viewModel.PatientId,
                     BookForDate = viewModel.BookForDate,
-                    BookForTime = viewModel.BookForTime,
                     MedicalCondition = viewModel.MedicalCondition,
                     AdditionalNotes = viewModel.AdditionalNotes,
                     Status = BookingStatus.Pending,
@@ -252,6 +325,8 @@ namespace HospitalManagement.Controllers
                     UpdatedById = user.Id,
                     LastUpdatedAt = DateTime.Now,
                     BookingReference = bookingReference,
+                    BookForTimeSlot = viewModel.BookForTimeSlot,
+                    AssignedUserId = availableDoctor.Id  
                 };
 
                 _context.Add(newAppointment);
@@ -262,8 +337,7 @@ namespace HospitalManagement.Controllers
                 await _context.SaveChangesAsync();
 
                 var patientMedicalRecord = await _context.PatientMedicalHistories
-                    .Where(pmr => pmr.PatientId == user.Id)
-                    .FirstOrDefaultAsync();
+                    .FirstOrDefaultAsync(pmr => pmr.PatientId == user.Id);
 
                 if (patientMedicalRecord != null)
                 {
@@ -288,13 +362,11 @@ namespace HospitalManagement.Controllers
                 await _context.SaveChangesAsync();
 
                 var appointment = await _context.Bookings
-                    .Where(a => a.BookingId == newAppointment.BookingId)
                     .Include(a => a.CreatedBy)
-                    .FirstOrDefaultAsync();
+                    .FirstOrDefaultAsync(a => a.BookingId == newAppointment.BookingId);
 
                 var payment = await _context.Payments
-                    .Where(a => a.PaymentId == newPayment.PaymentId)
-                    .FirstOrDefaultAsync();
+                    .FirstOrDefaultAsync(p => p.PaymentId == newPayment.PaymentId);
 
                 var encryptedAppointmentId = _encryptionService.Encrypt(appointment.BookingId);
                 int paymentId = payment.PaymentId;
@@ -311,20 +383,94 @@ namespace HospitalManagement.Controllers
             }
             catch (Exception ex)
             {
+                viewModel.AvailableTimeSlots = GetTimeSlotsByDate(viewModel.BookForDate);
                 return Json(new
                 {
                     success = false,
-                    message = "Failed to make appointment: " + ex.Message,
+                    message = "Failed to make an appointment: " + ex.Message,
                     errorDetails = new
                     {
-                        innerException = ex.InnerException?.Message,
-                        stackTrace = ex.StackTrace
+                        InnerException = ex.InnerException?.Message,
+                        StackTrace = ex.StackTrace
                     }
                 });
             }
         }
 
+        private List<SelectListItem> GetTimeSlotsByDate(DateTime date)
+        {
+            var slots = TimeSlotGenerator.GenerateDefaultSlots(date);
 
+            var selectList = slots.Select(slot =>
+            {
+                string fromText = DateTime.Today.Add(slot.From).ToString("HH:mm");
+                string toText = DateTime.Today.Add(slot.To).ToString("HH:mm");
+
+
+                return new SelectListItem
+                {
+                    Value = slot.From.ToString(@"hh\:mm"),
+                    Text = $"{fromText} - {toText}"
+                };
+            }).ToList();
+
+            return selectList;
+        }
+
+        [HttpGet]
+        public JsonResult GetAvailableTimeSlots(DateTime date, CommonMedicalCondition condition)
+        {
+            var allSlots = TimeSlotGenerator.GenerateDefaultSlots(date);
+            var availableSlots = new List<SelectListItem>();
+
+            if (!ConditionToSpecializationsMap.Map.TryGetValue(condition, out var requiredSpecializations))
+            {
+                return Json(new List<object>()); 
+            }
+
+            foreach (var slot in allSlots)
+            {
+                string slotValue = slot.From.ToString(@"hh\:mm");
+
+                var specializedDoctors = _context.Doctors
+                    .Where(d => requiredSpecializations.Contains(d.Specialization))
+                    .ToList();
+
+                if (!specializedDoctors.Any())
+                {
+                    continue;
+                }
+
+                var bookedDoctorIds = _context.Bookings
+                    .Where(b => b.BookForDate.Date == date.Date && b.BookForTimeSlot == slotValue)
+                    .Select(b => b.AssignedUserId)
+                    .ToList();
+
+                var availableDoctors = specializedDoctors
+                    .Where(d => !bookedDoctorIds.Contains(d.Id))
+                    .ToList();
+
+                if (availableDoctors.Any())
+                {
+                    string fromText = DateTime.Today.Add(slot.From).ToString("HH:mm");
+                    string toText = DateTime.Today.Add(slot.To).ToString("HH:mm");
+
+                    availableSlots.Add(new SelectListItem
+                    {
+                        Value = slotValue,
+                        Text = $"{fromText} - {toText}"
+                    });
+                }
+            }
+
+            var freeSlots = availableSlots
+                .Select(slot => new { value = slot.Value, text = slot.Text })
+                .ToList();
+
+            return Json(freeSlots);
+        }
+
+        [Authorize]
         public async Task<IActionResult> PayFastReturn(int paymentId, string appointmentId, decimal amount)
         {
             try
@@ -351,7 +497,7 @@ namespace HospitalManagement.Controllers
                 _context.Update(appointment);
                 await _context.SaveChangesAsync();
 
-                TempData["Message"] = $"You have successfully booked an appointment for {appointment.MedicalCondition} on {appointment.BookForDate:MMMM dd, yyyy} at {appointment.BookForTime:hh\\:mm tt}. " +
+                TempData["Message"] = $"You have successfully booked an appointment for {appointment.MedicalCondition} on {appointment.BookForDate:MMMM dd, yyyy} at {appointment.BookForTimeSlot}. " +
                                       $"We have sent you an email with your booking details. " +
                                       $"<a href='/Appointments/MyAppointments' style='color: inherit; text-decoration: underline;'>See Appointment</a>";
 
@@ -374,7 +520,7 @@ namespace HospitalManagement.Controllers
 
 
 
-
+        [Authorize]
         private async Task<string> GeneratePayFineFastPaymentUrl(int paymentId, decimal amount, string appointmentId, string returnUrl, string cancelUrl)
         {
             var decryptedAppointmentId = _encryptionService.DecryptToInt(appointmentId);
@@ -407,10 +553,7 @@ namespace HospitalManagement.Controllers
             return paymentUrl;
         }
 
-
-
-
-
+        [Authorize(Roles = "Doctor, System Administrator")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateStatusRedirect(int appointmentId, BookingStatus status, IFormFile XRayImages)
@@ -504,11 +647,12 @@ namespace HospitalManagement.Controllers
             return $"{year}{month}{day}{randomNumbers}{fineLetters}";
         }
 
-
+        [Authorize(Roles = "Doctor, System Administrator")]
         [HttpGet]
-        public async Task<IActionResult> X_RayAppointment(string appointmentId)
+        public async Task<IActionResult> X_RayAppointment(string appointmentId, DateTime? date)
         {
             var decryptedAppointmentId = _encryptionService.DecryptToInt(appointmentId);
+            var selectedDate = date ?? DateTime.Today;
 
             var appointment = await _context.Bookings
                 .Where(a => a.BookingId == decryptedAppointmentId)
@@ -523,7 +667,7 @@ namespace HospitalManagement.Controllers
                 PatientId = patient.Id,
                 AdditionalNotes = appointment.AdditionalNotes,
                 BookForDate = DateTime.Now,
-                BookForTime = DateTime.Now,
+                AvailableTimeSlots = GetTimeSlotsByDate(selectedDate),
                 MedicalCondition = appointment.MedicalCondition,
                 BookingId = decryptedAppointmentId,
                 Address = patient.Address,
@@ -541,7 +685,7 @@ namespace HospitalManagement.Controllers
             return View(viewModel);
         }
 
-
+        [Authorize(Roles = "Doctor, System Administrator")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> X_RayAppointment(BookXRayViewModel viewModel)
@@ -571,7 +715,7 @@ namespace HospitalManagement.Controllers
                     PatientId = viewModel.PatientId,
                     BodyParts = viewModel.BodyParts,
                     BookForDate = viewModel.BookForDate,
-                    BookForTime = viewModel.BookForTime,
+                    BookForTimeSlot = viewModel.BookForTimeSlot,
                     BookingReference = GenerateBookingReferenceNumber(),
                     AdditionalNotes = viewModel.AdditionalNotes,
                     CreatedAt = DateTime.Now,
@@ -583,7 +727,8 @@ namespace HospitalManagement.Controllers
                     MedicalCondition = viewModel.MedicalCondition,
                     Status = BookingStatus.Awaiting,
                     ScannerImage = viewModel.ScannerImage,
-                    UpdatedById = user.Id
+                    UpdatedById = user.Id,
+                    BookingAmount = 600
                 };
 
                 _context.Add(newXRayAppointment);
@@ -600,7 +745,7 @@ namespace HospitalManagement.Controllers
                 TempData["Message"] = $"You have successfully placed booked an X-Ray appointement " +
                     $"for {patient.FirstName} {patient.LastName} " +
                     $"for {viewModel.BookForDate.ToString("dd/MM/yyy")} " +
-                    $"at {viewModel.BookForTime.ToString("HH:mm")}.";
+                    $"at {viewModel.BookForTimeSlot}.";
 
                 var encryptedAppointmentId = _encryptionService.Encrypt(viewModel.BookingId);
 

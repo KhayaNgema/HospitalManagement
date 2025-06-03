@@ -45,5 +45,21 @@ namespace HospitalManagement.Controllers
 
             return View(kitchenStaff);
         }
+
+        public async Task<IActionResult> Pharmacists()
+        {
+            var kitchenStaff = await _context.KitchenStaff
+                .ToListAsync();
+
+            return View(kitchenStaff);
+        }
+
+        public async Task<IActionResult> Patients()
+        {
+            var kitchenStaff = await _context.Patients
+                .ToListAsync();
+
+            return View(kitchenStaff);
+        }
     }
 }

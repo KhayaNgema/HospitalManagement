@@ -1,5 +1,5 @@
 ﻿using HospitalManagement.Models;
-using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
 
 namespace HospitalManagement.ViewModels
@@ -7,22 +7,28 @@ namespace HospitalManagement.ViewModels
     public class MakeAppointmentViewModel
     {
         [Required]
-        public string PatientId { get; set; }
-
-        [Required(ErrorMessage = "Please select a date for the appointment.")]
-        [DataType(DataType.Date)]
         [Display(Name = "Appointment Date")]
+        [DataType(DataType.Date)]
         public DateTime BookForDate { get; set; }
 
-        [Required(ErrorMessage = "Please select a time for the appointment.")]
-        [DataType(DataType.Time)]
-        [Display(Name = "Appointment Time")]
-        public DateTime BookForTime { get; set; }
-
-        [Required(ErrorMessage = "Please select the medical condition.")]
+        [Required]
+        [Display(Name = "Medical Condition")]
         public CommonMedicalCondition MedicalCondition { get; set; }
 
-        [Display(Name = "Additional notes")]
+        [Required]
+        [Display(Name = "Select Time Slot")]
+        public int SelectedTimeSlotId { get; set; }
+
+        [Required(ErrorMessage = "Please select a time slot for the appointment.")]
+        public string BookForTimeSlot { get; set; }
+
+        public List<SelectListItem> AvailableTimeSlots { get; set; }
+
         public string? AdditionalNotes { get; set; }
+
+        public string PatientId { get; set; }
     }
+
 }
+
+

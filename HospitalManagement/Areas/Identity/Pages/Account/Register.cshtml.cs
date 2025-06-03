@@ -243,7 +243,17 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
                     };
 
                     _context.Add(medicalHistory);
-                    await _context.SaveChangesAsync();  
+                    await _context.SaveChangesAsync();
+
+                    var patient = new PatientBill
+                    {
+                        PatientId = newPatient.Id,
+                        PayableTotalAmount = 0,
+                        Services = null,
+                    };
+
+                    _context.Add(patient);
+                    await _context.SaveChangesAsync();
 
                     if (_userManager.Options.SignIn.RequireConfirmedAccount)
                     {

@@ -7,6 +7,7 @@ using HospitalManagement.Models;
 using HospitalManagement.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 namespace HospitalManagement.Controllers
 {
@@ -28,6 +29,23 @@ namespace HospitalManagement.Controllers
             _emailService = emailService;
         }
 
+
+        [Authorize]
+        public async Task<IActionResult> MyAdmissions()
+        {
+            var user = await _userManager.GetUserAsync(User);
+
+                var admissions = await _context.Admissions
+                    .Include(pa => pa.Patient)
+                    .Include(pa => pa.CreatedBy)
+                    .Where(pa => pa.PatientId == user.Id)
+                    .ToListAsync();
+
+            return View(admissions);
+        }
+
+
+        [Authorize(Roles ="Doctor, System Administrator")]
         public async Task<IActionResult> Admissions()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -53,19 +71,22 @@ namespace HospitalManagement.Controllers
             }
             else
             {
-                return Forbid();
+                return RedirectToAction("Error", "Home");
             }
 
             return View(admissions);
         }
 
 
+        [Authorize(Roles = "Doctor, System Administrator")]
         [HttpGet]
         public async Task<IActionResult> AdmissionDetails()
         {
             return View();
         }
 
+
+        [Authorize(Roles = "Doctor, System Administrator")]
         [HttpGet]
         public async Task<IActionResult> AdmitPatient(string appointmentId)
         {
@@ -104,7 +125,7 @@ namespace HospitalManagement.Controllers
             return View(viewModel);
         }
 
-
+        [Authorize(Roles = "Doctor, System Administrator")]
         [HttpPost]
         public async Task<IActionResult> AdmitPatient(AdmitPatientViewModel viewModel)
         {
@@ -169,12 +190,15 @@ namespace HospitalManagement.Controllers
             return View(viewModel);
         }
 
+        [Authorize(Roles = "Doctor, System Administrator")]
         [HttpGet]
         public async Task<IActionResult> UpdateAdmission()
         {
             return View();
         }
 
+
+        [Authorize(Roles = "Doctor, System Administrator")]
         [HttpPost]
         public async Task<IActionResult> UpdateAdmission(UpdateAdmissionViewModel viewModel)
         {

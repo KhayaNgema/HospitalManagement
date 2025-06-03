@@ -103,7 +103,7 @@
                         </h5>
                         <p class="card-text">Completed x-ray scanner requests are listed here</p>
                         <h1 class="card-text text-center center-number">@ViewBag.ClubAdminsCount</h1>
-                        <a asp-controller="MedicalHistories" asp-action="PatientsMedicalHistory" class="btn btn-primary mt-auto align-self-end styled-button">
+                        <a asp-controller="Appointments" asp-action="CompletedX_RayAppointments" class="btn btn-primary mt-auto align-self-end styled-button">
                             <i class="fas fa-file-medical-alt me-2"></i>
                             <span>Requests</span>
                             <span class="arrow ms-2">&#10148;</span>
@@ -143,14 +143,14 @@
                 </div>
             </div>
 
-            <div class="col-sm-12 col-md-6 col-lg-6">
-                <div class="card club-administrators-card">
+            <div class="col-sm-12 col-md-12 col-lg-6">
+                <div class="card sport-coordinators-card">
                     <div class="card-body d-flex flex-column">
-                        <h5 class="card-title"><i class="fas fa-notes-medical"></i> Medical history</h5>
-                        <p class="card-text">Patients medical histories are listed here</p>
-                        <h1 class="card-text text-center center-number">@ViewBag.ClubAdminsCount</h1>
-                        <a asp-controller="MedicalHistories" asp-action="PatientsMedicalHistory" class="btn btn-primary mt-auto align-self-end styled-button">
-                            <span>Medical history</span>
+                        <h5 class="card-title"><i class="fas fa-bone me-2"></i> X-Ray Requests</h5>
+                        <p class="card-text">X-Ray requests are listed here</p>
+                        <h1 class="card-text text-center center-number">@ViewBag.SportCoordinatorsCount</h1>
+                        <a asp-controller="Appointments" asp-action="MyXRayRequests" class="btn btn-primary mt-auto align-self-end styled-button">
+                            <span>Requests</span>
                             <span class="arrow">&#10148;</span>
                         </a>
                     </div>
@@ -164,24 +164,23 @@
                 <div class="card sport-coordinators-card">
                     <div class="card-body d-flex flex-column">
                         <h5 class="card-title"><i class="fas fa-sign-in-alt"></i> Admissions</h5>
-                        <p class="card-text">X-Ray requests are listed here</p>
+                        <p class="card-text">Your admissions are listed here</p>
                         <h1 class="card-text text-center center-number">@ViewBag.SportCoordinatorsCount</h1>
-                        <a asp-controller="Appointments" asp-action="MyXRayRequests" class="btn btn-primary mt-auto align-self-end styled-button">
-                            <span>Requests</span>
+                        <a asp-controller="Admissions" asp-action="MyPatientAdmissions" class="btn btn-primary mt-auto align-self-end styled-button">
+                            <span>Admissions</span>
                             <span class="arrow">&#10148;</span>
                         </a>
                     </div>
                 </div>
             </div>
-
             <div class="col-sm-12 col-md-6 col-lg-6">
-                <div class="card news-administrators-card">
+                <div class="card club-administrators-card">
                     <div class="card-body d-flex flex-column">
-                        <h5 class="card-title"><i class="fas fa-utensils"></i> Kitchen Staff</h5>
-                        <p class="card-text">Our kitchen staff members are listed here</p>
-                        <h1 class="card-text text-center center-number">@ViewBag.NewsAdminsCount</h1>
-                        <a asp-controller="Users" asp-action="NewsAdministrators" class="btn btn-primary mt-auto align-self-end styled-button">
-                            <span>Kitchen Staff</span>
+                        <h5 class="card-title"><i class="fas fa-notes-medical"></i> Medical history</h5>
+                        <p class="card-text">Patients medical histories are listed here</p>
+                        <h1 class="card-text text-center center-number">@ViewBag.ClubAdminsCount</h1>
+                        <a asp-controller="MedicalHistories" asp-action="PatientsMedicalHistory" class="btn btn-primary mt-auto align-self-end styled-button">
+                            <span>Medical history</span>
                             <span class="arrow">&#10148;</span>
                         </a>
                     </div>

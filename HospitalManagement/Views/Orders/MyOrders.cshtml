@@ -114,26 +114,37 @@
     </div>
 }
 
-<div class="container-fluid">
-    <div class="d-flex flex-wrap gap-3" id="ordersContainer">
-        @foreach (var item in Model)
-        {
-            <div class="order-card" data-id="@item.OrderId" data-status="@item.Status" style="flex: 0 0 22%;">
-                <div class="order-header">
-                    #@item.LastFourDigitsOfOrderNumber
-                </div>
-                <div class="order-body">
-                    <p><strong>Date:</strong> @item.OrderDate.ToString("yyyy-MM-dd HH:mm")</p>
-                    <p><strong>Total:</strong> @item.TotalPrice.ToString("C")</p>
-                    <p>
-                        <strong>Status:</strong>
-                        <span class="status-indicator @GetStatusClass(item.Status)">@item.Status</span>
-                    </p>
-                </div>
-            </div>
-        }
+@if (!Model.Any())
+{
+    <div class="alert alert-info text-center">
+        You have any meals orders.
     </div>
-</div>
+}
+else
+{
+        <div class="container-fluid">
+        <div class="d-flex flex-wrap gap-3" id="ordersContainer">
+            @foreach (var item in Model)
+            {
+                    <div class="order-card" data-id="@item.OrderId" data-status="@item.Status" style="flex: 0 0 22%;">
+                        <div class="order-header">
+                            #@item.LastFourDigitsOfOrderNumber
+                        </div>
+                        <div class="order-body">
+                            <p><strong>Date:</strong> @item.OrderDate.ToString("yyyy-MM-dd HH:mm")</p>
+                            <p><strong>Total:</strong> @item.TotalPrice.ToString("C")</p>
+                            <p>
+                                <strong>Status:</strong>
+                                <span class="status-indicator @GetStatusClass(item.Status)">@item.Status</span>
+                            </p>
+                        </div>
+                    </div>
+            }
+        </div>
+    </div>
+
+}
+
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {

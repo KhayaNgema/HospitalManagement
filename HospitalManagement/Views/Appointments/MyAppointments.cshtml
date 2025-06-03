@@ -43,7 +43,7 @@
     </style>
 </head>
 
-<div class="container-fluid my-5">
+<div class="container-fluid">
     <div class="d-flex align-items-center justify-content-between px-3 py-3 mb-4" style="background-color:#48AAAD;">
         <div class="d-flex align-items-center">
             <a asp-controller="Home" asp-action="Index" class="text-white text-decoration-none d-inline-flex align-items-center back-link me-3">
@@ -87,7 +87,7 @@
                         <div class="card-body pb-5">
                             <h5 class="appointment-header mb-3">@booking.MedicalCondition</h5>
                             <p class="mb-1"><strong>Date:</strong> @booking.BookForDate.ToString("MMMM dd, yyyy")</p>
-                            <p class="mb-1"><strong>Time:</strong> @booking.BookForTime.ToString(@"hh\:mm tt")</p>
+                            <p class="mb-1"><strong>Time:</strong> @booking.BookForTimeSlot</p>
                             <p class="mb-1"><strong>Status:</strong> <span class="badge badge-status">@booking.Status</span></p>
                         </div>
 
@@ -114,7 +114,7 @@
                                         <dd class="col-sm-8">@booking.BookForDate.ToString("MMMM dd, yyyy")</dd>
 
                                         <dt class="col-sm-4">Time</dt>
-                                        <dd class="col-sm-8">@booking.BookForTime.ToString(@"hh\:mm tt")</dd>
+                                        <dd class="col-sm-8">@booking.BookForTimeSlot)</dd>
 
                                         <dt class="col-sm-4">Status</dt>
                                         <dd class="col-sm-8">@booking.Status</dd>
@@ -150,7 +150,7 @@
                                         <dd class="col-sm-8">@booking.BookForDate.ToString("MMMM dd, yyyy")</dd>
 
                                         <dt class="col-sm-4">Time</dt>
-                                        <dd class="col-sm-8">@booking.BookForTime.ToString(@"hh\:mm tt")</dd>
+                                        <dd class="col-sm-8">@booking.BookForTimeSlot</dd>
 
                                         <dt class="col-sm-4">Status</dt>
                                         <dd class="col-sm-8">@booking.Status</dd>

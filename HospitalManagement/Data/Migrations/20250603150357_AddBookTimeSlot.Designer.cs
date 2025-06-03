@@ -4,6 +4,7 @@ using HospitalManagement.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HospitalManagement.Data.Migrations
 {
     [DbContext(typeof(HospitalManagementDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250603150357_AddBookTimeSlot")]
+    partial class AddBookTimeSlot
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -692,72 +695,6 @@ namespace HospitalManagement.Data.Migrations
                     b.ToTable("OrderItems");
                 });
 
-            modelBuilder.Entity("HospitalManagement.Models.PatientBill", b =>
-                {
-                    b.Property<int>("BillId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BillId"));
-
-                    b.Property<string>("PatientId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<decimal>("PayableTotalAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.HasKey("BillId");
-
-                    b.HasIndex("PatientId");
-
-                    b.ToTable("PatientBills");
-                });
-
-            modelBuilder.Entity("HospitalManagement.Models.PatientBillServices", b =>
-                {
-                    b.Property<int>("PatientBillServiceId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PatientBillServiceId"));
-
-                    b.Property<int?>("AdmissionId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("PatientBillId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ReferenceNumber")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ServiceName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ServiceType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("Subtotal")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("PatientBillServiceId");
-
-                    b.HasIndex("AdmissionId");
-
-                    b.HasIndex("PatientBillId");
-
-                    b.ToTable("PatientBillServices");
-                });
-
             modelBuilder.Entity("HospitalManagement.Models.PatientMedicalHistory", b =>
                 {
                     b.Property<int>("PatientMedicalHistoryId")
@@ -1042,9 +979,6 @@ namespace HospitalManagement.Data.Migrations
                     b.Property<int>("BodyParts")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("BookingAmount")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<string>("DoctorId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -1160,24 +1094,6 @@ namespace HospitalManagement.Data.Migrations
                     b.Property<int>("YearsOfExperience")
                         .HasColumnType("int");
 
-                    b.ToTable("AspNetUsers", t =>
-                        {
-                            t.Property("Biography")
-                                .HasColumnName("Doctor_Biography");
-
-                            t.Property("Department")
-                                .HasColumnName("Doctor_Department");
-
-                            t.Property("Education")
-                                .HasColumnName("Doctor_Education");
-
-                            t.Property("LicenseNumber")
-                                .HasColumnName("Doctor_LicenseNumber");
-
-                            t.Property("YearsOfExperience")
-                                .HasColumnName("Doctor_YearsOfExperience");
-                        });
-
                     b.HasDiscriminator().HasValue("Doctor");
                 });
 
@@ -1206,32 +1122,6 @@ namespace HospitalManagement.Data.Migrations
                     b.HasIndex("CartId");
 
                     b.HasDiscriminator().HasValue("Patient");
-                });
-
-            modelBuilder.Entity("HospitalManagement.Models.Pharmacist", b =>
-                {
-                    b.HasBaseType("HospitalManagement.Models.UserBaseModel");
-
-                    b.Property<string>("Biography")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<int>("Department")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Education")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("LicenseNumber")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<int>("YearsOfExperience")
-                        .HasColumnType("int");
-
-                    b.HasDiscriminator().HasValue("Pharmacist");
                 });
 
             modelBuilder.Entity("HospitalManagement.Models.SystemAdministrator", b =>
@@ -1510,34 +1400,6 @@ namespace HospitalManagement.Data.Migrations
                     b.Navigation("Order");
                 });
 
-            modelBuilder.Entity("HospitalManagement.Models.PatientBill", b =>
-                {
-                    b.HasOne("HospitalManagement.Models.Patient", "Patient")
-                        .WithMany()
-                        .HasForeignKey("PatientId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Patient");
-                });
-
-            modelBuilder.Entity("HospitalManagement.Models.PatientBillServices", b =>
-                {
-                    b.HasOne("HospitalManagement.Models.Admission", "Admission")
-                        .WithMany()
-                        .HasForeignKey("AdmissionId");
-
-                    b.HasOne("HospitalManagement.Models.PatientBill", "PatientBill")
-                        .WithMany("Services")
-                        .HasForeignKey("PatientBillId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Admission");
-
-                    b.Navigation("PatientBill");
-                });
-
             modelBuilder.Entity("HospitalManagement.Models.PatientMedicalHistory", b =>
                 {
                     b.HasOne("HospitalManagement.Models.Patient", "Patient")
@@ -1683,11 +1545,6 @@ namespace HospitalManagement.Data.Migrations
             modelBuilder.Entity("HospitalManagement.Models.Order", b =>
                 {
                     b.Navigation("OrderItems");
-                });
-
-            modelBuilder.Entity("HospitalManagement.Models.PatientBill", b =>
-                {
-                    b.Navigation("Services");
                 });
 
             modelBuilder.Entity("HospitalManagement.Models.PatientMedicalHistory", b =>
