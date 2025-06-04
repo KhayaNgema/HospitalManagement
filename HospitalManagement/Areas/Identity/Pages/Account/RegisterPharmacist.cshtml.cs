@@ -209,7 +209,7 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
                     LicenseNumber = Input.LicenseNumber,
                     Education = Input.Education,
                     YearsOfExperience = Input.YearsOfExperience,
-                    Department = Input.Department,
+                    Department = Department.Pharmacy,
                 };
 
                 if (Input.ProfilePicture != null && Input.ProfilePicture.Length > 0)
@@ -257,7 +257,7 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
 /*                    await _activityLogger.Log($"Added {Input.FirstName} {Input.LastName} as MediCare {doctor.Specialization}", userId);
 */
                     TempData["Message"] = $"{doctor.FirstName} {doctor.LastName}  has been successfully added as your new Pharmacist";
-                    return RedirectToAction("Doctors", "Users");
+                    return RedirectToAction("Pharmacists", "Users");
                 }
                 foreach (var error in result.Errors)
                 {

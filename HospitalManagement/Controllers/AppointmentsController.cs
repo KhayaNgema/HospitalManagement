@@ -83,10 +83,10 @@ namespace HospitalManagement.Controllers
                     .ToList();
 
                 var filteredAppointments = await query
-                    .Where(a => allowedConditions.Contains(a.MedicalCondition) &&
-                    a.Status == BookingStatus.Awaiting ||
-                    a.Status == BookingStatus.Assigned &&
-                    a.AssignedUserId == user.Id)
+                    .Where(a =>
+                        allowedConditions.Contains(a.MedicalCondition) &&
+                        (a.Status == BookingStatus.Assigned && a.AssignedUserId == user.Id))
+                    .Include(a => a.AssignedTo)
                     .OrderBy(a => a.BookForDate)
                     .ThenBy(a => a.BookForTimeSlot)
                     .ToListAsync();
@@ -104,12 +104,13 @@ namespace HospitalManagement.Controllers
             var user = await _userManager.GetUserAsync(User);
 
             var appointments = await _context.X_RayAppointments
-                 .Where(a => a.Status == BookingStatus.Awaiting ||
-                 a.Status == BookingStatus.Assigned ||
+                 .Where(a => a.Status == BookingStatus.Assigned ||
                   a.Status == BookingStatus.Completed && 
                   a.DoctorId == user.Id)
+                .Include(a => a.AssignedTo)
                 .Include(a => a.CreatedBy)
                 .Include(a => a.Doctor)
+                
                 .Include(a => a.ModifiedBy)
                 .Include(a => a.Booking)
                 .ToListAsync();
@@ -156,6 +157,7 @@ namespace HospitalManagement.Controllers
             var user = await _userManager.GetUserAsync(User);
 
             var myAppointments = await _context.Bookings
+                .Include(ma => ma.AssignedTo)
                 .Where(ma => ma.CreatedById == user.Id)
                 .OrderByDescending(ma => ma.CreatedAt)
                 .ToListAsync(); 
@@ -174,6 +176,7 @@ namespace HospitalManagement.Controllers
                 .Include(a => a.CreatedBy)
                 .Include(a => a.ModifiedBy)
                 .Include(a => a.ModifiedBy)
+                .Include(a => a.AssignedTo)
                 .FirstOrDefaultAsync();
 
             if (appointment == null)
@@ -199,6 +202,8 @@ namespace HospitalManagement.Controllers
         [HttpGet]
         public async Task<IActionResult> XRayAppointmentDetails(string appointmentId)
         {
+            var user = await _userManager.GetUserAsync(User);
+
             var decryptedAppointmentId = _encryptionService.DecryptToInt(appointmentId);
 
             var appointment = await _context.X_RayAppointments
@@ -249,6 +254,13 @@ namespace HospitalManagement.Controllers
                 XRayImage = appointment.ScannerImage,
                 IdNumber = appointment.CreatedBy.IdNumber
             };
+
+            var doctor = await _context.Doctors
+                .Where(d => d.Id == user.Id)
+                .FirstOrDefaultAsync();
+
+
+            ViewBag.Specialization = doctor.Specialization;
 
             return View(viewModel);
         }
@@ -470,6 +482,9 @@ namespace HospitalManagement.Controllers
             return Json(freeSlots);
         }
 
+
+      
+
         [Authorize]
         public async Task<IActionResult> PayFastReturn(int paymentId, string appointmentId, decimal amount)
         {
@@ -492,7 +507,7 @@ namespace HospitalManagement.Controllers
 
                 var patient = appointment.CreatedBy;
 
-                appointment.Status = BookingStatus.Awaiting;
+                appointment.Status = BookingStatus.Assigned;
 
                 _context.Update(appointment);
                 await _context.SaveChangesAsync();
@@ -655,10 +670,14 @@ namespace HospitalManagement.Controllers
             var selectedDate = date ?? DateTime.Today;
 
             var appointment = await _context.Bookings
-                .Where(a => a.BookingId == decryptedAppointmentId)
                 .Include(a => a.CreatedBy)
                 .Include(a => a.ModifiedBy)
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(a => a.BookingId == decryptedAppointmentId);
+
+            if (appointment == null || appointment.CreatedBy == null)
+            {
+                return NotFound("Appointment or patient not found.");
+            }
 
             var patient = appointment.CreatedBy;
 
@@ -666,12 +685,11 @@ namespace HospitalManagement.Controllers
             {
                 PatientId = patient.Id,
                 AdditionalNotes = appointment.AdditionalNotes,
-                BookForDate = DateTime.Now,
-                AvailableTimeSlots = GetTimeSlotsByDate(selectedDate),
+                BookForDate = selectedDate,
                 MedicalCondition = appointment.MedicalCondition,
                 BookingId = decryptedAppointmentId,
                 Address = patient.Address,
-                AlternatePhoneNumber= patient.AlternatePhoneNumber,
+                AlternatePhoneNumber = patient.AlternatePhoneNumber,
                 DateOfBirth = patient.DateOfBirth,
                 Email = patient.Email,
                 FirstName = patient.FirstName,
@@ -680,10 +698,12 @@ namespace HospitalManagement.Controllers
                 LastName = patient.LastName,
                 PhoneNumber = patient.PhoneNumber,
                 ProfilePicture = patient.ProfilePicture,
+                AvailableTimeSlots = GetTimeSlotsByDate(selectedDate)
             };
 
             return View(viewModel);
         }
+
 
         [Authorize(Roles = "Doctor, System Administrator")]
         [HttpPost]
@@ -694,21 +714,35 @@ namespace HospitalManagement.Controllers
             {
                 var user = await _userManager.GetUserAsync(User);
 
-                var appointment = await _context.Bookings
-                    .Where(a => a.BookingId == viewModel.BookingId)
-                    .Include(a => a.CreatedBy)
-                    .Include(a => a.ModifiedBy)
+                var availableDoctor = await _context.Doctors
+                    .Where(d => d.Specialization == Specialization.Radiologist &&
+                                !_context.Bookings.Any(b =>
+                                    b.AssignedUserId == d.Id &&
+                                    b.BookForDate == viewModel.BookForDate &&
+                                    b.BookForTimeSlot == viewModel.BookForTimeSlot))
                     .FirstOrDefaultAsync();
 
-                ICollection<string> instructionsList = null;
-
-                if (!string.IsNullOrWhiteSpace(viewModel.InstructionsInput))
+                if (availableDoctor == null)
                 {
-                    instructionsList = viewModel.InstructionsInput
-                        .Split(',', StringSplitOptions.RemoveEmptyEntries)
-                        .Select(i => i.Trim())
-                        .ToList();
+                    viewModel.AvailableTimeSlots = GetTimeSlotsByDate(viewModel.BookForDate);
+                    ModelState.AddModelError("", "No available Radiologist found for the selected time slot.");
+                    return View(viewModel);
                 }
+
+                var appointment = await _context.Bookings
+                    .Include(a => a.CreatedBy)
+                    .Include(a => a.ModifiedBy)
+                    .FirstOrDefaultAsync(a => a.BookingId == viewModel.BookingId);
+
+                if (appointment == null)
+                {
+                    return NotFound("Original booking not found.");
+                }
+
+                ICollection<string> instructionsList = string.IsNullOrWhiteSpace(viewModel.InstructionsInput)
+                    ? null
+                    : viewModel.InstructionsInput.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                                 .Select(i => i.Trim()).ToList();
 
                 var newXRayAppointment = new X_RayAppointment
                 {
@@ -723,12 +757,13 @@ namespace HospitalManagement.Controllers
                     DoctorId = user.Id,
                     OriginalBookingId = viewModel.BookingId,
                     LastUpdatedAt = DateTime.Now,
-                    Instructions = instructionsList, 
+                    Instructions = instructionsList,
                     MedicalCondition = viewModel.MedicalCondition,
-                    Status = BookingStatus.Awaiting,
+                    Status = BookingStatus.Assigned,
                     ScannerImage = viewModel.ScannerImage,
                     UpdatedById = user.Id,
-                    BookingAmount = 600
+                    BookingAmount = 600,
+                    AssignedUserId = availableDoctor.Id
                 };
 
                 _context.Add(newXRayAppointment);
@@ -738,14 +773,10 @@ namespace HospitalManagement.Controllers
                 _context.Update(newXRayAppointment);
                 await _context.SaveChangesAsync();
 
-                var patient = await _context.Patients
-                    .Where(p => p.Id == viewModel.PatientId)
-                    .FirstOrDefaultAsync();
+                var patient = await _context.Patients.FindAsync(viewModel.PatientId);
 
-                TempData["Message"] = $"You have successfully placed booked an X-Ray appointement " +
-                    $"for {patient.FirstName} {patient.LastName} " +
-                    $"for {viewModel.BookForDate.ToString("dd/MM/yyy")} " +
-                    $"at {viewModel.BookForTimeSlot}.";
+                TempData["Message"] = $"You have successfully booked an X-Ray appointment for {patient?.FirstName} {patient?.LastName} " +
+                                      $"on {viewModel.BookForDate:dd/MM/yyyy} at {viewModel.BookForTimeSlot}.";
 
                 var encryptedAppointmentId = _encryptionService.Encrypt(viewModel.BookingId);
 
@@ -764,11 +795,53 @@ namespace HospitalManagement.Controllers
                     }
                 });
             }
-
-            return View();
         }
 
 
+        [HttpGet]
+        public JsonResult GetXRayAvailableTimeSlots(DateTime date, CommonMedicalCondition condition)
+        {
+            var allSlots = TimeSlotGenerator.GenerateDefaultSlots(date);
+            var availableSlots = new List<object>();
+
+            var specializedDoctors = _context.Doctors
+                .Where(d => d.Specialization == Specialization.Radiologist)
+                .ToList();
+
+            if (!specializedDoctors.Any())
+            {
+                return Json(new List<object>());
+            }
+
+            foreach (var slot in allSlots)
+            {
+                string slotValue = slot.From.ToString(@"hh\:mm");
+
+                var bookedDoctorIds = _context.Bookings
+                    .Where(b => b.BookForDate.Date == date.Date && b.BookForTimeSlot == slotValue)
+                    .Select(b => b.AssignedUserId)
+                    .ToList();
+
+                var availableDoctor = specializedDoctors
+                    .FirstOrDefault(d => !bookedDoctorIds.Contains(d.Id));
+
+                if (availableDoctor != null)
+                {
+                    string fromText = DateTime.Today.Add(slot.From).ToString("HH:mm");
+                    string toText = DateTime.Today.Add(slot.To).ToString("HH:mm");
+
+                    availableSlots.Add(new
+                    {
+                        value = slotValue,
+                        text = $"{fromText} - {toText}",
+                        doctorId = availableDoctor.Id,
+                        doctorName = $"{availableDoctor.FirstName} {availableDoctor.LastName}"
+                    });
+                }
+            }
+
+            return Json(availableSlots);
+        }
 
     }
 }

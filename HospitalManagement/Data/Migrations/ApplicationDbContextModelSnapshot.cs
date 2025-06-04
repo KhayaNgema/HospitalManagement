@@ -64,6 +64,9 @@ namespace HospitalManagement.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AdmissionId"));
 
+                    b.Property<string>("AdditionalNotes")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime?>("AdmissionDate")
                         .HasColumnType("datetime2");
 
@@ -72,6 +75,12 @@ namespace HospitalManagement.Data.Migrations
                         .HasColumnType("nvarchar(10)");
 
                     b.Property<int>("BookingId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("CollectAfterCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("CollectionInterval")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
@@ -106,9 +115,15 @@ namespace HospitalManagement.Data.Migrations
                     b.Property<int>("PatientStatus")
                         .HasColumnType("int");
 
+                    b.Property<int>("PrescriptionType")
+                        .HasColumnType("int");
+
                     b.Property<string>("RoomNumber")
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("UntilDate")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UpdatedById")
                         .IsRequired()
@@ -452,6 +467,9 @@ namespace HospitalManagement.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MedicationId"));
 
+                    b.Property<int?>("AdmissionId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -465,11 +483,13 @@ namespace HospitalManagement.Data.Migrations
                         .HasColumnType("nvarchar(255)");
 
                     b.Property<int>("DosageForm")
-                        .HasMaxLength(50)
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("ExpiryDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsExpired")
+                        .HasColumnType("bit");
 
                     b.Property<bool>("IsPrescriptionRequired")
                         .HasColumnType("bit");
@@ -497,7 +517,6 @@ namespace HospitalManagement.Data.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("Strength")
-                        .HasMaxLength(50)
                         .HasColumnType("int");
 
                     b.Property<int>("UnitOfMeasure")
@@ -508,6 +527,8 @@ namespace HospitalManagement.Data.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("MedicationId");
+
+                    b.HasIndex("AdmissionId");
 
                     b.HasIndex("CreatedById");
 
@@ -1303,7 +1324,7 @@ namespace HospitalManagement.Data.Migrations
 
             modelBuilder.Entity("HospitalManagement.Models.Booking", b =>
                 {
-                    b.HasOne("HospitalManagement.Models.UserBaseModel", "AssignedTo")
+                    b.HasOne("HospitalManagement.Models.Doctor", "AssignedTo")
                         .WithMany()
                         .HasForeignKey("AssignedUserId");
 
@@ -1421,6 +1442,10 @@ namespace HospitalManagement.Data.Migrations
 
             modelBuilder.Entity("HospitalManagement.Models.Medication", b =>
                 {
+                    b.HasOne("HospitalManagement.Models.Admission", null)
+                        .WithMany("PrescribedMedication")
+                        .HasForeignKey("AdmissionId");
+
                     b.HasOne("HospitalManagement.Models.UserBaseModel", "CreatedBy")
                         .WithMany()
                         .HasForeignKey("CreatedById")
@@ -1668,6 +1693,11 @@ namespace HospitalManagement.Data.Migrations
                         .HasForeignKey("CartId");
 
                     b.Navigation("Cart");
+                });
+
+            modelBuilder.Entity("HospitalManagement.Models.Admission", b =>
+                {
+                    b.Navigation("PrescribedMedication");
                 });
 
             modelBuilder.Entity("HospitalManagement.Models.Cart", b =>

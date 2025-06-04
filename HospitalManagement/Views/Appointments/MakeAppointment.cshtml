@@ -5,7 +5,7 @@
     Layout = "~/Views/Shared/_PagesLayout.cshtml";
 }
 
-<div class="container-fluid">
+<div class="container my-3 px-4">
     <div class="row justify-content-center">
         <div class="col-12 col-md-8 col-lg-6">
             <div class="card shadow rounded-4 p-4">
@@ -60,7 +60,7 @@
         timeSlotDropdown.innerHTML = '<option value="">-- Select Time Slot --</option>';
 
         if (!selectedDate || !selectedCondition) {
-            return;  // Do nothing if either is missing
+            return;  
         }
 
         fetch(`/Appointments/GetAvailableTimeSlots?date=${selectedDate}&condition=${selectedCondition}`)
@@ -81,8 +81,6 @@
     document.getElementById('MedicalCondition').addEventListener('change', fetchAvailableSlots);
     window.addEventListener('DOMContentLoaded', fetchAvailableSlots);
 
-
-    // Optionally: call fetchAvailableSlots() on page load if both are prefilled
     window.addEventListener('DOMContentLoaded', (event) => {
         fetchAvailableSlots();
     });

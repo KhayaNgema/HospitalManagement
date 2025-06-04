@@ -50,6 +50,6 @@ namespace HospitalManagement.Models
 
         public string? AssignedUserId { get; set; }
         [ForeignKey("AssignedUserId")]
-        public virtual UserBaseModel AssignedTo { get; set; }
+        public virtual Doctor AssignedTo { get; set; }
     }
 }

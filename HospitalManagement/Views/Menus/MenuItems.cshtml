@@ -6,59 +6,14 @@
     Layout = "~/Views/Shared/_PagesLayout.cshtml";
 }
 
-<style>
-    .btn-details {
-        border: 1px solid #e0e0e0;
-        border-radius: 5px;
-    }
-
-        .btn-details:hover {
-            background-color: #16562b;
-            color: #ffffff;
-        }
-
-        .btn-details i {
-            margin-right: 5px;
-        }
-
-    .btn-create {
-        border: 2px solid #e0e0e0;
-        border-radius: 5px;
-        background-color: #16562b;
-        color: white;
-    }
-
-        .btn-create:hover {
-            background-color: #42d44a;
-            color: #ffffff;
-        }
-
-        .btn-create i {
-            margin-right: 5px;
-        }
-
-    .btn-store-view {
-        border: 2px solid #e0d8d8;
-        border-radius: 5px;
-        background-color: #16562b;
-        color: #ffffff;
-        font-size: 16px;
-        cursor: pointer;
-        transition: background-color 0.3s, color 0.3s;
-    }
-
-        .btn-store-view:hover {
-            background-color: #42d44a;
-            color: #ffffff;
-        }
-
-        .btn-store-view i {
-            margin-right: 8px;
-        }
-</style>
 
 <div class="d-flex align-items-center justify-content-between px-3 py-3 mb-4" style="background-color:#48AAAD;">
-    <h2 class="mb-0 text-white">Menu Items</h2>
+    <div class="d-flex align-items-center">
+        <a asp-controller="Home" asp-action="Index" class="text-white text-decoration-none d-inline-flex align-items-center back-link me-3">
+            <i class="bi bi-chevron-left me-1"></i> Back
+        </a>
+        <h2 class="mb-0 text-white">Menu Items</h2>
+    </div>
 </div>
 
 <div class="d-flex justify-content-between align-items-center mb-4 px-3">

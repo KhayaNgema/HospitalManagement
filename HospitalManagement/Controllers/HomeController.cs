@@ -88,6 +88,10 @@ namespace HospitalManagement.Controllers
             {
                 return View("KitchenStaffDashboard");
             }
+            else if (roles.Contains("Pharmacist"))
+            {
+                return View("PharmacistDashboard");
+            }
             else
             {
                 var patientAdmission = await _context.Admissions

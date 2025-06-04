@@ -1,4 +1,7 @@
 ﻿@model IEnumerable<HospitalManagement.Models.Admission>
+@inject HospitalManagement.Interfaces.IEncryptionService encryptionService
+
+
 
 @{
     ViewData["Title"] = "Admissions";
@@ -43,7 +46,9 @@
                 <tbody>
                     @foreach (var admission in Model)
                     {
-                        <tr class="ellipsis">
+                        var encryptedAdmissionId = encryptionService.Encrypt(admission.AdmissionId);
+
+                        <tr class="clickable-row ellipsis" data-id="@encryptedAdmissionId" style="cursor: pointer;">
                             <td>@admission.AdmissionDate?.ToString("dd/MM/yyyy")</td>
                             <td>@(admission.DischargeDate?.ToString("dd/MM/yyyy") ?? "N/A")</td>
                             <td>@(admission.Department)</td>
@@ -52,7 +57,6 @@
                             <td>@(string.IsNullOrEmpty(admission.BedNumber) ? "N/A" : admission.BedNumber)</td>
                             <td>@(admission.PatientStatus)</td>
                         </tr>
-
                     }
                 </tbody>
             </table>
@@ -60,7 +64,22 @@
     }
 </div>
 <script>
-    setTimeout(function () {
-        document.getElementById("tempDataMessage").style.display = "none";
-    }, 7000);
+    document.addEventListener('DOMContentLoaded', function () {
+        const redirectUrl = '@Url.Action("AdmissionDetails", "Admissions")';
+
+        document.querySelectorAll('#appointmentsTable .clickable-row').forEach(row => {
+            row.addEventListener('click', function () {
+                const encryptedAdmissionId = this.getAttribute('data-id');
+                if (encryptedAdmissionId && redirectUrl) {
+                    window.location.href = redirectUrl + '?admissionId=' + encodeURIComponent(encryptedAdmissionId);
+                }
+            });
+        });
+
+        setTimeout(function () {
+            const msg = document.getElementById("tempDataMessage");
+            if (msg) msg.style.display = "none";
+        }, 7000);
+    });
 </script>
+

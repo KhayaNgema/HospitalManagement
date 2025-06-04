@@ -29,6 +29,18 @@ namespace HospitalManagement.Controllers
             _emailService = emailService;
         }
 
+        public async Task<IActionResult> MyPatientAdmissions()
+        {
+            var user = await _userManager.GetUserAsync(User);
+
+            var admissions = await _context.Admissions
+                .Include(pa => pa.Patient)
+                .Include(pa => pa.CreatedBy)
+                .Where(pa => pa.CreatedById == user.Id)
+                .ToListAsync();
+
+            return View(admissions);
+        }
 
         [Authorize]
         public async Task<IActionResult> MyAdmissions()
@@ -80,9 +92,51 @@ namespace HospitalManagement.Controllers
 
         [Authorize(Roles = "Doctor, System Administrator")]
         [HttpGet]
-        public async Task<IActionResult> AdmissionDetails()
+        public async Task<IActionResult> AdmissionDetails(string admissionId)
         {
-            return View();
+            var decryptedAdmissionId = _encryptionService.DecryptToInt(admissionId);
+
+            var admission = await _context.Admissions
+                .Where(a => a.AdmissionId == decryptedAdmissionId)
+                .Include(a => a.Patient)
+                .FirstOrDefaultAsync();
+
+            var viewModel = new AdmissionDetailsViewModel
+            {
+                AdmissionId = decryptedAdmissionId,
+                PatientId = admission.PatientId,
+                BookingId = admission.BookingId,
+                Ward = admission.Ward,
+                AdditionalNotes = admission.AdditionalNotes,
+                Address = admission.AdditionalNotes,
+                AdmissionDate = admission.AdmissionDate,
+                AlternatePhoneNumber = admission.Patient.AlternatePhoneNumber,
+                CollectAfterCount = 0,
+                NextAppointmentDate = DateTime.Now,
+                BedNumber = admission.BedNumber,
+                CollectionInterval = admission.CollectionInterval,
+                DateOfBirth = admission.Patient.DateOfBirth,
+                Department = admission.Department,
+                DischargeDate = admission.DischargeDate,
+                Email = admission.Patient.Email,
+                FirstName = admission.Patient.FirstName,
+                Gender = admission.Patient.Gender,
+                IdNumber = admission.Patient.IdNumber,
+                LastName = admission.Patient.LastName,
+                LastVisitDate  = admission.LastVisitDate,
+                PatientMedicalHistoryId = admission.PatientMedicalHistoryId,
+                PatientStatus = admission.PatientStatus,
+                PhoneNumber = admission.Patient.PhoneNumber,
+                ProfilePicture = admission.Patient.ProfilePicture,
+                UntilDate = DateTime.Now.ToString("dd/MM/yyyy")
+            };
+
+            var medication = await _context.Medications
+                .ToListAsync();
+
+            ViewBag.Medications = medication;
+
+            return View(viewModel);
         }
 
 
@@ -170,7 +224,7 @@ namespace HospitalManagement.Controllers
                     $"to {viewModel.Department} in the {viewModel.Ward} at rom {viewModel.RoomNumber} " +
                     $"on bed {viewModel.BedNumber}.";
 
-                return RedirectToAction(nameof(Admissions));
+                return RedirectToAction(nameof(MyAdmissions));
             }
             catch (Exception ex)
             {

@@ -28,7 +28,7 @@
 <form asp-controller="Appointments" asp-action="UpdateStatusRedirect" method="post">
     <input type="hidden" name="appointmentId" value="@Model.BookingId" />
 
-    <div class="container-fluid">
+    <div class="container my-3 px-4">
         <div class="card shadow-lg border-0" style="border-left: 6px solid #48AAAD; border-radius: 10px;">
             <div class="card-header text-white" style="background-color: #48AAAD;">
                 <h3 class="mb-0">##@Model.BookingReference</h3>
@@ -103,13 +103,23 @@
                     </div>
                 </div>
 
-                <div class="mb-4">
-                    <label asp-for="Status" class="fw-semibold text-muted"></label>
-                    <select asp-for="Status" class="form-select form-select-lg rounded-3" asp-items="Html.GetEnumSelectList<HospitalManagement.Models.BookingStatus>()">
-                        <option value="">-- Select Status --</option>
-                    </select>
-                    <span asp-validation-for="Status" class="text-danger small"></span>
+
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <label asp-for="Status" class="fw-semibold text-muted"></label>
+                        <select asp-for="Status" class="form-select form-select-lg rounded-3" asp-items="Html.GetEnumSelectList<HospitalManagement.Models.BookingStatus>()">
+                            <option value="">-- Select Status --</option>
+                        </select>
+                        <span asp-validation-for="Status" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="fw-semibold text-muted">Assigned doctor</label>
+                        <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                            @Model.AssignedTo.FirstName @Model.AssignedTo.LastName)
+                        </div>
+                    </div>
                 </div>
+
 
                 <div class="mb-4">
                     <label class="fw-semibold text-muted">Additional notes</label>

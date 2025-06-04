@@ -5,11 +5,19 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
+using Hangfire;
+using HospitalManagement.Interfaces;
+using HospitalManagement.Models;
+using HospitalManagement.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using HospitalManagement.Data;
+using HospitalManagement.Interfaces;
 using HospitalManagement.Models;
+using HospitalManagement.Services;
 
 namespace HospitalManagement.Areas.Identity.Pages.Account.Manage
 {
@@ -18,48 +26,60 @@ namespace HospitalManagement.Areas.Identity.Pages.Account.Manage
         private readonly UserManager<UserBaseModel> _userManager;
         private readonly SignInManager<UserBaseModel> _signInManager;
         private readonly ILogger<ChangePasswordModel> _logger;
+        private readonly HospitalManagementDbContext _context;
+        private readonly EmailService _emailService;
+        private readonly IActivityLogger _activityLogger;
+
 
         public ChangePasswordModel(
             UserManager<UserBaseModel> userManager,
             SignInManager<UserBaseModel> signInManager,
-            ILogger<ChangePasswordModel> logger)
+            ILogger<ChangePasswordModel> logger,
+            HospitalManagementDbContext context,
+            EmailService emailService,
+            IActivityLogger activityLogger)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _logger = logger;
+            _context = context;
+            _emailService = emailService;
+            _activityLogger = activityLogger;
         }
 
         /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
+        ///     This API supports the (link unavailable) Core Identity default UI infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         [BindProperty]
         public InputModel Input { get; set; }
 
         /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
+        ///     This API supports the (link unavailable) Core Identity default UI infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         [TempData]
         public string StatusMessage { get; set; }
 
+        public string ReturnUrl { get; set; }
+
         /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
+        ///     This API supports the (link unavailable) Core Identity default UI infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         public class InputModel
         {
             /// <summary>
-            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
+            ///     This API supports the (link unavailable) Core Identity default UI infrastructure and is not intended to be used
             ///     directly from your code. This API may change or be removed in future releases.
             /// </summary>
             [Required]
             [DataType(DataType.Password)]
-            [Display(Name = "Current password")]
+            [Display(Name = "Old password")]
             public string OldPassword { get; set; }
 
             /// <summary>
-            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
+            ///     This API supports the (link unavailable) Core Identity default UI infrastructure and is not intended to be used
             ///     directly from your code. This API may change or be removed in future releases.
             /// </summary>
             [Required]
@@ -69,7 +89,7 @@ namespace HospitalManagement.Areas.Identity.Pages.Account.Manage
             public string NewPassword { get; set; }
 
             /// <summary>
-            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
+            ///     This API supports the (link unavailable) Core Identity default UI infrastructure and is not intended to be used
             ///     directly from your code. This API may change or be removed in future releases.
             /// </summary>
             [DataType(DataType.Password)]
@@ -78,9 +98,10 @@ namespace HospitalManagement.Areas.Identity.Pages.Account.Manage
             public string ConfirmPassword { get; set; }
         }
 
-        public async Task<IActionResult> OnGetAsync()
+        public async Task<IActionResult> OnGetAsync(string returnUrl = null)
         {
             var user = await _userManager.GetUserAsync(User);
+
             if (user == null)
             {
                 return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
@@ -92,10 +113,11 @@ namespace HospitalManagement.Areas.Identity.Pages.Account.Manage
                 return RedirectToPage("./SetPassword");
             }
 
+            ReturnUrl = returnUrl;
             return Page();
         }
 
-        public async Task<IActionResult> OnPostAsync()
+        public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
             if (!ModelState.IsValid)
             {
@@ -109,6 +131,7 @@ namespace HospitalManagement.Areas.Identity.Pages.Account.Manage
             }
 
             var changePasswordResult = await _userManager.ChangePasswordAsync(user, Input.OldPassword, Input.NewPassword);
+
             if (!changePasswordResult.Succeeded)
             {
                 foreach (var error in changePasswordResult.Errors)
@@ -122,7 +145,23 @@ namespace HospitalManagement.Areas.Identity.Pages.Account.Manage
             _logger.LogInformation("User changed their password successfully.");
             StatusMessage = "Your password has been changed.";
 
-            return RedirectToPage();
+            string emailBody = $@"
+                    Hi {user.FirstName} {user.LastName},<br/><br/>
+                    Your password has been changed successfully  
+                    and now you will be required to use your new password for aunthetication.<br/><br/>
+                    If you did not request this change, please contact our support team immediately.<br/><br>
+                    Kind regards,<br/>
+                    Diski360 Support Team
+            ";
+
+            BackgroundJob.Enqueue(() => _emailService.SendEmailAsync(user.Email, "Password change successful", emailBody, "Diski 360"));
+
+            await _activityLogger.Log($"Changed password", user.Id);
+
+            TempData["Message"] = $"You have successfully changed your password";
+
+            return RedirectToAction("PasswordAndSecurity", "Users");
         }
+
     }
 }

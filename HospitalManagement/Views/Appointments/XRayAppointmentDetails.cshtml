@@ -30,7 +30,7 @@
 
     <input type="hidden" name="appointmentId" value="@Model.BookingId" />
 
-    <div class="container-fluid">
+    <div class="container my-3 px-4">
         <div class="card shadow-lg border-0" style="border-left: 6px solid #48AAAD; border-radius: 10px;">
             <div class="card-header text-white" style="background-color: #48AAAD;">
                 <h3 class="mb-0">##@Model.BookingReference</h3>
@@ -155,7 +155,14 @@
                         </div>
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label class="fw-semibold text-muted">Upload X-Ray Image</label>
+                        @if(ViewBag.Specialization == Specialization.Radiologist)
+                        {
+                            <label class="fw-semibold text-muted">Upload X-Ray Image</label>
+                        }
+                        else
+                        {
+                            <label class="fw-semibold text-muted">Please see the X-ray image for the body part you requested </label>
+                        }
                         <div class="d-flex justify-content-center">
                             <div class="x_rayImage-container position-relative">
                                 @if (!string.IsNullOrEmpty(Model.XRayImage))
@@ -166,9 +173,12 @@
                                 {
                                     <i class="bi bi-cup-straw" id="profile-image-placeholder" style="font-size: 200px; color: #f0f0f0;"></i>
                                 }
-                                <label for="Input_ProfilePicture" class="camera-icon position-absolute bottom-0 end-0 m-2">
-                                    <i class="fa fa-camera" style="font-size: 40px; cursor: pointer;"></i>
-                                </label>
+                                @if(ViewBag.Specialization == Specialization.Radiologist)
+                                {
+                                    <label for="Input_ProfilePicture" class="camera-icon position-absolute bottom-0 end-0 m-2">
+                                        <i class="fa fa-camera" style="font-size: 40px; cursor: pointer;"></i>
+                                    </label>
+                                }
                             </div>
                         </div>
                         <input asp-for="XRayImages" type="file" accept="image/*" onchange="previewProfilePicture(event)" style="display: none;" id="Input_ProfilePicture" />

@@ -1,5 +1,141 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@using HospitalManagement.ViewModels
+@model MedicationViewModel
+
 @{
+    ViewData["Title"] = "New medication";
+    Layout = "~/Views/Shared/_PagesLayout.cshtml";
+}
+
+<head>
+    <style>
+        .btn-login {
+            background-color: #48AAAD;
+            color: white;
+            border-radius: 25px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            padding: 0.7rem;
+            transition: background-color 0.3s ease;
+        }
+
+            .btn-login:hover {
+                background-color: #369a9a;
+                box-shadow: 0 4px 15px rgba(72, 170, 173, 0.4);
+            }
+
+        .camera-icon {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            cursor: pointer;
+            background-color: white;
+            border-radius: 50%;
+            padding: 5px;
+        }
+    </style>
+</head>
+
+<div class="container-fluid my-3">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6">
+            <div class="login-card shadow p-4">
+                <h3 class="login-header text-center mb-4">New medication</h3>
+
+                <form asp-action="NewMedication" method="post" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="form-group text-center mb-4">
+                        <div class="d-flex justify-content-center">
+                            <div class="menuItem-container">
+                                <i class="fa fa-pills" id="profile-image-placeholder" style="font-size: 150px; color: #f0f0f0;"></i>
+                                <img id="profile-image-preview" alt="" class="menuItem-image" style="display: none; width: 100%; height: 100%; object-fit: cover;" />
+                                <label for="Input_ProfilePicture" class="camera-icon">
+                                    <i class="fa fa-camera" style="font-size: 20px;"></i>
+                                </label>
+                            </div>
+                        </div>
+                        <small class="form-text text-muted mt-2">Upload medication image.</small>
+                        <input asp-for="MedicationImages" type="file" accept="image/*" onchange="previewProfilePicture(event)" style="display: none;" id="Input_ProfilePicture" />
+                        <span asp-validation-for="MedicationImages" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="MedicationName"></label>
+                        <input asp-for="MedicationName" class="form-control" />
+                        <span asp-validation-for="MedicationName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Description"></label>
+                        <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                        <span asp-validation-for="Description" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="DosageForm" class="fw-semibold text-muted"></label>
+                        <select asp-for="DosageForm" class="form-select form-select-lg rounded-3" asp-items="Html.GetEnumSelectList<HospitalManagement.Models.DosageForm>()">
+                            <option value="">-- Select Dosage form --</option>
+                        </select>
+                        <span asp-validation-for="DosageForm" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Strength" class="fw-semibold text-muted"></label>
+                        <select asp-for="Strength" class="form-select form-select-lg rounded-3" asp-items="Html.GetEnumSelectList<HospitalManagement.Models.Strength>()">
+                            <option value="">-- Select Strength --</option>
+                        </select>
+                        <span asp-validation-for="Strength" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="UnitOfMeasure" class="fw-semibold text-muted"></label>
+                        <select asp-for="UnitOfMeasure" class="form-select form-select-lg rounded-3" asp-items="Html.GetEnumSelectList<HospitalManagement.Models.UnitOfMeasure>()">
+                            <option value="">-- Select Unit of measure --</option>
+                        </select>
+                        <span asp-validation-for="UnitOfMeasure" class="text-danger small"></span>
+                    </div>
+
+
+                    <div class="mb-4">
+                        <label asp-for="Manufacturer"></label>
+                        <input asp-for="Manufacturer" class="form-control" />
+                        <span asp-validation-for="Manufacturer" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="ExpiryDate" class="form-label fw-semibold"></label>
+                        <input asp-for="ExpiryDate" class="form-control rounded-3" type="date" id="BookForDate" />
+                        <span asp-validation-for="ExpiryDate" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Price"></label>
+                        <input asp-for="Price" class="form-control" type="number" step="0.01" />
+                        <span asp-validation-for="Price" class="text-danger small"></span>
+                    </div>
+
+                    <div class="d-grid mb-3">
+                        <button type="submit" class="btn btn-login">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function previewProfilePicture(event) {
+            var reader = new FileReader();
+            reader.onload = function () {
+                var output = document.getElementById('profile-image-preview');
+                output.src = reader.result;
+                output.style.display = 'block';
+                document.getElementById('profile-image-placeholder').style.display = 'none';
+            };
+            reader.readAsDataURL(event.target.files[0]);
+        }
+    </script>
+    <partial name="_ValidationScriptsPartial" />
 }

@@ -68,11 +68,10 @@ namespace HospitalManagement.Controllers
             var menuItems = await _context.MenuItems
                 .ToListAsync();
 
-/*            decimal totalPrice = _orderCalculationService.CalculateTotalPrice(cartItems);
+            decimal totalPrice = _orderCalculationService.CalculateTotalPrice(cartItems);
 
             ViewBag.TotalPrice = totalPrice;
 
-*/
             ViewBag.Categories = categories;
             var viewModel = new MenuViewModel
             {
@@ -110,7 +109,7 @@ namespace HospitalManagement.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> NewItem(MenuItemViewModel viewModel, IFormFile ItemsImages)
+        public async Task<IActionResult> NewItem(MenuItemViewModel viewModel)
         {
             try
             {

@@ -96,6 +96,15 @@
     }
 </div>
 <script>
+     document.addEventListener('DOMContentLoaded', function () {
+           document.querySelectorAll('#appointmentsTable .clickable-row').forEach(row => {
+               row.addEventListener('click', function () {
+                   const encryptedAppointmentId = this.getAttribute('data-id');
+                   const url = '@Url.Action("AppointmentDetails", "Appointments")';
+                   window.location.href = `${url}?appointmentId=${encodeURIComponent(encryptedAppointmentId)}`;
+               });
+           });
+       });
     setTimeout(function () {
         document.getElementById("tempDataMessage").style.display = "none";
     }, 7000);

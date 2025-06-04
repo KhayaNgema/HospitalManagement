@@ -1879,6 +1879,9 @@ html {
 }
 
 
+
+
+
 .profile-picture-container {
     border: 1px solid #ccc;
     padding: 0;
@@ -2818,7 +2821,6 @@ html {
 
 .profile-info {
     display: flex;
-    align-items: center;
 }
 
 .profile-image {

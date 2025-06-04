@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HospitalManagement.Models
@@ -42,6 +43,24 @@ namespace HospitalManagement.Models
 
         [DataType(DataType.Date)]
         public DateTime? NextAppointmentDate { get; set; }
+
+        [DisplayName("Additional notes")]
+        public string? AdditionalNotes { get; set; }
+
+        [DisplayName("Prescribed medication")]
+        public ICollection<Medication>? PrescribedMedication { get; set; }
+
+        [DisplayName("Until date")]
+        public string? UntilDate { get; set; }
+
+        [DisplayName("Collect after")]
+        public int? CollectAfterCount { get; set; }
+
+        [DisplayName("Interval")]
+        public CollectionInterval? CollectionInterval { get; set; }
+
+        [DisplayName("Pescription type")]
+        public PrescriptionType PrescriptionType { get; set; }
 
         public string CreatedById { get; set; }
         [ForeignKey("CreatedById")]

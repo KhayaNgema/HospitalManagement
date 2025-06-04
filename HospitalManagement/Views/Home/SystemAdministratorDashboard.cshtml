@@ -74,7 +74,7 @@
 
 <div class="container">
     <div class="row">
-        <div class="col-sm-12 col-md-6 col-lg-6">
+        <div class="col-sm-12 col-md-6 col-lg-4">
             <div class="card sport-administrators-card">
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title"><i class="fas fa-calendar-check"></i> Appointments</h5>
@@ -88,7 +88,7 @@
             </div>
         </div>
 
-        <div class="col-sm-12 col-md-12 col-lg-6">
+        <div class="col-sm-12 col-md-12 col-lg-4">
             <div class="card sport-coordinators-card">
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title"><i class="fas fa-sign-in-alt"></i> Admissions</h5>
@@ -96,6 +96,21 @@
                     <h1 class="card-text text-center center-number">@ViewBag.SportCoordinatorsCount</h1>
                     <a asp-controller="Admissions" asp-action="Admissions" class="btn btn-primary mt-auto align-self-end styled-button">
                         <span>Admissions</span>
+                        <span class="arrow">&#10148;</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-12 col-md-12 col-lg-4">
+            <div class="card sport-coordinators-card">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">
+                        <i class="fas fa-notes-medical"></i> Medication Prescription
+                    </h5>
+                    <p class="card-text">Medication prescriptions are listed here</p>
+                    <h1 class="card-text text-center center-number">@ViewBag.SportCoordinatorsCount</h1>
+                    <a asp-controller="Medications" asp-action="Prescriptions" class="btn btn-primary mt-auto align-self-end styled-button">
+                        <span>Prescriptions</span>
                         <span class="arrow">&#10148;</span>
                     </a>
                 </div>
@@ -110,7 +125,7 @@
                     <h5 class="card-title"><i class="fas fa-shopping-cart"></i> Orders</h5>
                     <p class="card-text">Patients meals orders are listed here</p>
                     <h1 class="card-text text-center center-number">@ViewBag.OfficialsCount</h1>
-                    <a asp-controller="Users" asp-action="Officials" class="btn btn-primary mt-auto align-self-end styled-button">
+                    <a asp-controller="Orders" asp-action="Orders" class="btn btn-primary mt-auto align-self-end styled-button">
                         <span>Orders</span>
                         <span class="arrow">&#10148;</span>
                     </a>
@@ -121,10 +136,10 @@
         <div class="col-sm-12 col-md-6 col-lg-4">
             <div class="card club-managers-card">
                 <div class="card-body d-flex flex-column">
-                    <h5 class="card-title"><i class="fas fa-user-pills"></i> Pharmacists</h5>
+                    <h5 class="card-title"><i class="fas fa-user-md"></i> Pharmacists</h5>
                     <p class="card-text">Our pharmacists are listed here</p>
                     <h1 class="card-text text-center center-number">@ViewBag.ClubManagersCount</h1>
-                    <a asp-controller="Users" asp-action="ClubManagers" class="btn btn-primary mt-auto align-self-end styled-button">
+                    <a asp-controller="Users" asp-action="Pharmacists" class="btn btn-primary mt-auto align-self-end styled-button">
                         <span>Pharmacists</span>
                         <span class="arrow">&#10148;</span>
                     </a>
@@ -138,7 +153,7 @@
                     <h5 class="card-title"><i class="fas fa-user-injured"></i> Patients</h5>
                     <p class="card-text">Our registered patients are listed here</p>
                     <h1 class="card-text text-center center-number">@ViewBag.ClubManagersCount</h1>
-                    <a asp-controller="Users" asp-action="ClubManagers" class="btn btn-primary mt-auto align-self-end styled-button">
+                    <a asp-controller="Users" asp-action="Patients" class="btn btn-primary mt-auto align-self-end styled-button">
                         <span>Patients</span>
                         <span class="arrow">&#10148;</span>
                     </a>

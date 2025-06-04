@@ -53,7 +53,7 @@
         </div>
         <div>
             <button class="btn btn-light btn-sm me-2 filter-btn" data-filter="Awaiting">
-                <i class="bi bi-clock-history"></i> <span class="btn-text ms-1">Awaiting</span>
+                <i class="bi bi-clock-history"></i> <span class="btn-text ms-1">Assigned</span>
             </button>
             <button class="btn btn-light btn-sm me-2 filter-btn" data-filter="Completed">
                 <i class="bi bi-check-circle" style="color:green;"></i> <span class="btn-text ms-1">Completed</span>
@@ -89,6 +89,18 @@
                             <p class="mb-1"><strong>Date:</strong> @booking.BookForDate.ToString("MMMM dd, yyyy")</p>
                             <p class="mb-1"><strong>Time:</strong> @booking.BookForTimeSlot</p>
                             <p class="mb-1"><strong>Status:</strong> <span class="badge badge-status">@booking.Status</span></p>
+                            <p class="mb-1">
+                                <strong>Doctor:</strong>
+                                @if (booking.AssignedTo != null)
+                                {
+                                    @($"{booking.AssignedTo.FirstName} {booking.AssignedTo.LastName} ({booking.AssignedTo.Specialization})")
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Not Assigned</span>
+                                }
+                            </p>
+
                         </div>
 
                         <div class="card-actions">
@@ -203,7 +215,7 @@
                 });
             }
 
-        filterAppointments('Awaiting');
+        filterAppointments('Assigned');
 
             filterButtons.forEach(button => {
                 button.addEventListener('click', () => {

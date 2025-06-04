@@ -17,10 +17,9 @@ namespace HospitalManagement.Models
 
         public string? MedicationImage { get; set; }
 
-        [StringLength(50)]
+   
         public DosageForm DosageForm { get; set; } 
 
-        [StringLength(50)]
         public Strength Strength { get; set; }
 
         public UnitOfMeasure UnitOfMeasure { get; set; } 
@@ -31,10 +30,13 @@ namespace HospitalManagement.Models
         [DataType(DataType.Currency)]
         public decimal Price { get; set; }
 
-        public bool IsPrescriptionRequired { get; set; }
-
         [DataType(DataType.Date)]
         public DateTime? ExpiryDate { get; set; }
+
+        public bool IsExpired { get; set; }
+
+        public bool IsPrescriptionRequired { get; set; }
+
         public string CreatedById { get; set; }
         [ForeignKey("CreatedById")]
         public UserBaseModel CreatedBy { get; set; }
