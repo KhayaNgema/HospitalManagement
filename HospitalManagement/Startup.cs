@@ -121,6 +121,7 @@ public class Startup
         services.AddScoped<FileUploadService>();
         services.AddScoped<QrCodeService>();
         services.AddScoped<CartService>();
+        services.AddHttpClient<IFaceService, AzureFaceService>();
         services.AddScoped<OrderNumberGenerator>();
         services.AddScoped<OrderCalculationService>();
         services.AddScoped<RandomPasswordGeneratorService>();

@@ -50,5 +50,7 @@ namespace HospitalManagement.ViewModels
         public IFormFile XRayImages { get; set; }
 
         public string XRayImage { get; set; }
+
+        public string AssignedToFullNames { get; set; }
     }
 }

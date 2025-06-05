@@ -103,20 +103,10 @@ namespace HospitalManagement.Controllers
                 if (patientAdmission != null)
                 {
                     ViewBag.PatientAdmissionStatus = patientAdmission.PatientStatus;
-
-                    if (patientAdmission.AdmissionDate.HasValue && patientAdmission.DischargeDate.HasValue)
-                    {
-                        ViewBag.NumberOfDays = (patientAdmission.DischargeDate.Value - patientAdmission.AdmissionDate.Value).Days;
-                    }
-                    else
-                    {
-                        ViewBag.NumberOfDays = 0;
-                    }
                 }
                 else
                 {
                     ViewBag.PatientAdmissionStatus = PatientStatus.Discharged;
-                    ViewBag.NumberOfDays = 0;
                 }
 
 

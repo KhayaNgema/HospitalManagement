@@ -5,6 +5,7 @@
 @{
     ViewData["Title"] = "Admit Patient";
     Layout = "~/Views/Shared/_PagesLayout.cshtml";
+    var prescribedList = (Model.PrescribedMedication ?? new List<Medication>()).ToList();
 }
 
 <a asp-controller="Appointments" asp-action="Appointments" class="text-decoration-none d-inline-flex align-items-center back-link mt-4 ms-4">
@@ -99,6 +100,47 @@
                     <span asp-validation-for="Treatment" class="text-danger"></span>
                 </div>
 
+                <div id="dischargePatientFields">
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6">
+                            <label for="categoryDropdown">Medication to prescribe</label>
+                            <div class="d-flex flex-nowrap gap-2 align-items-center">
+                                <select id="categoryDropdown" class="form-select" style="flex: 0 0 66.6667%; min-width: 0;">
+                                    <option value="">-- Select Medication --</option>
+                                    @foreach (var medication in ViewBag.Medications)
+                                    {
+                                        <option value="@medication.MedicationId">
+                                            @medication.MedicationName (D @medication.DosageForm - S @medication.Strength - U @medication.UnitOfMeasure)
+                                        </option>
+                                    }
+                                </select>
+
+                                <button id="addMedicationBtn" type="button" class="btn btn-success btn-md" style="flex: 0 0 33.3333%; height: auto; white-space: nowrap;">
+                                    <i class="fas fa-plus me-1"></i> Add
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <span asp-validation-for="PrescribedMedication" class="text-danger small"></span>
+
+                            <!-- Pills container -->
+                            <div id="medicationsContainer" class="border rounded py-2 px-3 shadow-sm mt-3" style="min-height: 100px; background-color: #f9f9f9;">
+                            </div>
+
+                            <div id="hiddenInputsContainer">
+                                @for (int i = 0; i < prescribedList.Count; i++)
+                                {
+                                    <input type="hidden" name="PrescribedMedication[@i].MedicationId" value="@prescribedList[i].MedicationId" />
+                                    <input type="hidden" name="PrescribedMedication[@i].MedicationName" value="@prescribedList[i].MedicationName" />
+                                }
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+
                 <div class="mb-3">
                     <label asp-for="FollowUpInstructions" class="form-label fw-semibold text-muted"></label>
                     <textarea asp-for="FollowUpInstructions" class="form-control" rows="3" placeholder="Enter follow-up instructions separated by commas"></textarea>
@@ -130,6 +172,7 @@
                     </button>
                     <input asp-for="PatientMedicalHistoryId" type="hidden" />
                     <input asp-for="PatientId" type="hidden" />
+                    <input asp-for="BookingId" type="hidden" />
                 </div>
 
             </form>
@@ -140,3 +183,91 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const dropdown = document.getElementById('categoryDropdown');
+        const addBtn = document.getElementById('addMedicationBtn');
+        const container = document.getElementById('medicationsContainer');
+        const hiddenInputsContainer = document.getElementById('hiddenInputsContainer');
+
+        let selectedMedications = [];
+
+        Array.from(hiddenInputsContainer.querySelectorAll('input[name^="PrescribedMedication"]'))
+            .forEach((input, index, allInputs) => {
+                const match = input.name.match(/\[(\d+)\]\.MedicationId/);
+                if (match) {
+                    const medIndex = parseInt(match[1]);
+                    const id = input.value;
+                    const nameInput = allInputs.find(el => el.name === `PrescribedMedication[${medIndex}].MedicationName`);
+                    if (nameInput) {
+                        selectedMedications.push({ id: id, text: nameInput.value });
+                    }
+                }
+            });
+
+        function renderMedications() {
+            container.innerHTML = '';
+            hiddenInputsContainer.innerHTML = '';
+
+            selectedMedications.forEach((med, index) => {
+
+                const medPill = document.createElement('span');
+                medPill.style.backgroundColor = '#48AAAD';
+                medPill.style.color = 'white';
+                medPill.style.userSelect = 'none';
+                medPill.style.marginRight = '0.5rem';
+                medPill.style.marginBottom = '0.5rem';
+                medPill.style.display = 'inline-flex';
+                medPill.style.alignItems = 'center';
+                medPill.style.padding = '0.3rem 0.5rem';
+                medPill.style.borderRadius = '8px';
+                medPill.textContent = med.text;
+
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.setAttribute('aria-label', 'Remove');
+                removeBtn.style.cursor = 'pointer';
+                removeBtn.style.background = 'transparent';
+                removeBtn.style.border = 'none';
+                removeBtn.style.color = 'white';
+                removeBtn.style.fontWeight = 'bold';
+                removeBtn.style.marginLeft = '0.5rem';
+                removeBtn.textContent = 'X';
+
+                removeBtn.addEventListener('click', () => {
+                    selectedMedications.splice(index, 1);
+                    renderMedications();
+                });
+
+                medPill.appendChild(removeBtn);
+                container.appendChild(medPill);
+
+                const medIdInput = document.createElement('input');
+                medIdInput.type = 'hidden';
+                medIdInput.name = `PrescribedMedication[${index}].MedicationId`;
+                medIdInput.value = med.id;
+
+                const medNameInput = document.createElement('input');
+                medNameInput.type = 'hidden';
+                medNameInput.name = `PrescribedMedication[${index}].MedicationName`;
+                medNameInput.value = med.text;
+
+                hiddenInputsContainer.appendChild(medIdInput);
+                hiddenInputsContainer.appendChild(medNameInput);
+            });
+        }
+
+        addBtn.addEventListener('click', () => {
+            const selectedValue = dropdown.value;
+            const selectedText = dropdown.options[dropdown.selectedIndex].text;
+
+            if (!selectedValue || selectedMedications.some(med => med.id === selectedValue)) return;
+
+            selectedMedications.push({ id: selectedValue, text: selectedText });
+            renderMedications();
+        });
+
+        renderMedications();
+    });
+</script>
+

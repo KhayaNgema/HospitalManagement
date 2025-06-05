@@ -10,7 +10,7 @@ namespace HospitalManagement.Models
         [Display(Name = "Ready for collection")]
         Ready_For_Collection,
 
-        [Display(Name = "Collected")]
+        [Display(Name = "Delivered")]
         Collected,
 
         [Display(Name = "Cancelled")]

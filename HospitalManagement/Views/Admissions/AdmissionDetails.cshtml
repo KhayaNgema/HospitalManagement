@@ -23,7 +23,7 @@
 }
 
 
-<a asp-controller="Patients" asp-action="Index" class="text-decoration-none d-inline-flex align-items-center mt-4 ms-4">
+<a asp-controller="Admissions" asp-action="MyPatientAdmissions" class="text-decoration-none d-inline-flex align-items-center mt-4 ms-4">
     <i class="bi bi-chevron-left me-2 fs-5"></i><span class="fw-semibold">Back to Patients</span>
 </a>
 
@@ -37,14 +37,16 @@
                 <h3 class="mb-0">Patient Admission Details</h3>
             </div>
             <div class="card-body px-4 py-4">
-
+                <div class="w-100 mt-4 mb-3">
+                    <h3 class="px-3 py-2 bg-light" style="color:#48AAAD; border-left: 5px solid #48AAAD;">
+                        Patient Information
+                    </h3>
+                </div>
                 <div class="row g-4 mb-4">
                     <div class="col-md-12 text-center">
                         <img src="~/@Model.ProfilePicture" alt="Profile Picture" class="img-thumbnail rounded-circle" style="width: 120px; height: 120px; object-fit: cover;" />
                     </div>
                 </div>
-
-                <h5 class="mb-3 fw-semibold text-muted">Patient Details</h5>
                 <div class="row g-4 mb-4">
                     <div class="col-md-6">
                         <label class="fw-semibold text-muted">First Name</label>
@@ -112,7 +114,11 @@
                     </div>
                 </div>
 
-                <h5 class="mb-3 fw-semibold text-muted">Admission Details</h5>
+                <div class="w-100 mt-4 mb-3">
+                    <h3 class="px-3 py-2 bg-light" style="color:#48AAAD; border-left: 5px solid #48AAAD;">
+                        Admission Details
+                    </h3>
+                </div>
                 <div class="row g-4 mb-4">
                     <div class="col-md-6">
                         <label class="fw-semibold text-muted">Admission Date</label>
@@ -173,7 +179,11 @@
                 </div>
 
                 <div id="dischargePatientFields" style="display:none;">
-                    <h5 class="mb-3 fw-semibold text-muted">Medication prescription</h5>
+                    <div class="w-100 mt-4 mb-3">
+                        <h3 class="px-3 py-2 bg-light" style="color:#48AAAD; border-left: 5px solid #48AAAD;">
+                            Medication prescription
+                        </h3>
+                    </div>
                     <div class="row g-4 mb-4">
                         <div class="col-md-6">
                             <label for="categoryDropdown">Medication to prescribe</label>

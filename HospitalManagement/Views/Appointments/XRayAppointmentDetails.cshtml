@@ -44,7 +44,11 @@
                         <span class="close" aria-label="Close"><span aria-hidden="true">&times;</span></span>
                     </div>
                 }
-
+                <div class="w-100 mt-4 mb-3">
+                    <h3 class="px-3 py-2 bg-light" style="color:#48AAAD; border-left: 5px solid #48AAAD;">
+                        Patient Information
+                    </h3>
+                </div>
                 <div class="text-center mb-4">
                     <img src="~/@Model.PatientProfilePicture" alt="Profile Picture" class="img-thumbnail rounded-circle" style="width: 120px; height: 120px; object-fit: cover;" />
                 </div>
@@ -69,7 +73,11 @@
                         <div class="info-box">@Model.PhoneNumber</div>
                     </div>
                 </div>
-
+                <div class="w-100 mt-4 mb-3">
+                    <h3 class="px-3 py-2 bg-light" style="color:#48AAAD; border-left: 5px solid #48AAAD;">
+                        Appointment Details
+                    </h3>
+                </div>
                 <div class="row mb-3">
                     <div class="col-md-6 mb-3">
                         <label class="fw-semibold text-muted">Appointment Date</label>
@@ -109,7 +117,11 @@
                         </div>
                     </div>
                 </div>
-
+                <div class="w-100 mt-4 mb-3">
+                    <h3 class="px-3 py-2 bg-light" style="color:#48AAAD; border-left: 5px solid #48AAAD;">
+                        Doctor's
+                    </h3>
+                </div>
                 <div class="row mb-3">
                     <div class="col-md-6 mb-3">
                         <label class="fw-semibold text-muted">Doctor</label>
@@ -121,14 +133,36 @@
                     </div>
                 </div>
 
+
+                <div class="col-12 mb-3">
+                    <label class="fw-semibold text-muted">Radiologist</label>
+                    <div class="info-box">@Model.AssignedToFullNames</div>
+                </div>
+                <div class="w-100 mt-4 mb-3">
+                    <h3 class="px-3 py-2 bg-light" style="color:#48AAAD; border-left: 5px solid #48AAAD;">
+                        Request Details
+                    </h3>
+                </div>
                 <div class="row mb-3">
-                    <div class="col-md-6 mb-3">
-                        <label asp-for="Status" class="fw-semibold text-muted">Status</label>
-                        <select asp-for="Status" class="form-select rounded-3" asp-items="Html.GetEnumSelectList<HospitalManagement.Models.BookingStatus>()">
-                            <option value="">-- Select Status --</option>
-                        </select>
-                        <span asp-validation-for="Status" class="text-danger small"></span>
-                    </div>
+                    @if (ViewBag.Specialization == Specialization.Radiologist)
+                    {
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Status" class="fw-semibold text-muted">Status</label>
+                            <select asp-for="Status" class="form-select rounded-3" asp-items="Html.GetEnumSelectList<HospitalManagement.Models.BookingStatus>()">
+                                <option value="">-- Select Status --</option>
+                            </select>
+                            <span asp-validation-for="Status" class="text-danger small"></span>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="col-md-6">
+                            <label class="fw-semibold text-muted">Status</label>
+                            <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                                @GetEnumDisplayName(Model.Status)
+                            </div>
+                        </div>
+                    }
                     <div class="col-md-6 mb-3">
                         <label class="fw-semibold text-muted">Additional Notes</label>
                         <div class="info-box">@Model.AdditionalNotes</div>
@@ -199,12 +233,14 @@
                         </div>
                     </div>
                 }
-
-                <div class="d-flex justify-content-end mt-4 gap-2">
-                    <button type="submit" class="btn btn-success px-4 py-2 fs-5">
-                        <i class="fa fa-save me-2" style="font-size: 1.5rem;"></i> Save
-                    </button>
-                </div>
+                @if (ViewBag.Specialization == Specialization.Radiologist)
+                {
+                     <div class="d-flex justify-content-end mt-4 gap-2">
+                        <button type="submit" class="btn btn-success px-4 py-2 fs-5">
+                            <i class="fa fa-save me-2" style="font-size: 1.5rem;"></i> Save
+                        </button>
+                    </div>
+                }
             </div>
         </div>
     </div>

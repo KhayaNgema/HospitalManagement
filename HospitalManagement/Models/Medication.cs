@@ -47,5 +47,7 @@ namespace HospitalManagement.Models
         [ForeignKey("UpdatedById")]
         public UserBaseModel ModifiedBy { get; set; }
         public DateTime LastUpdatedAt { get; set; }
+
+        public virtual ICollection<MedicationPescription> MedicationPescriptions { get; set; } = new List<MedicationPescription>();
     }
 }

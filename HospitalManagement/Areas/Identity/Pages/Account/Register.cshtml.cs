@@ -21,6 +21,7 @@ using Microsoft.Extensions.Logging;
 using HospitalManagement.Models;
 using HospitalManagement.Services;
 using HospitalManagement.Data;
+using HospitalManagement.Interfaces;
 
 namespace HospitalManagement.Areas.Identity.Pages.Account
 {
@@ -34,6 +35,7 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
         private readonly IEmailSender _emailSender;
         private readonly FileUploadService _fileUploadService;
         private readonly HospitalManagementDbContext _context;
+        private readonly IFaceService _faceService;
 
         public RegisterModel(
             UserManager<UserBaseModel> userManager,
@@ -42,7 +44,8 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
             ILogger<RegisterModel> logger,
             IEmailSender emailSender,
             FileUploadService fileUploadService,
-            HospitalManagementDbContext context)
+            HospitalManagementDbContext context,
+            IFaceService faceService)
         {
             _userManager = userManager;
             _userStore = userStore;
@@ -52,6 +55,7 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
             _emailSender = emailSender;
             _fileUploadService = fileUploadService;
             _context = context;
+            _faceService = faceService;
         }
 
         /// <summary>
@@ -100,6 +104,8 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
             [DataType(DataType.Date)]
             [Display(Name = "Date of birth")]
             public DateTime DateOfBirth{ get; set; }
+
+            public string FaceId { get; set; }
 
             [Required]
             [Display(Name = "Profile picture")]
@@ -184,6 +190,17 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
 
                 await _context.SaveChangesAsync();
 
+                await _faceService.CreatePersonGroupIfNotExistsAsync();
+
+                string? faceId = null;
+                if (Input.ProfilePicture != null && Input.ProfilePicture.Length > 0)
+                {
+                    using var imageStream = Input.ProfilePicture.OpenReadStream();
+
+                    faceId = await _faceService.RegisterFaceAsync(Input.Email, imageStream);
+                }
+
+
                 var newPatient = new Patient
                 {
                     FirstName = Input.FirstName,
@@ -203,7 +220,8 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
                     IsSuspended = false,
                     IsFirstTimeLogin = false,
                     IsDeleted = false,
-                    Id = cart.UserId
+                    Id = cart.UserId,
+                    FaceId = faceId,
                 };
 
                 if (Input.ProfilePicture != null && Input.ProfilePicture.Length > 0)
@@ -255,23 +273,13 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
                     _context.Add(patient);
                     await _context.SaveChangesAsync();
 
-                    if (_userManager.Options.SignIn.RequireConfirmedAccount)
-                    {
-                        return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });
-                    }
-                    else
-                    {
-                        await _signInManager.SignInAsync(newPatient, isPersistent: false);
-                        return LocalRedirect(returnUrl);
-                    }
+                    return RedirectToAction("AccountCreatedSuccessfully", "Home");
                 }
                 foreach (var error in result.Errors)
                 {
                     ModelState.AddModelError(string.Empty, error.Description);
                 }
             }
-
-            // If we got this far, something failed, redisplay form
             return Page();
         }
 

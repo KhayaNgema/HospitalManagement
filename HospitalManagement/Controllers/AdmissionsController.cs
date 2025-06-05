@@ -114,7 +114,6 @@ namespace HospitalManagement.Controllers
                 CollectAfterCount = 0,
                 NextAppointmentDate = DateTime.Now,
                 BedNumber = admission.BedNumber,
-                CollectionInterval = admission.CollectionInterval,
                 DateOfBirth = admission.Patient.DateOfBirth,
                 Department = admission.Department,
                 DischargeDate = admission.DischargeDate,
@@ -128,7 +127,7 @@ namespace HospitalManagement.Controllers
                 PatientStatus = admission.PatientStatus,
                 PhoneNumber = admission.Patient.PhoneNumber,
                 ProfilePicture = admission.Patient.ProfilePicture,
-                UntilDate = DateTime.Now.ToString("dd/MM/yyyy")
+                UntilDate = DateTime.Now
             };
 
             var medication = await _context.Medications
@@ -259,6 +258,101 @@ namespace HospitalManagement.Controllers
             if (ModelState.IsValid)
             {
 
+            }
+
+            return View(viewModel);
+        }
+
+
+        [Authorize(Roles = "Doctor, System Administrator")]
+        [HttpGet]
+        public async Task<IActionResult> DischargePatient()
+        {
+            return View();
+        }
+
+
+        [Authorize(Roles = "Doctor, System Administrator")]
+        [HttpPost]
+        public async Task<IActionResult> DischargePatient(AdmissionDetailsViewModel viewModel)
+        {
+            try
+            {
+                var user = await _userManager.GetUserAsync(User);
+
+                var admission = await _context.Admissions
+                    .Where(a => a.AdmissionId == viewModel.AdmissionId)
+                    .FirstOrDefaultAsync();
+
+                admission.PatientStatus = PatientStatus.Discharged;
+                admission.LastUpdatedAt = DateTime.Now;
+                admission.AdditionalNotes = viewModel.AdditionalNotes;
+                admission.UpdatedById = user.Id;
+
+                DateTime baseDate = viewModel.LastCollectionDate ?? DateTime.Now;
+                int count = viewModel.CollectAfterCount ?? 0;
+
+                DateTime tentativeNextCollectionDate = baseDate;
+
+                switch (viewModel.CollectionInterval)
+                {
+                    case CollectionInterval.Days:
+                        tentativeNextCollectionDate = baseDate.AddDays(count);
+                        break;
+                    case CollectionInterval.Weeks:
+                        tentativeNextCollectionDate = baseDate.AddDays(count * 7);
+                        break;
+                    case CollectionInterval.Months:
+                        tentativeNextCollectionDate = baseDate.AddMonths(count);
+                        break;
+                    case CollectionInterval.Years:
+                        tentativeNextCollectionDate = baseDate.AddYears(count);
+                        break;
+                }
+
+                if (viewModel.UntilDate.HasValue && tentativeNextCollectionDate > viewModel.UntilDate.Value)
+                {
+                    tentativeNextCollectionDate = viewModel.UntilDate.Value;
+                }
+
+
+                DateTime finalNextCollectionDate = (viewModel.UntilDate.HasValue && tentativeNextCollectionDate > viewModel.UntilDate.Value)
+                    ? viewModel.UntilDate.Value
+                    : tentativeNextCollectionDate;
+
+                var medicationPescription = new MedicationPescription
+                {
+                    AdditionalNotes = viewModel.AdditionalNotes,
+                    AdmissionId = viewModel.AdmissionId,
+                    CollectAfterCount = viewModel.CollectAfterCount,
+                    CreatedAt = DateTime.Now,
+                    LastUpdatedAt = DateTime.Now,
+                    CollectionInterval = viewModel.CollectionInterval,
+                    CreatedById = user.Id,
+                    HasDoneCollecting = false,
+                    NextCollectionDate = finalNextCollectionDate,
+                    PrescribedMedication = viewModel.PrescribedMedication,
+                    PrescriptionType = viewModel.PrescriptionType,
+                    UpdatedById = user.Id
+                };
+
+
+                _context.Update(admission);
+                _context.Add(medicationPescription);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Failed to discharge patient: " + ex.Message,
+                    errorDetails = new
+                    {
+                        InnerException = ex.InnerException?.Message,
+                        StackTrace = ex.StackTrace
+                    }
+                });
             }
 
             return View(viewModel);

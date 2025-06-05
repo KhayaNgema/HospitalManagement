@@ -28,8 +28,11 @@
                 <input type="hidden" asp-for="BookingId" />
                 <input type="hidden" asp-for="PatientId" />
 
-                <h5 class="text-muted mb-3">Patient Details</h5>
-
+                <div class="w-100 mt-4 mb-3">
+                    <h3 class="px-3 py-2 bg-light" style="color:#48AAAD; border-left: 5px solid #48AAAD;">
+                       Patient Information
+                    </h3>
+                </div>
                 <div class="text-center mb-3">
                     <img src="~/@Model.ProfilePicture" alt="Profile Picture" class="img-thumbnail rounded-circle" style="width: 120px; height: 120px; object-fit: cover;" />
                 </div>
@@ -88,8 +91,11 @@
                     <textarea asp-for="AdditionalNotes" class="form-control" rows="6" readonly></textarea>
                 </div>
 
-                <h5 class="text-muted mb-3">Appointment details</h5>
-
+                <div class="w-100 mt-4 mb-3">
+                    <h3 class="px-3 py-2 bg-light" style="color:#48AAAD; border-left: 5px solid #48AAAD;">
+                        Appointment details
+                    </h3>
+                </div>
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label asp-for="BookForDate" class="form-label fw-semibold"></label>

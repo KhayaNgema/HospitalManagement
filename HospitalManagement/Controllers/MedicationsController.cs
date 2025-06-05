@@ -24,6 +24,7 @@ namespace HospitalManagement.Controllers
         private readonly HospitalManagementDbContext _context;
         private readonly IActivityLogger _activityLogger;
         private readonly OrderCalculationService _orderCalculationService;
+        private readonly IEncryptionService _encryptionService;
 
         public MedicationsController(
             UserManager<UserBaseModel> userManager,
@@ -34,12 +35,14 @@ namespace HospitalManagement.Controllers
             RoleManager<IdentityRole> roleManager,
             RandomPasswordGeneratorService passwordGenerator,
             EmailService emailService,
+            IEncryptionService encryptionService,
             HospitalManagementDbContext db,
             IActivityLogger activityLogger)
         {
             _userManager = userManager;
             _userStore = userStore;
             _signInManager = signInManager;
+            _encryptionService = encryptionService;
             _emailSender = emailSender;
             _fileUploadService = fileUploadService;
             _roleManager = roleManager;
@@ -50,6 +53,24 @@ namespace HospitalManagement.Controllers
         }
 
         [HttpGet]
+        public async Task<IActionResult> MedicationPescriptionRequests()
+        {
+            var medications = await _context.MedicationPescription
+                .Include(mp => mp.PrescribedMedication)
+                .Include(mp => mp.Booking)
+                .ThenInclude(mp => mp.CreatedBy)
+                .Include(mp => mp.Admission)
+                .ThenInclude(mp => mp.Booking)
+                .Include(mp => mp.CreatedBy)
+                .Include(mp => mp.ModifiedBy)
+                .OrderByDescending(mp => mp.CreatedAt)
+                .ToListAsync();
+
+            return View(medications);
+        }
+
+
+        [HttpGet]
         public async Task<IActionResult> Medications()
         {
             var medications = await _context.Medications
@@ -57,6 +78,71 @@ namespace HospitalManagement.Controllers
 
             return View(medications);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> PescriptionRequest(string medicationPescriptionId)
+        {
+            var decryptedMedicationPescriptionId = _encryptionService.DecryptToInt(medicationPescriptionId);
+
+            var pescriptionRequest = await _context.MedicationPescription
+                .Where(pr => pr.MedicationPescriptionId == decryptedMedicationPescriptionId)
+                .Include(pr => pr.Booking)
+                    .ThenInclude(b => b.CreatedBy)
+                .Include(pr => pr.Booking)
+                    .ThenInclude(b => b.AssignedTo)
+                .Include(pr => pr.Admission)
+                    .ThenInclude(a => a.Patient)
+                .Include(pr => pr.Admission)
+                    .ThenInclude(a => a.CreatedBy)
+                 .Include(pr => pr.PrescribedMedication)
+                .FirstOrDefaultAsync();
+
+            if (pescriptionRequest == null)
+            {
+                return NotFound(); 
+            }
+
+            var booking = pescriptionRequest.Booking;
+            var admission = pescriptionRequest.Admission;
+
+            var patient = booking?.CreatedBy ?? admission?.Patient;
+            var doctor = booking?.AssignedTo ?? admission.CreatedBy;
+
+            if (patient == null || doctor == null)
+            {
+                return BadRequest("Incomplete prescription data.");
+            }
+
+            var viewModel = new PescriptionRequestViewModel
+            {
+                AccessCode = pescriptionRequest.AccessCode,
+                PatientFirstName = patient.FirstName,
+                PatientLastName = patient.LastName,
+                PatientIdNumber = patient.IdNumber,
+                Email = patient.Email,
+                ProfilePicture = patient.ProfilePicture,
+                PhoneNumber = patient.PhoneNumber,
+                DoctorFirstName = doctor.FirstName,
+                DoctorLastName = doctor.LastName,
+                DoctorEmail = doctor.Email,
+                DoctorPhoneNumber = doctor.PhoneNumber,
+                DoctorSpecialization = doctor.Specialization,
+                LastCollectionDate = pescriptionRequest.LastCollectionDate,
+                NextCollectionDate = pescriptionRequest.NextCollectionDate,
+                PescribedMedication = pescriptionRequest.PrescribedMedication,
+                PescriptionRequestId = decryptedMedicationPescriptionId,
+                AdditionalNotes = pescriptionRequest.AdditionalNotes,
+                PrescriptionType = pescriptionRequest.PrescriptionType,
+                CollectAfterCount = pescriptionRequest.CollectAfterCount,
+                CollectInterval = pescriptionRequest.CollectionInterval,
+                CollectUntilDate = pescriptionRequest.ExpiresAt,
+                DoctorDepartment = doctor.Department
+                
+            };
+
+            return View(viewModel);
+        }
+
 
         [HttpGet]
         public async Task<IActionResult> NewMedication()

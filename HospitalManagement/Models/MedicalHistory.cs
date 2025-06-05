@@ -38,6 +38,9 @@ namespace HospitalManagement.Models
         public float? HeightCm { get; set; }
         public float? WeightKg { get; set; }
 
+        [Display(Name = "Pescribed medication")]
+        public ICollection<Medication> PrescribedMedication { get; set; }
+
         [Display(Name = "Treatment Given")]
         public string? Treatment { get; set; }
 

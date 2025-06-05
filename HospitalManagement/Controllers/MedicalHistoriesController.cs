@@ -78,10 +78,16 @@ namespace HospitalManagement.Controllers
                 .Include(p => p.Patient)
                 .FirstOrDefaultAsync();
 
+            var appointment = await _context.Bookings
+                .Where(a => a.BookingReference == medicalHistory.AccessCode)
+                .OrderByDescending(a => a.CreatedAt)
+                .FirstOrDefaultAsync();
+
             var patient = medicalHistory.Patient;
 
             var viewModel = new NewMedicalRecordViewModel
             {
+                BookingId = appointment.BookingId,
                 FirstName = patient.FirstName,
                 LastName = patient.LastName,
                 DateOfBirth = patient.DateOfBirth,
@@ -89,6 +95,11 @@ namespace HospitalManagement.Controllers
                 PatientId = medicalHistory.PatientId,
                 PatientMedicalHistoryId= decryptedMedicalHistoryId
             };
+
+            var medication = await _context.Medications
+                .ToListAsync();
+
+            ViewBag.Medications = medication;
 
             return View(viewModel);
         }
@@ -110,7 +121,6 @@ namespace HospitalManagement.Controllers
                     Immunizations = viewModel.Immunizations,
                     HeightCm = viewModel.HeightCm,
                     LabResults = viewModel.LabResults,
-                    Medications = viewModel.Medications,
                     Notes = viewModel.Notes,
                     PatientMedicalHistoryId = viewModel.PatientMedicalHistoryId,
                     Surgeries = viewModel.Surgeries,
@@ -124,17 +134,136 @@ namespace HospitalManagement.Controllers
                     RecordedAt = DateTime.Now,
                     CreatedById = user.Id,
                     UpdatedById = user.Id,
+                    PrescribedMedication = null,
                 };
 
-                _context.Add(newMedicalRecord);
+                _context.MedicalHistorys.Add(newMedicalRecord);
                 await _context.SaveChangesAsync();
+
+                var admission = await _context.Admissions
+                    .Where(a => a.PatientId == viewModel.PatientId &&
+                    a.PatientStatus == PatientStatus.Admitted)
+                    .FirstOrDefaultAsync();
+
+                var booking = await _context.Bookings
+                    .Where(b => b.BookingId == viewModel.BookingId)
+                    .FirstOrDefaultAsync();
+
+                if (admission != null || booking != null)
+                {
+                    var patientBill = await _context.PatientBills
+                        .Where(pb => pb.PatientId == viewModel.PatientId)
+                        .Include(pb => pb.Services)
+                        .FirstOrDefaultAsync();
+
+                    if (viewModel.PrescribedMedication != null && viewModel.PrescribedMedication.Any())
+                    {
+                        foreach (var med in viewModel.PrescribedMedication)
+                        {
+                            var medicationEntity = await _context.Medications
+                                .FirstOrDefaultAsync(m => m.MedicationId == med.MedicationId);
+
+                            if (medicationEntity != null && admission != null)
+                            {
+                                var newBillService = new PatientBillServices
+                                {
+                                    AdmissionId = admission.AdmissionId,
+                                    BookingId = viewModel.BookingId,
+                                    CreatedAt = DateTime.Now,
+                                    UpdatedAt = DateTime.Now,
+                                    PatientBillId = patientBill.BillId,
+                                    ReferenceNumber = "@HO-WARD-TRT",
+                                    ServiceName = medicationEntity.MedicationName ?? "Prescribed Medication",
+                                    ServiceType = "Medication",
+                                    Subtotal = medicationEntity.Price,
+                                };
+
+                                _context.Add(newBillService);
+
+                                patientBill.Services.Add(newBillService); 
+                                patientBill.PayableTotalAmount += newBillService.Subtotal;
+                                _context.Update(patientBill);
+                                await _context.SaveChangesAsync();
+
+                            }
+                            else if(medicationEntity != null && booking != null)
+                            {
+                                var newBillService = new PatientBillServices
+                                {
+                                    AdmissionId = null,
+                                    BookingId = booking.BookingId,
+                                    CreatedAt = DateTime.Now,
+                                    UpdatedAt = DateTime.Now,
+                                    PatientBillId = patientBill.BillId,
+                                    ReferenceNumber = "@HO-1VST-TRT",
+                                    ServiceName = medicationEntity.MedicationName ?? "Prescribed Medication",
+                                    ServiceType = "Medication",
+                                    Subtotal = medicationEntity.Price,
+                                };
+
+                                _context.Add(newBillService);
+
+                                patientBill.Services.Add(newBillService);
+                                patientBill.PayableTotalAmount += newBillService.Subtotal;
+                                _context.Update(patientBill);
+                                await _context.SaveChangesAsync();
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    var medicationPescription = new MedicationPescription
+                    {
+                        AdditionalNotes = viewModel.Notes,
+                        AdmissionId = null,
+                        CollectAfterCount = null,
+                        CreatedAt = DateTime.Now,
+                        LastUpdatedAt = DateTime.Now,
+                        CollectionInterval = null,
+                        CreatedById = user.Id,
+                        HasDoneCollecting = false,
+                        ExpiresAt = null,
+                        NextCollectionDate = null,
+                        PrescriptionType = null,
+                        UpdatedById = user.Id,
+                        BookingId = viewModel.BookingId,
+                        PrescribedMedication = new List<Medication>(),
+                        AccessCode = booking.BookingReference,
+
+                    };
+
+                    if (viewModel.PrescribedMedication != null && viewModel.PrescribedMedication.Any())
+                    {
+                        foreach (var med in viewModel.PrescribedMedication)
+                        {
+                            var medicationEntity = await _context.Medications
+                                .FirstOrDefaultAsync(m => m.MedicationId == med.MedicationId);
+
+                            if (medicationEntity != null)
+                            {
+                                medicationPescription.PrescribedMedication.Add(medicationEntity);
+                            }
+                            else
+                            {
+
+                            }
+                        }
+                    }
+
+                    _context.MedicationPescription.Add(medicationPescription);
+                    await _context.SaveChangesAsync();
+
+                    medicationPescription.QrCodeImage = _qrCodeService.GenerateQrCode(medicationPescription.AccessCode);
+                    _context.Update(medicationPescription);
+                    await _context.SaveChangesAsync();
+                }
 
                 TempData["Message"] = $"You have successfully added new medical record for {viewModel.FirstName} {viewModel.LastName}";
 
                 var encryptedMedicalRecordId = _encryptionService.Encrypt(viewModel.PatientMedicalHistoryId);
 
                 return RedirectToAction(nameof(PatientMedicalRecord), new { medicalHistoryId = encryptedMedicalRecordId });
-
             }
             catch (Exception ex)
             {
@@ -149,8 +278,6 @@ namespace HospitalManagement.Controllers
                     }
                 });
             }
-
-            return View(viewModel);
         }
 
 

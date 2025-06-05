@@ -20,9 +20,10 @@ namespace HospitalManagement.Models
 
         public byte[]? QrCodeImage { get; set; }
 
+        public DateTime ExpiresAt { get; set; }
+
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
-        public DateTime ExpiresAt { get; set; } 
 
         public bool IsActive => DateTime.Now < ExpiresAt;
     }

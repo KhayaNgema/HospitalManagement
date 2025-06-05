@@ -25,6 +25,27 @@ namespace HospitalManagement.Data
                 .HasValue<Booking>("Booking")
                 .HasValue<X_RayAppointment>("X_RayAppointment");
 
+            modelBuilder.Entity<MedicationPescription>()
+                   .HasMany(mp => mp.PrescribedMedication)
+                   .WithMany(m => m.MedicationPescriptions)
+                   .UsingEntity<Dictionary<string, object>>(
+                       "MedicationPescription_Medication",
+                       j => j
+                           .HasOne<Medication>()
+                           .WithMany()
+                           .HasForeignKey("MedicationId")
+                           .OnDelete(DeleteBehavior.Cascade),
+                       j => j
+                           .HasOne<MedicationPescription>()
+                           .WithMany()
+                           .HasForeignKey("MedicationPescriptionId")
+                           .OnDelete(DeleteBehavior.Cascade),
+                       j =>
+                       {
+                           j.HasKey("MedicationPescriptionId", "MedicationId");
+                           j.ToTable("MedicationPescription_Medication");
+                       });
+
         }
 
 
@@ -78,5 +99,7 @@ namespace HospitalManagement.Data
         public DbSet<HospitalManagement.Models.PatientBill> PatientBills { get; set; }
 
         public DbSet<HospitalManagement.Models.PatientBillServices> PatientBillServices { get; set; }
+
+        public DbSet<HospitalManagement.Models.MedicationPescription> MedicationPescription { get; set; }
     }
 }

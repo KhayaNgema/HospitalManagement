@@ -1,0 +1,237 @@
+﻿@using System.Reflection
+@using System.ComponentModel.DataAnnotations
+@model HospitalManagement.ViewModels.PescriptionRequestViewModel
+@inject HospitalManagement.Interfaces.IEncryptionService encryptionService
+
+@functions {
+    public string GetEnumDisplayName(Enum enumValue)
+    {
+        var displayAttr = enumValue.GetType()
+                                   .GetMember(enumValue.ToString())
+                                   .First()
+                                   .GetCustomAttribute<DisplayAttribute>();
+
+        return displayAttr?.Name ?? enumValue.ToString();
+    }
+}
+
+@{
+    ViewData["Title"] = "Prescription Request";
+    Layout = "~/Views/Shared/_PagesLayout.cshtml";
+    var encryptedAppointmentId = encryptionService.Encrypt(Model.PescriptionRequestId);
+}
+
+<a asp-controller="Medications" asp-action="MedicationPescriptionRequests" class="text-decoration-none d-inline-flex align-items-center back-link mt-4 ms-4">
+    <i class="bi bi-chevron-left me-1"></i> Medication Prescription Requests
+</a>
+
+<form asp-controller="Appointments" asp-action="UpdateStatusRedirect" method="post" enctype="multipart/form-data">
+    @Html.AntiForgeryToken()
+
+    <input type="hidden" name="appointmentId" value="@Model.PescriptionRequestId" />
+
+    <div class="container my-3 px-4">
+        <div class="card shadow-lg border-0" style="border-left: 6px solid #48AAAD; border-radius: 10px;">
+            <div class="card-header text-white" style="background-color: #48AAAD;">
+                <h3 class="mb-0">##@Model.AccessCode</h3>
+            </div>
+
+            <div class="card-body px-4 py-4">
+                @if (TempData["Message"] != null)
+                {
+                    <div id="tempDataMessage" class="alert @(TempData["Message"].ToString().Contains("successfully") ? "alert-success" : "alert-danger")" role="alert">
+                        @Html.Raw(TempData["Message"])
+                        <span class="close" aria-label="Close"><span aria-hidden="true">&times;</span></span>
+                    </div>
+                }
+                <div class="w-100 mt-4 mb-3">
+                    <h3 class="px-3 py-2 bg-light" style="color:#48AAAD; border-left: 5px solid #48AAAD;">
+                        Patient Information
+                    </h3>
+                </div>
+                <div class="text-center mb-4">
+                    <img src="~/@Model.ProfilePicture" alt="Profile Picture" class="img-thumbnail rounded-circle" style="width: 120px; height: 120px; object-fit: cover;" />
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6 mb-3">
+                        <label class="fw-semibold text-muted">Patient</label>
+                        <div class="info-box">@Model.PatientFirstName @Model.PatientLastName</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="fw-semibold text-muted">Email</label>
+                        <div class="info-box">@Model.Email</div>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6 mb-3">
+                        <label class="fw-semibold text-muted">Id number</label>
+                        <div class="info-box">@Model.PatientIdNumber</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="fw-semibold text-muted">Phone number</label>
+                        <div class="info-box">@Model.PhoneNumber</div>
+                    </div>
+                </div>
+
+                <div class="w-100 mt-4 mb-3">
+                    <h3 class="px-3 py-2 bg-light" style="color:#48AAAD; border-left: 5px solid #48AAAD;">
+                        Prescribed Medication
+                    </h3>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6 mb-3">
+                        <label class="fw-semibold text-muted">Medication to dispense</label>
+                        <div class="info-box">
+                            @if (Model.PescribedMedication != null && Model.PescribedMedication.Any())
+                            {
+                                foreach (var med in Model.PescribedMedication)
+                                {
+                                    <div>&#8226; @med.MedicationName (D @med.DosageForm - S @med.Strength - U @med.UnitOfMeasure)</div> 
+                                }
+                            }
+                            else
+                            {
+                                <div>N/A</div>
+                            }
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="fw-semibold text-muted">Additional Notes</label>
+                        <div class="info-box">@Model.AdditionalNotes</div>
+                    </div>
+                </div>
+                <div class="row g-4 mb-4">
+                    <label class="fw-semibold text-muted">Collection Type</label>
+                    <div class="info-box">@((Model.PrescriptionType.HasValue ? Model.PrescriptionType.ToString() : "N/A"))</div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-2">
+                        <label class="fw-semibold text-muted">Collection after</label>
+                        <div class="info-box">@((Model.CollectAfterCount.HasValue ? Model.CollectAfterCount.ToString() : "N/A"))</div>
+                    </div>
+
+                    <div class="col-md-5">
+                        <label class="fw-semibold text-muted">Collection Interval</label>
+                        <div class="info-box">@((Model.CollectInterval.HasValue ? Model.CollectInterval.ToString() : "N/A"))</div>
+                    </div>
+
+                    <div class="col-md-5">
+                        <label class="fw-semibold text-muted">Collect until</label>
+                        <div class="info-box">@((Model.CollectUntilDate.HasValue ? Model.CollectUntilDate.Value.ToString("yyyy-MM-dd") : "N/A"))</div>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6 mb-3">
+                        <label class="fw-semibold text-muted">Last Collection Date</label>
+                        <div class="info-box">
+                            @(Model.LastCollectionDate.HasValue
+                                    ? Model.LastCollectionDate.Value.ToString("yyyy-MM-dd")
+                                    : "N/A")
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="fw-semibold text-muted">Next Collection Date</label>
+                        <div class="info-box">
+                            @(Model.NextCollectionDate.HasValue
+                                    ? Model.NextCollectionDate.Value.ToString("yyyy-MM-dd")
+                                    : "N/A")
+                        </div>
+                    </div>
+                </div>
+
+                @if(User.IsInRole("Pharmacist"))
+                {
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Status" class="fw-semibold text-muted">Status</label>
+                        <select asp-for="Status" class="form-select rounded-3" asp-items="Html.GetEnumSelectList<MedicationPescriptionStatus>()">
+                            <option value="">-- Select Status --</option>
+                        </select>
+                        <span asp-validation-for="Status" class="text-danger small"></span>
+                    </div>
+                }
+
+                <div class="w-100 mt-4 mb-3">
+                    <h3 class="px-3 py-2 bg-light" style="color:#48AAAD; border-left: 5px solid #48AAAD;">
+                        Requester' Information
+                    </h3>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 mb-3">
+                        <label class="fw-semibold text-muted">Doctor</label>
+                        <div class="info-box">@Model.DoctorFirstName @Model.DoctorLastName</div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="fw-semibold text-muted">Email Adress</label>
+                        <div class="info-box">@Model.DoctorEmail</div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="fw-semibold text-muted">Phone Number</label>
+                        <div class="info-box">@Model.DoctorPhoneNumber</div>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6 mb-3">
+                        <label class="fw-semibold text-muted">Departmemt</label>
+                        <div class="info-box">@Model.DoctorDepartment</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="fw-semibold text-muted">Specialization</label>
+                        <div class="info-box">@Model.DoctorSpecialization</div>
+                    </div>
+                </div>
+
+                @if(User.IsInRole("Pharmacist"))
+                {
+                    <div class="d-flex justify-content-end mt-4 gap-2">
+                        <button type="submit" class="btn btn-success px-4 py-2 fs-5">
+                            <i class="fa fa-save me-2" style="font-size: 1.5rem;"></i> Save
+                        </button>
+                    </div>
+                }
+            </div> 
+        </div>
+    </div>
+</form>
+
+<style>
+    .info-box {
+        border-left: 5px solid #48AAAD;
+        border: 1px solid #dee2e6;
+        padding: 1rem;
+        border-radius: 0.375rem;
+        background-color: #f9f9f9;
+        box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.03);
+    }
+</style>
+
+<script>
+    function previewProfilePicture(event) {
+        var reader = new FileReader();
+        reader.onload = function () {
+            var output = document.getElementById('profile-image-preview');
+            if (output) {
+                output.src = reader.result;
+                output.style.display = 'block';
+            } else {
+                var img = document.createElement("img");
+                img.id = 'profile-image-preview';
+                img.src = reader.result;
+                img.className = 'x_rayImage-image position-absolute top-0 start-0 w-100 h-100';
+                img.style.objectFit = 'cover';
+                var container = document.querySelector('.x_rayImage-container');
+                container.appendChild(img);
+            }
+            var placeholder = document.getElementById('profile-image-placeholder');
+            if (placeholder) placeholder.style.display = 'none';
+        };
+        reader.readAsDataURL(event.target.files[0]);
+    }
+
+
+    setTimeout(function () {
+        var msg = document.getElementById("tempDataMessage");
+        if (msg) msg.style.display = "none";
+    }, 7000);
+</script>

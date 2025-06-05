@@ -6,6 +6,8 @@ namespace HospitalManagement.ViewModels
 {
     public class NewMedicalRecordViewModel
     {
+        public int BookingId { get; set; }
+
         [Required]
         public string PatientId { get; set; }
 
@@ -33,8 +35,6 @@ namespace HospitalManagement.ViewModels
         [Display(Name = "Treatment Given")]
         public string? Treatment { get; set; }
 
-        [Display(Name = "Medications Prescribed")]
-        public virtual ICollection<Medication>? Medications { get; set; }
 
         [Display(Name = "Follow-Up Instructions")]
         public List<string>? FollowUpInstructions { get; set; }
@@ -60,5 +60,8 @@ namespace HospitalManagement.ViewModels
 
         [StringLength(100, ErrorMessage = "Profile picture URL cannot exceed 100 characters.")]
         public string? ProfilePicture { get; set; }
+
+        [Display(Name = "Pescribed medication")]
+        public ICollection<Medication> PrescribedMedication { get; set; }
     }
 }

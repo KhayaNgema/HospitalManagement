@@ -492,7 +492,7 @@
                     </div>
                 </div>
             }
-            else 
+            else
             {
                 <div id="wrapper">
                     <div id="sidebar-wrapper" style="overflow-y: auto; scrollbar-width: thin; scrollbar-color: transparent transparent;">
@@ -502,6 +502,7 @@
                             <div style="margin-top: 10px;">
 
                                 <div style="font-size: 16px; font-weight: bold;">@firstName @lastName</div>
+                                <div style="font-size: 14px; color: #ccc;">Patient</div>
                             </div>
                             <button style="background-color: transparent; border: 1px solid #48AAAD; color: #48AAAD; padding: 4px 9px; border-radius: 5px; font-size: 14px; cursor: pointer; margin-top: 10px;">
                                 <a style="color:#48AAAD" asp-controller="Users" asp-action="UserProfile" asp-route-userId="@encryptedUserId">Profile <i class="fa fa-arrow-right"></i></a>
@@ -530,8 +531,8 @@
                             <hr style="background-color: white; opacity: 0.2; margin: 15px 20px;">
 
                             <li style="margin: 20px 0 0 30px; display: flex; align-items: center;">
-                                <i class="fa fa-notes-medical fa-lg" style="color: white; margin-right: 10px;"></i>
-                                <a asp-controller="MedicalHistory" asp-action="MyMedicalHistory" class="nav-link text-light" style="font-weight: bold;">Medical history</a>
+                                <i class="fa fa-pills fa-lg" style="color: white; margin-right: 10px;"></i>
+                                <a asp-controller="MedicalHistory" asp-action="MyMedicalHistory" class="nav-link text-light" style="font-weight: bold;">Medications</a>
                             </li>
 
                             <hr style="background-color: white; opacity: 0.2; margin: 15px 20px;">

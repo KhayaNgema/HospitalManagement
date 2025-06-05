@@ -69,7 +69,7 @@ namespace HospitalManagement.ViewModels
         public ICollection<Medication>? PrescribedMedication { get; set; }
 
         [DisplayName("Until date")]
-        public string? UntilDate { get; set; }
+        public DateTime? UntilDate { get; set; }
 
         [DisplayName("Collect after")]
         public int? CollectAfterCount { get; set; }
@@ -82,6 +82,8 @@ namespace HospitalManagement.ViewModels
 
         [DisplayName("Pescription type")]
         public PrescriptionType PrescriptionType { get; set; }
+        [DataType(DataType.Date)]
+        public DateTime? LastCollectionDate { get; set; }
 
     }
 }

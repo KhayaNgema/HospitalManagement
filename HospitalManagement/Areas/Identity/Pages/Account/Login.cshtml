@@ -32,8 +32,7 @@
                 <h1 class="app-name text-center"><span style="color: #022D36;">Medi</span><span style="color: #48AAAD;">Connect</span></h1>
                 <h3 class="login-header">Login</h3>
                 <form id="account" method="post" novalidate>
-                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-
+                    <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
                     <div class="mb-4">
                         <label asp-for="Input.Email" class="form-label fw-semibold"></label>
                         <input asp-for="Input.Email" class="form-control" />
@@ -64,10 +63,9 @@
                             <a id="forgot-password" asp-page="./ForgotPassword">Forgot your password?</a>
                         </p>
                     </div>
-                    <div class="text-center small">
-                        <p>
-                            <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl">Don't have an account? Click here to create a new account</a>
-                        </p>
+                    <div class="account-link-wrapper">
+                        <p class="fw-semibold">Don't have an account?</p>
+                        <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl">Create a new account</a>
                     </div>
                 </form>
             </div>

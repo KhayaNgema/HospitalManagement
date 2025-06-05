@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 
 namespace HospitalManagement.Models
 {
@@ -12,5 +13,7 @@ namespace HospitalManagement.Models
 
         public int? CartId { get; set; }
         public virtual Cart Cart { get; set; }
+
+        public string FaceId { get; set; }
     }
 }

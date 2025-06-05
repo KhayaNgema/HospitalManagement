@@ -12,6 +12,11 @@ namespace HospitalManagement.Models
         public int PatientBillId { get; set; }
         public virtual PatientBill PatientBill { get; set; }
 
+        public int? BookingId { get; set; }
+
+        [ForeignKey("BookingId")]
+        public virtual Booking Booking { get; set; }
+
         public int? AdmissionId { get; set; }
 
         [ForeignKey("AdmissionId")]

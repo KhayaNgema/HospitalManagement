@@ -68,10 +68,10 @@ namespace HospitalManagement.Controllers
             var menuItems = await _context.MenuItems
                 .ToListAsync();
 
-            decimal totalPrice = _orderCalculationService.CalculateTotalPrice(cartItems);
+/*            decimal totalPrice = _orderCalculationService.CalculateTotalPrice(cartItems);*/
 
-            ViewBag.TotalPrice = totalPrice;
-
+/*            ViewBag.TotalPrice = totalPrice;
+*/
             ViewBag.Categories = categories;
             var viewModel = new MenuViewModel
             {

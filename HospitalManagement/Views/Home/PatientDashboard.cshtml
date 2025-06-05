@@ -157,18 +157,12 @@
                     <h5 class="card-title"><i class="fas fa-shopping-cart"></i> Menu</h5>
                     <p class="card-text">Find your favourite healthy meals here</p>
 
-                    @if (ViewBag.PatientAdmissionStatus != null && ViewBag.PatientAdmissionStatus == PatientStatus.Admitted && ViewBag.NumberOfDays >= 5)
+                    @if (ViewBag.PatientAdmissionStatus != null && ViewBag.PatientAdmissionStatus == PatientStatus.Admitted)
                     {
                         <a asp-controller="Menus" asp-action="Menu" class="btn btn-primary mt-auto align-self-end styled-button">
                             <span>Order now</span>
                             <span class="arrow">&#10148;</span>
                         </a>
-                    }
-                    else if (ViewBag.PatientAdmissionStatus != null && ViewBag.PatientAdmissionStatus == PatientStatus.Admitted && ViewBag.NumberOfDays < 5)
-                    {
-                        <p class="card-text mt-2" style="font-weight: bold; font-size: 1.25rem;">
-                            You cannot order food since you have been admitted for less than 5 days.
-                        </p>
                     }
                     else
                     {

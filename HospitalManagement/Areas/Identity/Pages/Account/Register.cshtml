@@ -54,6 +54,7 @@
                         <input asp-for="Input.ProfilePicture" class="form-control" type="file" onchange="previewProfilePicture(event)" accept="image/*" style="display: none;" />
                         <span asp-validation-for="Input.ProfilePicture" class="text-danger"></span>
                     </div>
+                   
                     <div class="row">
                         <div class="mb-4 col-md-6">
                             <label asp-for="Input.FirstName" class="form-label fw-semibold"></label>
@@ -167,10 +168,9 @@
                         </button>
                     </div>
 
-                    <div class="text-center small">
-                        <p>
-                            <a asp-page="./Login" asp-route-returnUrl="@Model.ReturnUrl">Already have an account? Click here to login</a>
-                        </p>
+                    <div class="account-link-wrapper">
+                        <p class="fw-semibold">Are you already one of us?</p>
+                        <a asp-page="./Login" asp-route-returnUrl="@Model.ReturnUrl">Click here to login</a>
                     </div>
                 </form>
 

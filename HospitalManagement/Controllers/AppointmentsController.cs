@@ -210,6 +210,7 @@ namespace HospitalManagement.Controllers
                 .Where(a => a.BookingId == decryptedAppointmentId)
                 .Include(a => a.CreatedBy)
                 .Include(a => a.ModifiedBy)
+                .Include(a => a.AssignedTo)
                 .Include(a => a.Doctor)
                 .Include(a => a.Patient)
                 .FirstOrDefaultAsync();
@@ -252,7 +253,9 @@ namespace HospitalManagement.Controllers
                 PhoneNumber = appointment.CreatedBy.PhoneNumber,
                 Specialization = specializations,
                 XRayImage = appointment.ScannerImage,
-                IdNumber = appointment.CreatedBy.IdNumber
+                IdNumber = appointment.CreatedBy.IdNumber,
+                AssignedToFullNames = $"{appointment.AssignedTo.FirstName} {appointment.AssignedTo.LastName}"
+               
             };
 
             var doctor = await _context.Doctors

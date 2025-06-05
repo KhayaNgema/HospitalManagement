@@ -15,6 +15,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 using HospitalManagement.Models;
+using Microsoft.EntityFrameworkCore;
+using HospitalManagement.Interfaces;
+using HospitalManagement.Data;
 
 namespace HospitalManagement.Areas.Identity.Pages.Account
 {
@@ -22,11 +25,24 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
     {
         private readonly SignInManager<UserBaseModel> _signInManager;
         private readonly ILogger<LoginModel> _logger;
+        private readonly IActivityLogger _activityLogger;
+        private readonly UserManager<UserBaseModel> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly HospitalManagementDbContext _context;
 
-        public LoginModel(SignInManager<UserBaseModel> signInManager, ILogger<LoginModel> logger)
+        public LoginModel(SignInManager<UserBaseModel> signInManager,
+            ILogger<LoginModel> logger,
+            IActivityLogger activityLogger,
+            UserManager<UserBaseModel> userManager,
+            RoleManager<IdentityRole> roleManager,
+            HospitalManagementDbContext context)
         {
             _signInManager = signInManager;
             _logger = logger;
+            _activityLogger = activityLogger;
+            _userManager = userManager;
+            _roleManager = roleManager;
+            _context = context;
         }
 
         /// <summary>
@@ -94,7 +110,6 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
 
             returnUrl ??= Url.Content("~/");
 
-            // Clear the existing external cookie to ensure a clean login process
             await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
 
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
@@ -110,32 +125,54 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
 
             if (ModelState.IsValid)
             {
-                // This doesn't count login failures towards account lockout
-                // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-                var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
-                if (result.Succeeded)
+                var isEmail = new EmailAddressAttribute().IsValid(Input.Email);
+
+                var user = isEmail ?
+                            await _userManager.FindByEmailAsync(Input.Email) :
+                            await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == Input.Email);
+
+                if (user != null)
                 {
-                    _logger.LogInformation("User logged in.");
-                    return LocalRedirect(returnUrl);
-                }
-                if (result.RequiresTwoFactor)
-                {
-                    return RedirectToPage("./LoginWith2fa", new { ReturnUrl = returnUrl, RememberMe = Input.RememberMe });
-                }
-                if (result.IsLockedOut)
-                {
-                    _logger.LogWarning("User account locked out.");
-                    return RedirectToPage("./Lockout");
+                    if (user.IsDeleted)
+                    {
+                        ModelState.AddModelError(string.Empty, "Your account is deleted and you don't have access to this system anymore.");
+                    }
+                    else if (user.IsSuspended)
+                    {
+                        ModelState.AddModelError(string.Empty, "Your account has been suspended. Please contact your system administrator.");
+                    }
+                    else if (!user.IsActive)
+                    {
+                        ModelState.AddModelError(string.Empty, "Your account has been deactivated. Please contact your system administrator.");
+                    }
+                    else if (!user.EmailConfirmed)
+                    {
+                        ModelState.AddModelError(string.Empty, "Your email address is not verified. Please verify it and try again.");
+                    }
+                    else
+                    {
+
+                            var result = await _signInManager.PasswordSignInAsync(user.UserName, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+
+                            if (result.Succeeded)
+                            {
+                                return LocalRedirect(returnUrl);
+                            }
+                            else
+                            {
+                                ModelState.AddModelError(string.Empty, "Incorrect email or phone number or password.");
+                            }
+                    }
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, "Invalid login attempt.");
-                    return Page();
+                    ModelState.AddModelError(string.Empty, "User account does not exist in this system.");
                 }
             }
 
-            // If we got this far, something failed, redisplay form
             return Page();
         }
     }
+
+
 }
