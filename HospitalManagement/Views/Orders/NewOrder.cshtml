@@ -5,7 +5,7 @@
     Layout = "~/Views/Shared/_PagesLayout.cshtml";
 }
 
-<div class="container my-3 px-4">
+<div class="container-fluid my-3 px-4">
     <div class="d-flex align-items-center justify-content-between px-3 py-3 mb-4" style="background-color:#48AAAD;">
         <h2 class="mb-0 text-white">Checkout</h2>
     </div>
@@ -45,22 +45,16 @@
                         </tr>
                     }
                 </tbody>
-                <tfoot>
-                    <tr>
-                        <td colspan="2"></td>
-                        <td class="fw-bold">Total:</td>
-                        <td class="fw-bold text-success">
-                            R <span id="totalPrice">@ViewBag.TotalPrice.ToString("0.00")</span>
-                        </td>
-                    </tr>
-                </tfoot>
             </table>
 
             <input type="hidden" id="totalPriceField" name="TotalPrice" value="@ViewBag.TotalPrice" />
 
-            <div class="text-end mt-4">
-                <button type="submit" class="btn btn-primary px-4" onclick="populateTotalPrice()">
-                    <i class="bi bi-cart-check me-1"></i> Place Order
+            <div class="bill-summary-box bg-white shadow rounded p-3">
+                <div class="text-end fs-5 fw-bold text-success mb-2">
+                    Total: R <span id="totalPrice">@ViewBag.TotalPrice.ToString("0.00")</span>
+                </div>
+                <button type="submit" style="background-color:#48AAAD; color:white" class="btn  w-100" onclick="populateTotalPrice()">
+                    <i class="bi bi-cart-check me-1"></i> Pay Now
                 </button>
             </div>
         </form>
@@ -73,5 +67,25 @@
             var totalPrice = parseFloat($("#totalPrice").text().trim().substring(2));
             $("#totalPriceField").val(totalPrice);
         }
+          function adjustBillSummaryPosition() {
+            const billBox = document.querySelector('.bill-summary-box');
+            const footer = document.querySelector('footer');
+            if (!billBox || !footer) return;
+
+            const footerRect = footer.getBoundingClientRect();
+            const windowHeight = window.innerHeight;
+
+            if (footerRect.top < windowHeight) {
+
+                const overlap = windowHeight - footerRect.top;
+                billBox.style.bottom = `${overlap + 20}px`;
+            } else {
+                billBox.style.bottom = '20px';
+            }
+        }
+
+        window.addEventListener('scroll', adjustBillSummaryPosition);
+        window.addEventListener('resize', adjustBillSummaryPosition);
+        window.addEventListener('load', adjustBillSummaryPosition);
     </script>
 }

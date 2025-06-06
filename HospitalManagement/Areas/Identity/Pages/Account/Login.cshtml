@@ -35,13 +35,16 @@
                     <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
                     <div class="mb-4">
                         <label asp-for="Input.Email" class="form-label fw-semibold"></label>
-                        <input asp-for="Input.Email" class="form-control" />
+                        <input asp-for="Input.Email" class="form-control" placeholder="example@gmail.com" />
                         <span asp-validation-for="Input.Email" class="text-danger small"></span>
                     </div>
 
-                    <div class="mb-4">
+                    <div class="mb-4 position-relative">
                         <label asp-for="Input.Password" class="form-label fw-semibold"></label>
-                        <input asp-for="Input.Password" class="form-control" />
+                        <input asp-for="Input.Password" class="form-control pe-5" id="passwordInput" />
+
+                        <i class="bi bi-eye-slash position-absolute toggle-icon" id="toggleIcon" onclick="togglePassword()"></i>
+
                         <span asp-validation-for="Input.Password" class="text-danger small"></span>
                     </div>
 
@@ -72,3 +75,19 @@
         </div>
     </div>
 </div>
+<script>
+    function togglePassword() {
+        const input = document.getElementById("passwordInput");
+        const icon = document.getElementById("toggleIcon");
+
+        if (input.type === "password") {
+            input.type = "text";
+            icon.classList.remove("bi-eye-slash");
+            icon.classList.add("bi-eye");
+        } else {
+            input.type = "password";
+            icon.classList.remove("bi-eye");
+            icon.classList.add("bi-eye-slash");
+        }
+    }
+</script>

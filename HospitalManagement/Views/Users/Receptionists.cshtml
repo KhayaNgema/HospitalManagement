@@ -1,7 +1,7 @@
-﻿@model IEnumerable<HospitalManagement.Models.Doctor>
+﻿@model IEnumerable<HospitalManagement.Models.Receptionist>
 
 @{
-    ViewData["Title"] = "Doctors";
+    ViewData["Title"] = "Receptionists";
     Layout = "~/Views/Shared/_PagesLayout.cshtml";
 }
 
@@ -11,17 +11,17 @@
             <a asp-controller="Home" asp-action="Index" class="text-white text-decoration-none d-inline-flex align-items-center back-link me-3">
                 <i class="bi bi-chevron-left me-1"></i> Back
             </a>
-            <h2 class="mb-0 text-white">Doctors</h2>
+            <h2 class="mb-0 text-white">Receptionists</h2>
         </div>
     </div>
     <div class="d-flex justify-content-between align-items-center mb-4 px-3">
 
         <div class="input-group w-50">
-            <input type="text" class="form-control" placeholder="Search by name, occupassion, license..." id="qrSearchInput">
+            <input type="text" class="form-control" placeholder="Search by name..." id="qrSearchInput">
         </div>
         <div>
-            <a href="/Identity/Account/RegisterDoctor" class="btn btn-primary" id="addButton">
-                <i class="bi bi-plus-circle me-1"></i> New Doctor
+            <a href="/Identity/Account/RegisterReceptionist" class="btn btn-primary" id="addButton">
+                <i class="bi bi-plus-circle me-1"></i> New Receptionist
             </a>
         </div>
 
@@ -39,28 +39,19 @@
     @if (!Model.Any())
     {
         <div class="alert alert-info text-center">
-            No doctors found.
+            No receptionists found.
         </div>
     }
     else
     {
-        @foreach (var group in Model.GroupBy(d => d.Specialization))
-        {
-            <div class="w-100 mt-4 mb-3">
-                <h3 class="px-3 py-2 bg-light" style="color:#48AAAD; border-left: 5px solid #48AAAD;">
-                    @group.Key's
-                </h3>
-            </div>
 
             <div class="table-responsive mb-5">
                 <table class="table table-striped table-borderless">
                     <thead class="custom-thead text-nowrap">
                         <tr>
-                            <th><i class="fas fa-user me-1"></i>Doctor</th>
+                        <th><i class="fas fa-user me-1"></i>Receptionist</th>
                             <th><i class="fas fa-envelope me-1"></i>Email address</th>
                             <th><i class="fas fa-phone me-1"></i>Phone number</th>
-                            <th><i class="fas fa-clock me-1"></i>Hours</th>
-                            <th><i class="fas fa-toggle-on me-1"></i>Status</th>
                             @if (User.IsInRole("System Administrator"))
                             {
                                 <th><i class="fas fa-user-shield me-1"></i>Created By</th>
@@ -71,34 +62,29 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var doctor in group)
+                        @foreach (var receptionist in Model)
                         {
                             <tr class="ellipsis">
                                 <td style="white-space: nowrap;">
                                     <div style="display: flex; align-items: center; gap: 8px;">
-                                        <img src="~/@doctor.ProfilePicture" alt="Profile photo" class="club-badge-image" style="border-radius: 50%; width: 50px; height: 50px;" />
-                                        <span>@doctor.FirstName @doctor.LastName</span>
+                                    <img src="~/@receptionist.ProfilePicture" alt="Profile photo" class="club-badge-image" style="border-radius: 50%; width: 50px; height: 50px;" />
+                                    <span>@receptionist.FirstName @receptionist.LastName</span>
                                     </div>
                                 </td>
-                                <td>@doctor.Email</td>
-                                <td>@doctor.PhoneNumber</td>
-                                <td>
-                                    @($"{doctor.AvailableTimings.From:hh\\:mm} - {doctor.AvailableTimings.To:hh\\:mm}")
-                                </td>
-                                <td>@doctor.AvailabilityStatus</td>
+                                <td>@receptionist.Email</td>
+                                <td>@receptionist.PhoneNumber</td>
                                 @if (User.IsInRole("System Administrator"))
                                 {
-                                    <td>@doctor.CreatedBy</td>
-                                    <td>@doctor.CreatedDateTime.ToString("yyyy/MM/dd HH:mm")</td>
-                                    <td>@doctor.ModifiedBy</td>
-                                    <td>@doctor.ModifiedDateTime.ToString("yyyy/MM/dd HH:mm")</td>
+                                    <td>@receptionist.CreatedBy</td>
+                                    <td>@receptionist.CreatedDateTime.ToString("yyyy/MM/dd HH:mm")</td>
+                                    <td>@receptionist.ModifiedBy</td>
+                                    <td>@receptionist.ModifiedDateTime.ToString("yyyy/MM/dd HH:mm")</td>
                                 }
                             </tr>
                         }
                     </tbody>
                 </table>
             </div>
-        }
 
     }
 </div>

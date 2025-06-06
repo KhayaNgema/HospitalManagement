@@ -25,7 +25,7 @@ using HospitalManagement.Services;
 
 namespace HospitalManagement.Areas.Identity.Pages.Account
 {
-    public class RegisterDoctorModel : PageModel
+    public class RegisterReceptionistModel : PageModel
     {
         private readonly SignInManager<UserBaseModel> _signInManager;
         private readonly UserManager<UserBaseModel> _userManager;
@@ -40,7 +40,7 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
         private readonly HospitalManagementDbContext _context;
         private readonly IActivityLogger _activityLogger;
 
-        public RegisterDoctorModel(
+        public RegisterReceptionistModel(
             UserManager<UserBaseModel> userManager,
             IUserStore<UserBaseModel> userStore,
             SignInManager<UserBaseModel> signInManager,
@@ -100,11 +100,6 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
             [Display(Name = "Alternate phone number")]
             public string AlternatePhoneNumber { get; set; }
 
-            [Required(ErrorMessage = "Medical license number is required.")]
-            [Display(Name = "License Number")]
-            [StringLength(50)]
-            public string LicenseNumber { get; set; }
-
             [Display(Name = "Years of Experience")]
             [Range(0, 60, ErrorMessage = "Experience must be between 0 and 60 years.")]
             public int YearsOfExperience { get; set; }
@@ -116,10 +111,6 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
             [Display(Name = "Biography / About")]
             [StringLength(1000)]
             public string? Biography { get; set; }
-
-
-            [Required(ErrorMessage = "Specialization is required.")]
-            public Specialization Specialization { get; set; }
 
             [Required]
             [EmailAddress]
@@ -187,7 +178,7 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
 
                 var user = await _userManager.GetUserAsync(User);
 
-                var doctor = new Doctor
+                var doctor = new Receptionist
                 {
                     FirstName = Input.FirstName,
                     LastName = Input.LastName,
@@ -210,11 +201,8 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
                     Gender = Input.Gender,
                     IdNumber = Input.IdNumber,
                     IsDeleted = false,
-                    LicenseNumber = Input.LicenseNumber,
                     Education = Input.Education,
-                    YearsOfExperience = Input.YearsOfExperience,
-                    Specialization = Input.Specialization,
-                    Department = Input.Department,
+                    YearsOfExperience = Input.YearsOfExperience
                 };
 
                 if (Input.ProfilePicture != null && Input.ProfilePicture.Length > 0)
@@ -233,7 +221,7 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
                 {
                     _logger.LogInformation("Doctor a new account with password.");
 
-                    await _userManager.AddToRoleAsync(doctor, "Doctor");
+                    await _userManager.AddToRoleAsync(doctor, "Receptionist");
 
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(doctor);
                     code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
@@ -245,7 +233,7 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
 
                     string accountCreationEmailBody = $"Hello {doctor.FirstName},<br><br>";
                     accountCreationEmailBody += $"Welcome to MediCare!<br><br>";
-                    accountCreationEmailBody += $"You have been successfully added as Medicare {doctor.Specialization}. Below are your login credentials:<br><br>";
+                    accountCreationEmailBody += $"You have been successfully added as Medicare Receptionist. Below are your login credentials:<br><br>";
                     accountCreationEmailBody += $"Email: {doctor.Email}<br>";
                     accountCreationEmailBody += $"Password: {randomPassword}<br><br>";
                     accountCreationEmailBody += $"Please note that we have sent you two emails, including this one. You need to open the other email to confirm your email address before you can log into the system.<br><br>";
@@ -261,8 +249,8 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
 
 /*                    await _activityLogger.Log($"Added {Input.FirstName} {Input.LastName} as MediCare {doctor.Specialization}", userId);
 */
-                    TempData["Message"] = $"{doctor.FirstName} {doctor.LastName}  has been successfully added as your new {doctor.Specialization}";
-                    return RedirectToAction("Doctors", "Users");
+                    TempData["Message"] = $"{doctor.FirstName} {doctor.LastName}  has been successfully added as your new Pharmacist";
+                    return RedirectToAction("Receptionists", "Users");
                 }
                 foreach (var error in result.Errors)
                 {
@@ -274,7 +262,7 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
                 return new JsonResult(new
                 {
                     success = false,
-                    message = "Failed to onboard doctor: " + ex.Message,
+                    message = "Failed to onboard Receptionist: " + ex.Message,
                     errorDetails = new
                     {
                         innerException = ex.InnerException?.Message,

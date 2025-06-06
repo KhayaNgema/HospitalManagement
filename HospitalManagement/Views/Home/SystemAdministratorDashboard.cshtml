@@ -163,7 +163,7 @@
     </div>
 
     <div class="row">
-        <div class="col-sm-12 col-md-6 col-lg-4">
+        <div class="col-sm-12 col-md-6 col-lg-6">
             <div class="card division-players-card">
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title"><i class="fas fa-user-md"></i> Doctors</h5>
@@ -177,7 +177,7 @@
             </div>
         </div>
 
-        <div class="col-sm-12 col-md-6 col-lg-4">
+        <div class="col-sm-12 col-md-6 col-lg-6">
             <div class="card news-administrators-card">
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title"><i class="fas fa-utensils"></i> Kitchen Staff</h5>
@@ -190,8 +190,24 @@
                 </div>
             </div>
         </div>
+    </div>
 
-        <div class="col-sm-12 col-md-6 col-lg-4">
+    <div class="row">
+        <div class="col-sm-12 col-md-6 col-lg-6">
+            <div class="card division-players-card">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title"><i class="fas fa-user-md"></i> Receptionists</h5>
+                    <p class="card-text">Our receptionists are listed here</p>
+                    <h1 class="card-text text-center center-number">@ViewBag.DivisionPlayersCount</h1>
+                    <a asp-controller="Users" asp-action="Receptionists" class="btn btn-primary mt-auto align-self-end styled-button">
+                        <span>Receptionists</span>
+                        <span class="arrow">&#10148;</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-12 col-md-6 col-lg-6">
             <div class="card news-updaters-card">
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title"><i class="fas fa-user-shield"></i> Admins</h5>

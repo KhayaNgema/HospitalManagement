@@ -65,8 +65,8 @@ namespace HospitalManagement.ViewModels
         [DisplayName("Additional notes")]
         public string? AdditionalNotes { get; set; }
 
-        [DisplayName("Prescribed medication")]
-        public ICollection<Medication>? PrescribedMedication { get; set; }
+        [Display(Name = "Pescribed medication")]
+        public ICollection<Medication> PrescribedMedication { get; set; }
 
         [DisplayName("Until date")]
         public DateTime? UntilDate { get; set; }

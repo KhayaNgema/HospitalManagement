@@ -17,19 +17,25 @@
 
 <div class="center-content">
     <div class="content">
-        <h3>Order Placed Successfully</h3>
-        <br />
-        <div>
-            <p>Your order was placed successfully. Thank you for shopping with us.</p>
-            <p>
-                Order number: <span id="orderNumber">@ViewBag.OrderNumber</span><br />
-                Order Status: <span id="orderStatus">@ViewBag.OrderStatus</span><br />
-                Amount paid: <span id="amountPaid">@ViewBag.AmountPaid</span><br />
-                <br />
-                Click here to download your proof of purchase
+        <div class="mt-4">
+            <p class="fw-semibold text-success" style="font-weight:bold; font-size:28px;">
+                Your order was placed successfully. Thank you for shopping with us.
             </p>
+
             <p>
-                <a href="@Url.Action("MyInvoices", "Invoices")">Proof of purchase</a>.
+                <strong>#ORDER:</strong> <span id="orderNumber" style="font-weight:bold; font-size:25px;">@ViewBag.OrderNumber</span><br />
+            </p>
+            <p class="fs-5">
+                <strong>Order Status:</strong> <span id="orderStatus" class="badge badge-status">@ViewBag.OrderStatus</span><br />
+                <strong>Total Order Amount:</strong> R <span id="amountPaid">@ViewBag.AmountPaid</span><br />
+            </p>
+            <br />
+            <p class="fs-5 mt-3">
+                Click here to download your proof of purchase:
+            </p>
+
+            <p class="fs-5">
+                <a class="fw-bold" href="@Url.Action("MyInvoices", "Invoices")">Proof of Purchase</a>
             </p>
         </div>
     </div>

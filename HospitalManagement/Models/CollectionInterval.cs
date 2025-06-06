@@ -5,15 +5,15 @@ namespace HospitalManagement.Models
     public enum CollectionInterval
     {
         [Display(Name = "Day(s)")]
-        Days,
+        Day,
 
-        [Display(Name = "Weeks(s)")]
-        Weeks,
+        [Display(Name = "Week(s)")]
+        Week,
 
-        [Display(Name = "Months(s)")]
-        Months,
+        [Display(Name = "Month(s)")]
+        Month,
 
-        [Display(Name = "Years(s)")]
-        Years
+        [Display(Name = "Year(s)")]
+        Year
     }
 }

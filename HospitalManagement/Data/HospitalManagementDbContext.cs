@@ -101,5 +101,7 @@ namespace HospitalManagement.Data
         public DbSet<HospitalManagement.Models.PatientBillServices> PatientBillServices { get; set; }
 
         public DbSet<HospitalManagement.Models.MedicationPescription> MedicationPescription { get; set; }
+
+        public DbSet<HospitalManagement.Models.Receptionist> Receptionists { get; set; }
     }
 }

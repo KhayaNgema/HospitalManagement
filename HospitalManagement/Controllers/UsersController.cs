@@ -40,6 +40,14 @@ namespace HospitalManagement.Controllers
             return View(doctors);
         }
 
+        public async Task<IActionResult> Receptionists()
+        {
+            var receptionists = await _context.Receptionists
+                .ToListAsync();
+
+            return View(receptionists);
+        }
+
         public async Task<IActionResult> KitchenStaff()
         {
             var kitchenStaff = await _context.KitchenStaff

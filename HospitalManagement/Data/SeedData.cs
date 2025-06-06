@@ -22,7 +22,9 @@ public static class SeedData
                 "Doctor", 
                 "Paramedic",
                 "Pharmacist",
-                "Kitchen Staff"};
+                "Kitchen Staff",
+                "Receptionist"
+            };
 
 
             foreach (var roleName in roleNames)

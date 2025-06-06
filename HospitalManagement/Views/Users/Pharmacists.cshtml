@@ -75,13 +75,13 @@
                                 <td>@doctor.Email</td>
                                 <td>@doctor.PhoneNumber</td>
                                 <td>@doctor.Department</td>
-                                @if (User.IsInRole("System Administrator"))
-                                {
-                                    <td>@doctor.FirstName @doctor.LastName</td>
-                                    <td>@doctor.CreatedDateTime.ToString("yyyy/MM/dd HH:mm")</td>
-                                    <td>@doctor.FirstName @doctor.LastName</td>
-                                    <td>@doctor.ModifiedDateTime.ToString("yyyy/MM/dd HH:mm")</td>
-                                }
+                            @if (User.IsInRole("System Administrator"))
+                            {
+                                <td>@doctor.CreatedBy</td>
+                                <td>@doctor.CreatedDateTime.ToString("yyyy/MM/dd HH:mm")</td>
+                                <td>@doctor.ModifiedBy</td>
+                                <td>@doctor.ModifiedDateTime.ToString("yyyy/MM/dd HH:mm")</td>
+                            }
                             </tr>
                         }
                     </tbody>

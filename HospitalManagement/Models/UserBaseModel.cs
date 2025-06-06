@@ -34,15 +34,8 @@ namespace HospitalManagement.Models
         [StringLength(10, ErrorMessage = "Gender cannot exceed 10 characters.")]
         public string? Gender { get; set; }
 
-        [Required(ErrorMessage = "Phone number is required.")]
-        [Phone(ErrorMessage = "Invalid phone number format.")]
-        public string PhoneNumber { get; set; }
-
         [Phone(ErrorMessage = "Invalid alternate phone number format.")]
         public string? AlternatePhoneNumber { get; set; }
-
-        [EmailAddress(ErrorMessage = "Invalid email address.")]
-        public string? Email { get; set; }
 
         [StringLength(200, ErrorMessage = "Address cannot exceed 200 characters.")]
         public string? Address { get; set; }

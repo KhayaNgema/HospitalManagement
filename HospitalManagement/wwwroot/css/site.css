@@ -3,6 +3,87 @@ html, body {
     width: 100%;
 }
 
+.receipt {
+        font-family: 'Courier New', monospace;
+        max-width: 100%;
+        margin: auto;
+        border: 1px dashed #aaa;
+        background: #fff;
+        font-size: 18px; 
+    }
+
+    .receipt-table {
+        overflow-x: auto;
+    }
+
+    .receipt-table table {
+        white-space: nowrap;
+        font-size: 18px; 
+    }
+
+    .receipt-table th,
+    .receipt-table td {
+        padding: 8px 16px; 
+        vertical-align: middle;
+    }
+
+    .receipt-table td {
+        font-weight: 500;
+    }
+
+    .text-success {
+        font-family: inherit;
+        font-size: 20px; /
+    }
+
+    .btn-primary {
+        font-size: 18px;
+        padding: 12px 0;
+    }
+
+.toggle-icon {
+    top: 65%; 
+    right: 1rem;
+    transform: translateY(-50%);
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #6c757d;
+    position: absolute;
+}
+
+    .toggle-icon:hover {
+        color: #48AAAD;
+    }
+
+.bill-summary-box {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    max-width: 250px;
+    border: 1px solid #ddd;
+    background-color: #fff;
+    padding: 16px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+.qr-code-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.qr-code-box {
+    display: inline-block;
+}
+
+.details-list dt,
+.details-list dd {
+    margin-bottom: 0.5rem;
+}
+
 .container {
     width: 100%;
 }

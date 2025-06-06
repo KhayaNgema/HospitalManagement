@@ -41,7 +41,7 @@ namespace HospitalManagement.Controllers
                 else
                 {
                     ViewBag.ActiveTab = string.IsNullOrEmpty(tab) ? "sportnews" : tab;
-                    return RedirectToAction("Dashboard");
+                    return RedirectToAction("Home");
                 }
             }
             else
@@ -51,7 +51,7 @@ namespace HospitalManagement.Controllers
             }
         }
 
-        public async Task<IActionResult> Dashboard()
+        public async Task<IActionResult> Home()
         {
             if (!User.Identity.IsAuthenticated)
             {
@@ -92,10 +92,15 @@ namespace HospitalManagement.Controllers
             {
                 return View("PharmacistDashboard");
             }
+            else if (roles.Contains("Receptionist"))
+            {
+                return View("ReceptionistDashboard");
+            }
             else
             {
                 var patientAdmission = await _context.Admissions
-                    .Where(a => a.PatientId == user.Id)
+                    .Where(a => a.PatientId == user.Id &&
+                    a.PatientStatus == PatientStatus.Admitted)
                     .OrderByDescending(a => a.AdmissionDate)
                     .Include(a => a.Patient)
                     .FirstOrDefaultAsync();

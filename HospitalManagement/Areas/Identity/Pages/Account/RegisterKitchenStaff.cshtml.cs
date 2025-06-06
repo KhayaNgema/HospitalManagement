@@ -160,7 +160,7 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
                     return Page();
                 }
 
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var user = await _userManager.GetUserAsync(User);
 
                 var doctor = new KitchenStaff
                 {
@@ -169,9 +169,9 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
                     DateOfBirth = Input.DateOfBirth,
                     Email = Input.Email,
                     PhoneNumber = Input.PhoneNumber,
-                    CreatedBy = userId,
+                    CreatedBy = $"{user.FirstName} {user.LastName}",
                     CreatedDateTime = DateTime.Now,
-                    ModifiedBy = userId,
+                    ModifiedBy = $"{user.FirstName} {user.LastName}",
                     ModifiedDateTime = DateTime.Now,
                     IsActive = true,
                     IsSuspended = false,
@@ -228,7 +228,6 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
 
                     BackgroundJob.Enqueue(() => _emailService.SendEmailAsync(doctor.Email, "Confirm Your Email Address", emailConfirmationEmailBody, "Diski 360"));
 
-                    await _activityLogger.Log($"Added {Input.FirstName} {Input.LastName} as MediCare kitchen staff", userId);
 
                     TempData["Message"] = $"{doctor.FirstName} {doctor.LastName}  has been successfully added as your new kitchen staff";
                     return RedirectToAction("Doctors", "Users");

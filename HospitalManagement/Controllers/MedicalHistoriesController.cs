@@ -163,30 +163,7 @@ namespace HospitalManagement.Controllers
                             var medicationEntity = await _context.Medications
                                 .FirstOrDefaultAsync(m => m.MedicationId == med.MedicationId);
 
-                            if (medicationEntity != null && admission != null)
-                            {
-                                var newBillService = new PatientBillServices
-                                {
-                                    AdmissionId = admission.AdmissionId,
-                                    BookingId = viewModel.BookingId,
-                                    CreatedAt = DateTime.Now,
-                                    UpdatedAt = DateTime.Now,
-                                    PatientBillId = patientBill.BillId,
-                                    ReferenceNumber = "@HO-WARD-TRT",
-                                    ServiceName = medicationEntity.MedicationName ?? "Prescribed Medication",
-                                    ServiceType = "Medication",
-                                    Subtotal = medicationEntity.Price,
-                                };
-
-                                _context.Add(newBillService);
-
-                                patientBill.Services.Add(newBillService); 
-                                patientBill.PayableTotalAmount += newBillService.Subtotal;
-                                _context.Update(patientBill);
-                                await _context.SaveChangesAsync();
-
-                            }
-                            else if(medicationEntity != null && booking != null)
+                            if(medicationEntity != null && booking != null)
                             {
                                 var newBillService = new PatientBillServices
                                 {
@@ -251,7 +228,7 @@ namespace HospitalManagement.Controllers
                         }
                     }
 
-                    _context.MedicationPescription.Add(medicationPescription);
+                    _context.Add(medicationPescription);
                     await _context.SaveChangesAsync();
 
                     medicationPescription.QrCodeImage = _qrCodeService.GenerateQrCode(medicationPescription.AccessCode);

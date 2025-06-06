@@ -125,11 +125,7 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
 
             if (ModelState.IsValid)
             {
-                var isEmail = new EmailAddressAttribute().IsValid(Input.Email);
-
-                var user = isEmail ?
-                            await _userManager.FindByEmailAsync(Input.Email) :
-                            await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == Input.Email);
+                var user = await _userManager.FindByEmailAsync(Input.Email);
 
                 if (user != null)
                 {
@@ -151,17 +147,16 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
                     }
                     else
                     {
+                        var result = await _signInManager.PasswordSignInAsync(user.UserName, Input.Password, Input.RememberMe, lockoutOnFailure: false);
 
-                            var result = await _signInManager.PasswordSignInAsync(user.UserName, Input.Password, Input.RememberMe, lockoutOnFailure: false);
-
-                            if (result.Succeeded)
-                            {
-                                return LocalRedirect(returnUrl);
-                            }
-                            else
-                            {
-                                ModelState.AddModelError(string.Empty, "Incorrect email or phone number or password.");
-                            }
+                        if (result.Succeeded)
+                        {
+                            return LocalRedirect(returnUrl);
+                        }
+                        else
+                        {
+                            ModelState.AddModelError(string.Empty, "Incorrect email or password.");
+                        }
                     }
                 }
                 else

@@ -3,6 +3,7 @@ using HospitalManagement.Interfaces;
 using HospitalManagement.Models;
 using HospitalManagement.Services;
 using HospitalManagement.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -51,6 +52,29 @@ namespace HospitalManagement.Controllers
             _context = db;
             _activityLogger = activityLogger;
         }
+
+
+
+        [HttpGet]
+        public async Task<IActionResult> CollectMedication()
+        {
+            var user = await _userManager.GetUserAsync(User);
+
+            var medications = await _context.MedicationPescription
+                .Include(mp => mp.PrescribedMedication)
+                .Include(mp => mp.Booking).ThenInclude(b => b.CreatedBy)
+                .Include(mp => mp.Admission).ThenInclude(a => a.Patient)
+                .Include(mp => mp.Admission).ThenInclude(a => a.Booking)
+                .Where(mp =>
+                    (mp.Admission != null && mp.Admission.Patient != null && mp.Admission.Patient.Id == user.Id) ||
+                    (mp.Booking != null && mp.Booking.CreatedBy != null && mp.Booking.CreatedBy.Id == user.Id)
+                )
+                .ToListAsync();
+
+
+            return View(medications);
+        }
+
 
         [HttpGet]
         public async Task<IActionResult> MedicationPescriptionRequests()
@@ -205,6 +229,35 @@ namespace HospitalManagement.Controllers
 
                 return View(viewModel);
             }
+        }
+
+
+        [Authorize(Roles = "Pharmacist, System Administrator")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateStatusRedirect(int prescriptionRequestId, MedicationPescriptionStatus status)
+        {
+            var user = await _userManager.GetUserAsync(User);
+
+            var medicationprescriptionRequest = await _context.MedicationPescription
+                .Where(mpr => mpr.MedicationPescriptionId == prescriptionRequestId)
+                .FirstOrDefaultAsync();
+
+
+            if (medicationprescriptionRequest != null)
+            {
+                medicationprescriptionRequest.Status = status;
+                medicationprescriptionRequest.LastUpdatedAt = DateTime.Now;
+                medicationprescriptionRequest.UpdatedById = user.Id;
+
+                _context.Update(medicationprescriptionRequest);
+                await _context.SaveChangesAsync();
+            }
+
+            TempData["Message"] = $"You have successfully updated the medication prescription request status to {status}.";
+
+            var encryptedId = _encryptionService.Encrypt(prescriptionRequestId);
+            return RedirectToAction(nameof(PescriptionRequest), new { medicationPescriptionId = encryptedId });
         }
     }
 }

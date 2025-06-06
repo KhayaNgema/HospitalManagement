@@ -119,9 +119,10 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
             [Display(Name = "Gender")]
             public string Gender { get; set; }
 
+            [Required]
             [Display(Name = "Phone number")]
             [Phone(ErrorMessage = "Invalid phone number format.")]
-            public string? PhoneNumber { get; set; }
+            public string PhoneNumber { get; set; }
 
             [Display(Name = "Alternate phone number")]
             [Phone(ErrorMessage = "Invalid alternate phone number format.")]

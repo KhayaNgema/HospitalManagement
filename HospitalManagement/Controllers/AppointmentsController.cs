@@ -45,7 +45,7 @@ namespace HospitalManagement.Controllers
 
         }
 
-        [Authorize(Roles = "Doctor, System Administrator")]
+        [Authorize(Roles = "Doctor, Receptionist, System Administrator")]
         [HttpGet]
         public async Task<IActionResult> Appointments()
         {
@@ -58,7 +58,7 @@ namespace HospitalManagement.Controllers
                 .Include(a => a.AssignedTo)
                 .Include(a => a.ModifiedBy);
 
-            if (userRoles.Contains("System Administrator"))
+            if (userRoles.Contains("System Administrator") || userRoles.Contains("Receptionist"))
             {
                 var allAppointments = await query
                     .Where(ap => ap.Status == BookingStatus.Awaiting ||
@@ -294,6 +294,21 @@ namespace HospitalManagement.Controllers
             try
             {
                 var user = await _userManager.GetUserAsync(User);
+
+/*                var activeBookings = await _context.Bookings
+                    .Where(ab => ab.CreatedById == user.Id &&
+                    ab.Status == BookingStatus.Assigned || ab.Status == BookingStatus.Awaiting &&
+                    ab.MedicalCondition == viewModel.MedicalCondition)
+                    .ToListAsync();
+
+                if(activeBookings != null)
+                {
+                    TempData["Message"] = $"You cannot book another appointment while you have incomplete appointments for the same medical condition. " +
+                        $"Please visit your appointments section to see all your active appointments and cancel them if you want to book a new appointment.";
+
+                    return View(viewModel);
+                }*/
+
                 var bookingReference = GenerateBookingReferenceNumber();
                 var deviceInfo = await _deviceInfoService.GetDeviceInfo();
 
@@ -577,6 +592,7 @@ namespace HospitalManagement.Controllers
         public async Task<IActionResult> UpdateStatusRedirect(int appointmentId, BookingStatus status, IFormFile XRayImages)
         {
             var user = await _userManager.GetUserAsync(User);
+
             var xrayAppointment = await _context.Bookings
                 .OfType<X_RayAppointment>()
                 .Include(b => b.Patient)
@@ -627,7 +643,6 @@ namespace HospitalManagement.Controllers
             var encryptedBookingId = _encryptionService.Encrypt(appointmentId);
             return RedirectToAction(nameof(AppointmentDetails), new { appointmentId = encryptedBookingId });
         }
-
 
 
         private string GenerateBookingReferenceNumber()

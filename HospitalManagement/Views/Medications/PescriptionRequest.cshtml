@@ -21,7 +21,7 @@
     var encryptedAppointmentId = encryptionService.Encrypt(Model.PescriptionRequestId);
 }
 
-<a asp-controller="Medications" asp-action="MedicationPescriptionRequests" class="text-decoration-none d-inline-flex align-items-center back-link mt-4 ms-4">
+<a asp-controller="Medications" asp-action="UpdateStatus" class="text-decoration-none d-inline-flex align-items-center back-link mt-4 ms-4">
     <i class="bi bi-chevron-left me-1"></i> Medication Prescription Requests
 </a>
 
@@ -119,7 +119,7 @@
 
                     <div class="col-md-5">
                         <label class="fw-semibold text-muted">Collect until</label>
-                        <div class="info-box">@((Model.CollectUntilDate.HasValue ? Model.CollectUntilDate.Value.ToString("yyyy-MM-dd") : "N/A"))</div>
+                        <div class="info-box">@((Model.CollectUntilDate.HasValue ? Model.CollectUntilDate.Value.ToString("dd/MM/yyy") : "N/A"))</div>
                     </div>
                 </div>
                 <div class="row mb-3">
@@ -127,7 +127,7 @@
                         <label class="fw-semibold text-muted">Last Collection Date</label>
                         <div class="info-box">
                             @(Model.LastCollectionDate.HasValue
-                                    ? Model.LastCollectionDate.Value.ToString("yyyy-MM-dd")
+                                    ? Model.LastCollectionDate.Value.ToString("dd/MM/yyy")
                                     : "N/A")
                         </div>
                     </div>
@@ -135,7 +135,7 @@
                         <label class="fw-semibold text-muted">Next Collection Date</label>
                         <div class="info-box">
                             @(Model.NextCollectionDate.HasValue
-                                    ? Model.NextCollectionDate.Value.ToString("yyyy-MM-dd")
+                                ? Model.NextCollectionDate.Value.ToString("dd/MM/yyy")
                                     : "N/A")
                         </div>
                     </div>

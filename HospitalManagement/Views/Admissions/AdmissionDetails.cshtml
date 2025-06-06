@@ -20,6 +20,10 @@
     Layout = "~/Views/Shared/_PagesLayout.cshtml";
 
     var encryptedPatientId = encryptionService.Encrypt(Model.PatientId);
+
+    var encryptedAdmissionId = encryptionService.Encrypt(Model.AdmissionId);
+
+    var prescribedList = (Model.PrescribedMedication ?? new List<Medication>()).ToList();
 }
 
 
@@ -27,7 +31,8 @@
     <i class="bi bi-chevron-left me-2 fs-5"></i><span class="fw-semibold">Back to Patients</span>
 </a>
 
-<form asp-controller="Admissions" asp-action="SubmitAdmission" method="post">
+<form asp-action="DischargePatient" asp-controller="Admissions" method="post" asp-route-admissionId="@encryptedAdmissionId">
+    @Html.AntiForgeryToken()
     <input type="hidden" asp-for="PatientId" />
     <input type="hidden" asp-for="AdmissionId" />
 
@@ -163,6 +168,12 @@
                         </div>
                     </div>
                 </div>
+                <div class="row g-4 mb-4">
+                    <label class="fw-semibold text-muted">Additional Notes</label>
+                    <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                        @(string.IsNullOrWhiteSpace(Model.AdditionalNotes) ? "N/A" : Model.AdditionalNotes)
+                    </div>
+                </div>
 
                 <div id="actionButtons" style="display: flex; justify-content: flex-end; margin-top: 3rem; gap: 1rem; visibility: visible;">
                     <button type="submit" style="background-color: #198754; color: white; padding: 0.375rem 0.75rem; font-size: 1rem; border: none; border-radius: 0.25rem; align-self: center; cursor: pointer;">
@@ -210,7 +221,13 @@
                             <div id="medicationsContainer" class="border rounded py-2 px-3 shadow-sm mt-3" style="min-height: 100px; background-color: #f9f9f9;">
                             </div>
 
-                            <input type="hidden" id="PrescribedMedicationSerialized" name="PrescribedMedicationSerialized" />
+                            <div id="hiddenInputsContainer">
+                                @for (int i = 0; i < prescribedList.Count; i++)
+                                {
+                                    <input type="hidden" name="PrescribedMedication[@i].MedicationId" value="@prescribedList[i].MedicationId" />
+                                    <input type="hidden" name="PrescribedMedication[@i].MedicationName" value="@prescribedList[i].MedicationName" />
+                                }
+                            </div>
                         </div>
                     </div>
 
@@ -269,7 +286,7 @@
         const dropdown = document.getElementById('categoryDropdown');
         const addBtn = document.getElementById('addMedicationBtn');
         const container = document.getElementById('medicationsContainer');
-        const hiddenInput = document.getElementById('PrescribedMedicationSerialized');
+        const hiddenInputsContainer = document.getElementById('hiddenInputsContainer');
 
         const actionButtons = document.getElementById('actionButtons');
         const dischargeToggleBtn = document.getElementById('dischargeToggleBtn');
@@ -279,8 +296,23 @@
 
         let selectedMedications = [];
 
+        Array.from(hiddenInputsContainer.querySelectorAll('input[name^="PrescribedMedication"]'))
+            .forEach((input, index, allInputs) => {
+                const match = input.name.match(/\[(\d+)\]\.MedicationId/);
+                if (match) {
+                    const medIndex = parseInt(match[1]);
+                    const id = input.value;
+                    const nameInput = allInputs.find(el => el.name === `PrescribedMedication[${medIndex}].MedicationName`);
+                    if (nameInput) {
+                        selectedMedications.push({ id: id, text: nameInput.value });
+                    }
+                }
+            });
+
         function renderMedications() {
             container.innerHTML = '';
+            hiddenInputsContainer.innerHTML = '';
+
             selectedMedications.forEach((med, index) => {
                 const medPill = document.createElement('span');
                 medPill.style.backgroundColor = '#48AAAD';
@@ -297,48 +329,56 @@
 
                 const removeBtn = document.createElement('button');
                 removeBtn.type = 'button';
-                removeBtn.setAttribute('aria-label', 'Remove');
-                removeBtn.style.cursor = 'pointer';
-                removeBtn.style.background = 'transparent';
+                removeBtn.textContent = '×';
+                removeBtn.style.marginLeft = '0.5rem';
+                removeBtn.style.background = 'none';
                 removeBtn.style.border = 'none';
                 removeBtn.style.color = 'white';
-                removeBtn.style.fontWeight = 'bold';
-                removeBtn.style.marginLeft = '0.5rem';
-                removeBtn.textContent = 'X';
+                removeBtn.style.cursor = 'pointer';
 
                 removeBtn.addEventListener('click', () => {
-                    selectedMedications.splice(index, 1);
+                    selectedMedications = selectedMedications.filter(m => m.id !== med.id);
                     renderMedications();
-                    updateHiddenInput();
                 });
 
                 medPill.appendChild(removeBtn);
                 container.appendChild(medPill);
+
+                const hiddenId = document.createElement('input');
+                hiddenId.type = 'hidden';
+                hiddenId.name = `PrescribedMedication[${index}].MedicationId`;
+                hiddenId.value = med.id;
+
+                const hiddenName = document.createElement('input');
+                hiddenName.type = 'hidden';
+                hiddenName.name = `PrescribedMedication[${index}].MedicationName`;
+                hiddenName.value = med.text;
+
+                hiddenInputsContainer.appendChild(hiddenId);
+                hiddenInputsContainer.appendChild(hiddenName);
             });
         }
 
-        function updateHiddenInput() {
-            hiddenInput.value = JSON.stringify(
-                selectedMedications.map(med => ({ id: med.id, name: med.text }))
-            );
-        }
-
         addBtn.addEventListener('click', () => {
-            const selectedValue = dropdown.value;
-            const selectedText = dropdown.options[dropdown.selectedIndex].text;
+            const selectedOption = dropdown.options[dropdown.selectedIndex];
+            const id = selectedOption.value;
+            const text = selectedOption.text;
 
-            if (!selectedValue || selectedMedications.some(med => med.id === selectedValue)) return;
+            if (!id) return;
 
-            selectedMedications.push({ id: selectedValue, text: selectedText });
+            if (selectedMedications.some(m => m.id === id)) {
+                alert("Medication already added.");
+                return;
+            }
+
+            selectedMedications.push({ id, text });
             renderMedications();
-            updateHiddenInput();
         });
 
         dischargeToggleBtn.addEventListener('click', () => {
-            const visible = dischargePatientFields.style.display === 'block';
-            dischargePatientFields.style.display = visible ? 'none' : 'block';
-            actionButtons.style.visibility = visible ? 'visible' : 'hidden';
-            confirmDischargeContainer.style.visibility = visible ? 'hidden' : 'visible';
+            dischargePatientFields.style.display = 'block';
+            actionButtons.style.visibility = 'hidden';
+            confirmDischargeContainer.style.visibility = 'visible';
         });
 
         cancelDischargeBtn.addEventListener('click', () => {
@@ -346,6 +386,7 @@
             actionButtons.style.visibility = 'visible';
             confirmDischargeContainer.style.visibility = 'hidden';
         });
-    });
 
+        renderMedications();
+    });
 </script>

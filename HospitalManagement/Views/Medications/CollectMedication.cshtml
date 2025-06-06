@@ -1,0 +1,151 @@
+﻿@model IEnumerable<HospitalManagement.Models.MedicationPescription>
+@inject HospitalManagement.Interfaces.IEncryptionService encryptionService
+
+@{
+    ViewData["Title"] = "Medication";
+    Layout = "~/Views/Shared/_PagesLayout.cshtml";
+}
+
+
+<head>
+    <style>
+        .btn-details,
+        .btn-cancel {
+            font-size: 1rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        .btn-details {
+            background-color: #48AAAD;
+            color: white;
+            border: none;
+            margin-right: 6px;
+        }
+
+            .btn-details:hover {
+                background-color: #3c979a;
+            }
+
+        .btn-cancel {
+            background-color: transparent;
+            border: 1px solid #ff4d4d;
+            color: #ff4d4d;
+        }
+
+            .btn-cancel:hover {
+                background-color: #ff4d4d;
+                color: white;
+            }
+
+        .filter-btn.active {
+            background-color: #022D36;
+            color: white;
+        }
+    </style>
+</head>
+
+<div class="container-fluid">
+    <div class="d-flex align-items-center justify-content-between px-3 py-3 mb-4" style="background-color:#48AAAD;">
+        <div class="d-flex align-items-center">
+            <a asp-controller="Home" asp-action="Index" class="text-white text-decoration-none d-inline-flex align-items-center back-link me-3">
+                <i class="bi bi-chevron-left me-1"></i> Back
+            </a>
+            <h2 class="mb-0 text-white">Your Medication To Collect</h2>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info text-center">
+            You have no appointments booked yet.
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="appointmentsContainer">
+            @foreach (var medication in Model)
+            {
+                var cancelModalId = $"cancelModal_{medication.MedicationPescriptionId}";
+                var detailsModalId = $"detailsModal_{medication.MedicationPescriptionId}";
+
+                <div class="col appointment-card-wrapper" data-status="@medication.Status">
+                    <div class="card appointment-card rounded-4 p-3 h-100">
+                        <div class="card-body pb-5">
+                            <h5 class="appointment-header mb-3">
+                                @(medication.Admission?.Booking?.MedicalCondition ?? medication.Booking?.MedicalCondition)
+                            </h5>
+                            <p class="mb-1"><strong>Collection Date:</strong> @medication.NextCollectionDate</p>
+                            <p class="mb-1"><strong>Status:</strong> <span class="badge badge-status">@medication.Status</span></p>
+                        </div>
+
+                        <div class="card-actions">
+                            <button class="btn btn-details" data-bs-toggle="modal" data-bs-target="#@detailsModalId">Details</button>
+                        </div>
+                    </div>
+
+                    <div class="modal fade" id="@detailsModalId" tabindex="-1" aria-labelledby="@($"{detailsModalId}_Label")" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered modal-lg">
+                            <div class="modal-content rounded-4">
+                                <div class="modal-header modal-header-custom">
+                                    <h5 class="modal-title" id="@($"{detailsModalId}_Label")">Medication Collection Details</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+
+                                <div class="modal-body d-flex flex-column align-items-start" style="font-size: 18px; padding:25px;">
+
+                                    @if (medication.QrCodeImage != null)
+                                    {
+                                        <div class="qr-code-wrapper mb-4 w-100 d-flex justify-content-center">
+                                            <div class="d-inline-block border rounded p-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                                                <img src="data:image/png;base64,@Convert.ToBase64String(medication.QrCodeImage)" alt="QR Code" style="width:200px; height:200px;" />
+                                                <label class="fw-semibold text-muted d-block mt-2 text-center">QR Code</label>
+                                            </div>
+                                        </div>
+                                    }
+
+                                    <dl class="row w-100">
+
+                                        <dt class="col-sm-3 fw-semibold">Medication:</dt>
+                                        <dd class="col-sm-9">
+                                            @if (medication.PrescribedMedication != null && medication.PrescribedMedication.Any())
+                                            {
+                                                <ul class="list-unstyled mb-0">
+                                                    @foreach (var med in medication.PrescribedMedication)
+                                                    {
+                                                        <li>- @med.MedicationName (D @med.DosageForm - S @med.Strength - @med.UnitOfMeasure)</li>
+                                                    }
+                                                </ul>
+                                            }
+                                            else
+                                            {
+                                                <span>N/A</span>
+                                            }
+                                        </dd>
+
+                                        <dt class="col-sm-3 fw-semibold">Collection Date:</dt>
+                                        <dd class="col-sm-9">@medication.NextCollectionDate?.ToString("dd MMM yyyy")</dd>
+
+                                        <dt class="col-sm-3 fw-semibold">Last Collected:</dt>
+                                        <dd class="col-sm-9">@medication.LastCollectionDate?.ToString("dd MMM yyyy")</dd>
+
+                                        <dt class="col-sm-3 fw-semibold">Status:</dt>
+                                        <dd class="col-sm-9"><span class="badge badge-status">@medication.Status</span></dd>
+
+                                        <dt class="col-sm-3 fw-semibold">Expiry Date:</dt>
+                                        <dd class="col-sm-9">@medication.ExpiresAt?.ToString("dd MMM yyyy")</dd>
+
+                                    </dl>
+                                </div>
+
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

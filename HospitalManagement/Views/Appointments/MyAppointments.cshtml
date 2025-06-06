@@ -153,23 +153,38 @@
                                     <h5 class="modal-title" id="@($"{detailsModalId}_Label")">Appointment Details</h5>
                                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
-                                <div class="modal-body">
-                                    <dl class="row">
-                                        <dt class="col-sm-4">Medical Condition</dt>
-                                        <dd class="col-sm-8">@booking.MedicalCondition</dd>
+                                <div class="modal-body d-flex flex-column align-items-center">
 
-                                        <dt class="col-sm-4">Date</dt>
-                                        <dd class="col-sm-8">@booking.BookForDate.ToString("MMMM dd, yyyy")</dd>
+                                    @if (booking.QrCodeImage != null)
+                                    {
+                                        <div class="qr-code-wrapper mb-4 text-center">
+                                            <div class="d-inline-block border rounded p-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                                                <img src="data:image/png;base64,@Convert.ToBase64String(booking.QrCodeImage)" alt="QR Code" style="width:200px; height:200px;" />
+                                                <label class="fw-semibold text-muted d-block mt-2 text-center">QR Code</label>
+                                            </div>
+                                        </div>
+                                    }
 
-                                        <dt class="col-sm-4">Time</dt>
-                                        <dd class="col-sm-8">@booking.BookForTimeSlot</dd>
+                                    <dl class="details-list row">
+                                        <dt class="col-sm-4 text-start">Medical Condition</dt>
+                                        <dd class="col-sm-8 text-start">@booking.MedicalCondition</dd>
 
-                                        <dt class="col-sm-4">Status</dt>
-                                        <dd class="col-sm-8">@booking.Status</dd>
+                                        <dt class="col-sm-4 text-start">Date</dt>
+                                        <dd class="col-sm-8 text-start">@booking.BookForDate.ToString("MMMM dd, yyyy")</dd>
 
-                                        <dt class="col-sm-4">Notes</dt>
-                                        <dd class="col-sm-8">@booking.AdditionalNotes</dd>
+                                        <dt class="col-sm-4 text-start">Time</dt>
+                                        <dd class="col-sm-8 text-start">@booking.BookForTimeSlot</dd>
+
+                                        <dt class="col-sm-4 text-start">Status</dt>
+                                        <dd class="col-sm-8 text-start">@booking.Status</dd>
+
+                                        <dt class="col-sm-4 text-start">Doctor</dt>
+                                        <dd class="col-sm-8 text-start">@booking.AssignedTo.FirstName @booking.AssignedTo.LastName</dd>
+
+                                        <dt class="col-sm-4 text-start">Notes</dt>
+                                        <dd class="col-sm-8 text-start">@booking.AdditionalNotes</dd>
                                     </dl>
+
                                 </div>
                                 <div class="modal-footer">
                                     <a class="btn btn-outline-primary" asp-controller="Appointments" asp-action="RescheduleAppointment" asp-route-id="@booking.BookingId">Reschedule</a>

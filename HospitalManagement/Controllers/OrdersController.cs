@@ -214,9 +214,12 @@ namespace Cafeteria.Controllers
                 _context.Add(order);
                 await _context.SaveChangesAsync();
 
-                TempData["Message"] = $"You have successfully placed your order.";
-
-                return RedirectToAction(nameof(OrderPlacedSuccessfully));
+                return RedirectToAction("OrderPlacedSuccessfully", new
+                {
+                    orderNumber = order.OrderNumber,
+                    orderStatus = order.Status.ToString(),
+                    amountPaid = order.TotalPrice
+                });
             }
             catch (Exception ex)
             {
@@ -481,32 +484,68 @@ namespace Cafeteria.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public JsonResult MoveToCollected(int orderId)
+        public async Task<JsonResult> MoveToCollected(int orderId)
         {
             try
             {
-                Debug.WriteLine("MoveToCollected action method started...");
-                Debug.WriteLine("Received orderId: " + orderId);
-
-                var order = _context.Orders
+                var order = await _context.Orders
                                .Include(o => o.OrderItems)
-                               .SingleOrDefault(o => o.OrderId == orderId);
-
-                if (order == null)
-                {
-                    Debug.WriteLine("Order not found.");
-                    return Json(new { success = false, message = "Order not found." });
-                }
-
-                Debug.WriteLine("Order found: " + order.OrderNumber);
+                               .SingleOrDefaultAsync(o => o.OrderId == orderId);
 
                 order.Status = OrderStatus.Collected;
                 order.LastUpdated = DateTime.Now;
                 _context.SaveChanges();
 
-                Debug.WriteLine("Order status updated to Collected.");
+                var patientBill = await _context.PatientBills
+                    .Where(pb => pb.PatientId == order.PatientId)
+                    .Include(pb => pb.Services)
+                    .Include(pb => pb.Patient)
+                    .FirstOrDefaultAsync();
 
-                return Json(new { success = true, message = "Order status updated to Collected." });
+                var admission = await _context.Admissions
+                    .Include(a => a.Booking)
+                    .Where(a => a.PatientId == order.PatientId &&
+                    a.PatientStatus == PatientStatus.Admitted)
+                    .FirstOrDefaultAsync();
+
+                foreach (var orderItem in order.OrderItems)
+                {
+                    var menuItem = _context.MenuItems
+                        .FirstOrDefault(m => m.ItemId == orderItem.MenuItemId);
+
+                    if (menuItem != null)
+                    {
+                        string shortCode = new string(menuItem.ItemName
+                            .Where(char.IsLetterOrDigit)
+                            .Take(3)
+                            .ToArray())
+                            .ToUpper();
+
+                        var newBillService = new PatientBillServices
+                        {
+                            AdmissionId = admission.AdmissionId,
+                            BookingId = admission.BookingId,
+                            CreatedAt = DateTime.Now,
+                            UpdatedAt = DateTime.Now,
+                            PatientBillId = patientBill.BillId,
+                            ReferenceNumber = $"HO-WARD-FOO-{shortCode}",
+                            ServiceName = menuItem.ItemName ?? "Ordered Meals",
+                            ServiceType = "Meals",
+                            Subtotal = menuItem.Price
+                        };
+
+                        _context.PatientBillServices.Add(newBillService);
+
+                        patientBill.Services.Add(newBillService);
+                        patientBill.PayableTotalAmount += newBillService.Subtotal;
+                    }
+                }
+
+
+                _context.Update(patientBill);
+                await _context.SaveChangesAsync();
+
+                return Json(new { success = true});
             }
             catch (Exception ex)
             {

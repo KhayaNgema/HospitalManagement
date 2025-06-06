@@ -17,16 +17,19 @@ namespace HospitalManagement.Controllers
         private readonly UserManager<UserBaseModel> _userManager;
         private readonly IEncryptionService _encryptionService;
         private readonly EmailService _emailService;
+        private readonly QrCodeService _qrCodeService;
 
         public AdmissionsController(HospitalManagementDbContext context,
             UserManager<UserBaseModel> userManager,
             IEncryptionService encryptionService,
+            QrCodeService qrCodeService,
             EmailService emailService)
         {
             _context = context;
             _userManager = userManager;
             _encryptionService = encryptionService;
             _emailService = emailService;
+            _qrCodeService = qrCodeService;
         }
 
         public async Task<IActionResult> MyPatientAdmissions()
@@ -108,7 +111,7 @@ namespace HospitalManagement.Controllers
                 BookingId = admission.BookingId,
                 Ward = admission.Ward,
                 AdditionalNotes = admission.AdditionalNotes,
-                Address = admission.AdditionalNotes,
+                Address = admission.Patient.Address,
                 AdmissionDate = admission.AdmissionDate,
                 AlternatePhoneNumber = admission.Patient.AlternatePhoneNumber,
                 CollectAfterCount = 0,
@@ -127,7 +130,8 @@ namespace HospitalManagement.Controllers
                 PatientStatus = admission.PatientStatus,
                 PhoneNumber = admission.Patient.PhoneNumber,
                 ProfilePicture = admission.Patient.ProfilePicture,
-                UntilDate = DateTime.Now
+                UntilDate = DateTime.Now,
+                RoomNumber = admission.RoomNumber,
             };
 
             var medication = await _context.Medications
@@ -172,7 +176,8 @@ namespace HospitalManagement.Controllers
                 Email = appointment.CreatedBy.Email,
                 IdNumber = appointment.CreatedBy.IdNumber,
                 PhoneNumber = appointment.CreatedBy.PhoneNumber,
-                ProfilePicture = appointment.CreatedBy.ProfilePicture
+                ProfilePicture = appointment.CreatedBy.ProfilePicture,
+                
             };
 
             return View(viewModel);
@@ -223,7 +228,7 @@ namespace HospitalManagement.Controllers
                     $"to {viewModel.Department} in the {viewModel.Ward} at rom {viewModel.RoomNumber} " +
                     $"on bed {viewModel.BedNumber}.";
 
-                return RedirectToAction(nameof(MyAdmissions));
+                return RedirectToAction(nameof(MyPatientAdmissions));
             }
             catch (Exception ex)
             {
@@ -263,25 +268,21 @@ namespace HospitalManagement.Controllers
             return View(viewModel);
         }
 
-
-        [Authorize(Roles = "Doctor, System Administrator")]
-        [HttpGet]
-        public async Task<IActionResult> DischargePatient()
-        {
-            return View();
-        }
-
-
         [Authorize(Roles = "Doctor, System Administrator")]
         [HttpPost]
-        public async Task<IActionResult> DischargePatient(AdmissionDetailsViewModel viewModel)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DischargePatient(AdmissionDetailsViewModel viewModel, string admissionId)
         {
             try
             {
                 var user = await _userManager.GetUserAsync(User);
 
+                var decryptedAdmissionId = _encryptionService.DecryptToInt(admissionId);
+
                 var admission = await _context.Admissions
-                    .Where(a => a.AdmissionId == viewModel.AdmissionId)
+                    .Where(a => a.AdmissionId == decryptedAdmissionId)
+                    .Include(a => a.Booking)
+                    .ThenInclude(a => a.Patient)
                     .FirstOrDefaultAsync();
 
                 admission.PatientStatus = PatientStatus.Discharged;
@@ -289,57 +290,118 @@ namespace HospitalManagement.Controllers
                 admission.AdditionalNotes = viewModel.AdditionalNotes;
                 admission.UpdatedById = user.Id;
 
-                DateTime baseDate = viewModel.LastCollectionDate ?? DateTime.Now;
-                int count = viewModel.CollectAfterCount ?? 0;
-
-                DateTime tentativeNextCollectionDate = baseDate;
-
-                switch (viewModel.CollectionInterval)
-                {
-                    case CollectionInterval.Days:
-                        tentativeNextCollectionDate = baseDate.AddDays(count);
-                        break;
-                    case CollectionInterval.Weeks:
-                        tentativeNextCollectionDate = baseDate.AddDays(count * 7);
-                        break;
-                    case CollectionInterval.Months:
-                        tentativeNextCollectionDate = baseDate.AddMonths(count);
-                        break;
-                    case CollectionInterval.Years:
-                        tentativeNextCollectionDate = baseDate.AddYears(count);
-                        break;
-                }
-
-                if (viewModel.UntilDate.HasValue && tentativeNextCollectionDate > viewModel.UntilDate.Value)
-                {
-                    tentativeNextCollectionDate = viewModel.UntilDate.Value;
-                }
-
-
-                DateTime finalNextCollectionDate = (viewModel.UntilDate.HasValue && tentativeNextCollectionDate > viewModel.UntilDate.Value)
-                    ? viewModel.UntilDate.Value
-                    : tentativeNextCollectionDate;
-
-                var medicationPescription = new MedicationPescription
-                {
-                    AdditionalNotes = viewModel.AdditionalNotes,
-                    AdmissionId = viewModel.AdmissionId,
-                    CollectAfterCount = viewModel.CollectAfterCount,
-                    CreatedAt = DateTime.Now,
-                    LastUpdatedAt = DateTime.Now,
-                    CollectionInterval = viewModel.CollectionInterval,
-                    CreatedById = user.Id,
-                    HasDoneCollecting = false,
-                    NextCollectionDate = finalNextCollectionDate,
-                    PrescribedMedication = viewModel.PrescribedMedication,
-                    PrescriptionType = viewModel.PrescriptionType,
-                    UpdatedById = user.Id
-                };
-
-
                 _context.Update(admission);
-                _context.Add(medicationPescription);
                 await _context.SaveChangesAsync();
+
+                if (admission != null)
+                {
+                    var patientBill = await _context.PatientBills
+                        .Where(pb => pb.PatientId == admission.PatientId)
+                        .Include(pb => pb.Services)
+                        .Include(pb => pb.Patient)
+                        .FirstOrDefaultAsync();
+
+                    if (viewModel.PrescribedMedication != null && viewModel.PrescribedMedication.Any())
+                    {
+                        DateTime baseDate = viewModel.LastCollectionDate ?? DateTime.Now;
+                        int count = viewModel.CollectAfterCount ?? 0;
+
+                        DateTime tentativeNextCollectionDate = baseDate;
+
+                        switch (viewModel.CollectionInterval)
+                        {
+                            case CollectionInterval.Day:
+                                tentativeNextCollectionDate = baseDate.AddDays(count);
+                                break;
+                            case CollectionInterval.Week:
+                                tentativeNextCollectionDate = baseDate.AddDays(count * 7);
+                                break;
+                            case CollectionInterval.Month:
+                                tentativeNextCollectionDate = baseDate.AddMonths(count);
+                                break;
+                            case CollectionInterval.Year:
+                                tentativeNextCollectionDate = baseDate.AddYears(count);
+                                break;
+                        }
+
+                        if (viewModel.UntilDate.HasValue && tentativeNextCollectionDate > viewModel.UntilDate.Value)
+                        {
+                            tentativeNextCollectionDate = viewModel.UntilDate.Value;
+                        }
+
+
+                        DateTime finalNextCollectionDate = (viewModel.UntilDate.HasValue && tentativeNextCollectionDate > viewModel.UntilDate.Value)
+                            ? viewModel.UntilDate.Value
+                            : tentativeNextCollectionDate;
+
+                        var medicationPescription = new MedicationPescription
+                        {
+                            AdditionalNotes = viewModel.AdditionalNotes,
+                            AdmissionId = decryptedAdmissionId,
+                            BookingId = admission.BookingId,
+                            CollectAfterCount = viewModel.CollectAfterCount,
+                            CreatedAt = DateTime.Now,
+                            LastUpdatedAt = DateTime.Now,
+                            CollectionInterval = viewModel.CollectionInterval,
+                            CreatedById = user.Id,
+                            HasDoneCollecting = false,
+                            NextCollectionDate = finalNextCollectionDate,
+                            PrescribedMedication = new List<Medication>(),
+                            PrescriptionType = viewModel.PrescriptionType,
+                            UpdatedById = user.Id,
+                            ExpiresAt = viewModel.UntilDate,
+                            AccessCode = admission.Booking.BookingReference,
+                            LastCollectionDate = baseDate,
+                        };
+
+                        _context.Add(medicationPescription);
+                        await _context.SaveChangesAsync();
+
+                        medicationPescription.QrCodeImage = _qrCodeService.GenerateQrCode(medicationPescription.AccessCode);
+                        _context.Update(medicationPescription);
+                        await _context.SaveChangesAsync();
+
+                        foreach (var med in viewModel.PrescribedMedication)
+                        {
+                            var medicationEntity = await _context.Medications
+                                .FirstOrDefaultAsync(m => m.MedicationId == med.MedicationId);
+
+                            if (medicationEntity != null)
+                            {
+                                medicationPescription.PrescribedMedication.Add(medicationEntity);
+                            }
+
+                            if (medicationEntity != null && admission != null)
+                            {
+                                var newBillService = new PatientBillServices
+                                {
+                                    AdmissionId = admission.AdmissionId,
+                                    BookingId = admission.BookingId,
+                                    CreatedAt = DateTime.Now,
+                                    UpdatedAt = DateTime.Now,
+                                    PatientBillId = patientBill.BillId,
+                                    ReferenceNumber = "@HO-WARD-TRT",
+                                    ServiceName = medicationEntity.MedicationName ?? "Prescribed Medication",
+                                    ServiceType = "Medication",
+                                    Subtotal = medicationEntity.Price,
+                                };
+
+                                _context.Add(newBillService);
+
+                                patientBill.Services.Add(newBillService);
+                                patientBill.PayableTotalAmount += newBillService.Subtotal;
+                                _context.Update(patientBill);
+                                await _context.SaveChangesAsync();
+
+                            }
+                        }
+                    }
+                }
+
+                TempData["Message"] = $"You have successfully discharged {viewModel.FirstName} {viewModel.LastName}";
+
+
+                return RedirectToAction(nameof(MyPatientAdmissions));
             }
             catch (Exception ex)
             {

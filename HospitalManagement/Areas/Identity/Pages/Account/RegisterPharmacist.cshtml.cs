@@ -181,7 +181,7 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
                     return Page();
                 }
 
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var user = await _userManager.GetUserAsync(User);
 
                 var doctor = new Pharmacist
                 {
@@ -190,9 +190,9 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
                     DateOfBirth = Input.DateOfBirth,
                     Email = Input.Email,
                     PhoneNumber = Input.PhoneNumber,
-                    CreatedBy = userId,
+                    CreatedBy = $"{user.FirstName} {user.LastName}",
                     CreatedDateTime = DateTime.Now,
-                    ModifiedBy = userId,
+                    ModifiedBy = $"{user.FirstName} {user.LastName}",
                     ModifiedDateTime = DateTime.Now,
                     IsActive = true,
                     IsSuspended = false,

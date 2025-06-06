@@ -73,9 +73,9 @@
                             <td>@staff.PhoneNumber</td>
                             @if (User.IsInRole("System Administrator"))
                             {
-                                <td>@staff.FirstName @staff.LastName</td>
+                                <td>@staff.CreatedBy</td>
                                 <td>@staff.CreatedDateTime.ToString("yyyy/MM/dd HH:mm")</td>
-                                <td>@staff.FirstName @staff.LastName</td>
+                                <td>@staff.ModifiedBy</td>
                                 <td>@staff.ModifiedDateTime.ToString("yyyy/MM/dd HH:mm")</td>
                             }
                         </tr>
