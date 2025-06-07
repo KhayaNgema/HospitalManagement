@@ -1,12 +1,46 @@
 ﻿@model IEnumerable<HospitalManagement.Models.Admission>
 @inject HospitalManagement.Interfaces.IEncryptionService encryptionService
 
-
-
 @{
     ViewData["Title"] = "Admissions";
     Layout = "~/Views/Shared/_PagesLayout.cshtml";
 }
+
+<style>
+    .admission-card {
+        border: 1px solid #ccc;
+        border-left: 6px solid #48AAAD;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+        margin-bottom: 20px;
+        transition: transform 0.2s;
+        cursor: pointer;
+    }
+
+        .admission-card:hover {
+            background-color: #f9f9f9;
+            transform: translateY(-2px);
+        }
+
+    .admission-header {
+        color: #48AAAD;
+        padding: 10px 15px;
+        font-size: 20px;
+        font-weight: 600;
+        border-top-left-radius: 5px;
+        border-top-right-radius: 5px;
+    }
+
+    .admission-body {
+        padding: 15px;
+    }
+
+        .admission-body p {
+            margin-bottom: 8px;
+            color: #555;
+        }
+</style>
+
 <div class="container-fluid">
     <div class="d-flex align-items-center justify-content-between px-3 py-3 mb-4" style="background-color:#48AAAD;">
         <div class="d-flex align-items-center">
@@ -16,62 +50,47 @@
             <h2 class="mb-0 text-white">Your Admissions</h2>
         </div>
     </div>
-    <div class="d-flex justify-content-between align-items-center mb-4 px-3">
-        <div class="input-group w-50 me-2">
-            <input type="text" class="form-control" placeholder="Search by your name" id="qrSearchInput">
-        </div>
-    </div>
 
     @if (!Model.Any())
     {
         <div class="alert alert-info text-center">
-            You have not been addmitted at MediConnect.
+            You have not been admitted at MediConnect.
         </div>
     }
     else
     {
-        <div class="table-responsive">
-            <table class="table table-striped table-borderless" id="appointmentsTable">
-                <thead class="custom-thead">
-                    <tr>
-                        <th class="text-nowrap"><i class="fas fa-calendar-plus me-1"></i> Admission Date</th>
-                        <th class="text-nowrap"><i class="fas fa-calendar-minus me-1"></i> Discharge Date</th>
-                        <th class="text-nowrap"><i class="fas fa-stethoscope me-1"></i> Department</th>
-                        <th class="text-nowrap"><i class="fas fa-hospital me-1"></i> Ward</th>
-                        <th class="text-nowrap"><i class="fas fa-door-open me-1"></i> Room No.</th>
-                        <th class="text-nowrap"><i class="fas fa-bed me-1"></i> Bed No.</th>
-                        <th class="text-nowrap"><i class="fas fa-info-circle me-1"></i> Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var admission in Model)
-                    {
-                        var encryptedAdmissionId = encryptionService.Encrypt(admission.AdmissionId);
-
-                        <tr class="clickable-row ellipsis" data-id="@encryptedAdmissionId" style="cursor: pointer;">
-                            <td>@admission.AdmissionDate?.ToString("dd/MM/yyyy")</td>
-                            <td>@(admission.DischargeDate?.ToString("dd/MM/yyyy") ?? "N/A")</td>
-                            <td>@(admission.Department)</td>
-                            <td>@(admission.Ward)</td>
-                            <td>@(string.IsNullOrEmpty(admission.RoomNumber) ? "N/A" : admission.RoomNumber)</td>
-                            <td>@(string.IsNullOrEmpty(admission.BedNumber) ? "N/A" : admission.BedNumber)</td>
-                            <td>@(admission.PatientStatus)</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+        <div class="row">
+            @foreach (var admission in Model)
+            {
+                var encryptedId = encryptionService.Encrypt(admission.AdmissionId);
+                <div class="col-sm-12 col-md-6 col-lg-4">
+                    <div class="admission-card" data-id="@encryptedId">
+                        <div class="admission-header" style="font-weight:bold; font-size:24px;">
+                            @admission.AdmissionDate?.ToString("dd MMM yyyy")
+                        </div>
+                        <div class="admission-body">
+                            <p><strong>Discharge Date:</strong> @(admission.DischargeDate?.ToString("dd MMM yyyy") ?? "N/A")</p>
+                            <p><strong>Department/Ward:</strong> @admission.Department</p>
+                            <p><strong>Room No.:</strong> @(string.IsNullOrEmpty(admission.RoomNumber) ? "N/A" : admission.RoomNumber)</p>
+                            <p><strong>Bed No.:</strong> @(string.IsNullOrEmpty(admission.BedNumber) ? "N/A" : admission.BedNumber)</p>
+                            <p><strong>Status:</strong> @admission.PatientStatus</p>
+                        </div>
+                    </div>
+                </div>
+            }
         </div>
     }
 </div>
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const redirectUrl = '@Url.Action("AdmissionDetails", "Admissions")';
 
-        document.querySelectorAll('#appointmentsTable .clickable-row').forEach(row => {
-            row.addEventListener('click', function () {
-                const encryptedAdmissionId = this.getAttribute('data-id');
-                if (encryptedAdmissionId && redirectUrl) {
-                    window.location.href = redirectUrl + '?admissionId=' + encodeURIComponent(encryptedAdmissionId);
+        document.querySelectorAll('.admission-card').forEach(card => {
+            card.addEventListener('click', function () {
+                const admissionId = this.getAttribute('data-id');
+                if (admissionId && redirectUrl) {
+                    window.location.href = redirectUrl + '?admissionId=' + encodeURIComponent(admissionId);
                 }
             });
         });
@@ -82,4 +101,3 @@
         }, 7000);
     });
 </script>
-

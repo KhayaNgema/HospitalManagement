@@ -98,31 +98,34 @@
 
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <label asp-for="Ward"></label>
-                        <select asp-for="Ward" class="form-select" asp-items="Html.GetEnumSelectList<Ward>()">
-                            <option value="">-- Select Ward --</option>
-                        </select>
-                        <span asp-validation-for="Ward" class="text-danger small"></span>
-                    </div>
-                    <div class="col-md-3">
-                        <label asp-for="RoomNumber" class="form-label fw-semibold text-muted"></label>
-                        <input asp-for="RoomNumber" class="form-control" />
-                        <span asp-validation-for="RoomNumber" class="text-danger"></span>
-                    </div>
-                    <div class="col-md-3">
-                        <label asp-for="BedNumber" class="form-label fw-semibold text-muted"></label>
-                        <input asp-for="BedNumber" class="form-control" />
-                        <span asp-validation-for="BedNumber" class="text-danger"></span>
-                    </div>
-                </div>
-
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label asp-for="Department"></label>
+                        <label>Department/Ward</label>
                         <select asp-for="Department" class="form-select" asp-items="Html.GetEnumSelectList<Department>()">
-                            <option value="">-- Select Department--</option>
+                            <option value="">-- Select Department/Ward--</option>
                         </select>
                         <span asp-validation-for="Department" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="roomsDropdown">Room</label>
+                        <select asp-for="RoomNumber" id="roomsDropdown" class="form-select">
+                            <option value="">-- Select Room --</option>
+                            @foreach (var room in ViewBag.Rooms)
+                            {
+                                <option value="@room.RoomNumber"
+                                        data-department="@((int)room.Department)"
+                                        data-beds="@room.NoOfBeds">
+                                    @room.RoomNumber
+                                </option>
+                            }
+                        </select>
+                        <span asp-validation-for="RoomNumber" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="bedDropdown">Bed Number</label>
+                        <select asp-for="BedNumber" id="bedDropdown" class="form-select">
+                            <option value="">-- Select Bed --</option>
+                        </select>
+                        <span asp-validation-for="BedNumber" class="text-danger small"></span>
                     </div>
                 </div>
 
@@ -139,7 +142,49 @@
         </div>
     </div>
 </div>
-
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
+    <script>
+        const allRoomOptions = Array.from(document.querySelectorAll('#roomsDropdown option')).slice(1); // Skip placeholder
+        const departmentSelect = document.querySelector('[name="Department"]');
+        const roomsDropdown = document.getElementById('roomsDropdown');
+        const bedDropdown = document.getElementById('bedDropdown');
+
+        function filterRoomsByDepartment(selectedDepartment) {
+            roomsDropdown.innerHTML = '<option value="">-- Select Room --</option>';
+            bedDropdown.innerHTML = '<option value="">-- Select Bed --</option>';
+
+            allRoomOptions.forEach(option => {
+                if (option.getAttribute('data-department') === selectedDepartment) {
+                    roomsDropdown.appendChild(option.cloneNode(true));
+                }
+            });
+        }
+
+        departmentSelect.addEventListener('change', function () {
+            filterRoomsByDepartment(this.value);
+        });
+
+        roomsDropdown.addEventListener('change', function () {
+            const selectedOption = this.options[this.selectedIndex];
+            const numberOfBeds = parseInt(selectedOption.getAttribute('data-beds'));
+
+            bedDropdown.innerHTML = '<option value="">-- Select Bed --</option>';
+            if (!isNaN(numberOfBeds)) {
+                for (let i = 1; i <= numberOfBeds; i++) {
+                    const option = document.createElement('option');
+                    option.value = i;
+                    option.text = `Bed ${i}`;
+                    bedDropdown.appendChild(option);
+                }
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const initialDepartment = departmentSelect.value;
+            if (initialDepartment) {
+                filterRoomsByDepartment(initialDepartment);
+            }
+        });
+    </script>
 }
+

@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Hangfire;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Cafeteria.Controllers
 {
@@ -212,13 +213,16 @@ namespace Cafeteria.Controllers
                 };
 
                 _context.Add(order);
+                _context.RemoveRange(cartItems);
+
                 await _context.SaveChangesAsync();
 
                 return RedirectToAction("OrderPlacedSuccessfully", new
                 {
                     orderNumber = order.OrderNumber,
                     orderStatus = order.Status.ToString(),
-                    amountPaid = order.TotalPrice
+                    amountPaid = order.TotalPrice,
+                    orderId = order.OrderId,
                 });
             }
             catch (Exception ex)
@@ -236,186 +240,31 @@ namespace Cafeteria.Controllers
             }
         }
 
-
-        public async Task<IActionResult> PayFastReturn(int paymentId)
+        [Authorize]
+        public async Task<IActionResult> ProofOfPurchase(int orderId)
         {
-            try
-            {
-                var cartItems = await GetCartItemsForCurrentUserAsync();
+            var user = await _userManager.GetUserAsync(User);
 
-                var totalPrice = _orderCalculationService.CalculateTotalPrice(cartItems);
+            var order = await _context.Orders
+                .Include(o => o.OrderItems)
+                .ThenInclude(oi => oi.MenuItem)
+                .FirstOrDefaultAsync(o => o.OrderId == orderId && o.PatientId == user.Id);
 
-                var payment = _context.Payments.FirstOrDefault(p => p.PaymentId == paymentId);
+            if (order == null)
+                return NotFound();
 
-                if (payment == null || payment.AmountPaid != totalPrice || !_paymentService.ValidatePayment(payment))
-                {
-                    return Json(new { success = false, message = "Invalid or failed payment." });
-                }
-
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-                if (string.IsNullOrEmpty(userId))
-                {
-                    return Json(new { success = false, message = "User not authenticated." });
-                }
-
-                var order = new Order
-                {
-                    OrderNumber = _orderNumberGenerator.GenerateOrderNumber(),
-                    OrderDate = DateTime.Now,
-                    TotalPrice = totalPrice,
-                    PatientId = userId,
-                    LastUpdated = DateTime.Now,
-                    OrderItems = cartItems.Select(ci => new OrderItem
-                    {
-                        MenuItemId = ci.MenuItemId,
-                        MenuItemName = ci.MenuItem.ItemName,
-                        Quantity = ci.Quantity,
-                        SubTotal = ci.Subtotal,
-                        MenuItemPrice = ci.MenuItem.Price
-                    }).ToList(),
-                    IsPaid = true,
-                    Status = OrderStatus.Pending
-                };
-
-                _context.Add(order);
-
-                /*                var invoice = new Invoice
-                                {
-                                    OrderId = order.OrderId,
-                                    PaymentId = payment.PaymentId,
-                                    UserId = userId,
-                                    InvoiceTimeStamp = DateTime.Now,
-                                    Items = order.OrderItems.ToList(),
-                                    TotalAmount = order.TotalPrice
-                                };
-
-                                _db.Invoices.Add(invoice);*/
-                _context.CartItems.RemoveRange(cartItems);
-                await _context.SaveChangesAsync();
-
-                return RedirectToAction("OrderPlacedSuccessfully", new
-                {
-                    orderNumber = order.OrderNumber,
-                    orderStatus = order.Status.ToString(),
-                    amountPaid = order.TotalPrice
-                });
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error: " + ex.Message);
-                return Json(new { success = false, message = "Failed to process payment: " + ex.Message });
-            }
+            return PartialView("_ProofOfPurchasePartial", order);
         }
 
 
-        public async Task<IActionResult> PayFastReturn(int paymentId, string encryptedTransferId, decimal totalPrice)
-        {
-            try
-            {
-                var payment = await _context.Payments.FirstOrDefaultAsync(p => p.PaymentId == paymentId);
-
-                if (payment == null)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Payment with PaymentId: {paymentId} not found.");
-                    return Json(new { success = false, message = "Payment not found." });
-                }
-
-                decimal roundedAmountPaid = Math.Round(payment.AmountPaid, 2);
-                decimal roundedTotalPrice = Math.Round(totalPrice, 2);
-
-                if (Math.Abs(roundedAmountPaid - roundedTotalPrice) > 0.01m)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Amount mismatch: Payment AmountPaid = {roundedAmountPaid}, totalPrice = {roundedTotalPrice}");
-                    return Json(new { success = false, message = $"Invalid payment amount. AmountPaid: {roundedAmountPaid}, totalPrice: {roundedTotalPrice}" });
-                }
-
-                if (!_paymentService.ValidatePayment(payment))
-                {
-                    return Json(new { success = false, message = "Payment validation failed." });
-                }
-
-                var user = await _userManager.GetUserAsync(User);
-                if (user == null)
-                {
-                    System.Diagnostics.Debug.WriteLine("User not authenticated.");
-                    return Json(new { success = false, message = "User not authenticated." });
-                }
-
-                payment.Status = PaymentPaymentStatus.Successful;
-                payment.AmountPaid = roundedAmountPaid;
-
-
-                _context.Update(payment);
-                await _context.SaveChangesAsync();
-
-/*                var newInvoice = new Invoice
-                {
-                    PaymentId = payment.PaymentId,
-                    TransferId = playerTransfer.TransferId,
-                    InvoiceTimeStamp = DateTime.Now,
-                    CreatedById = user.Id,
-                    InvoiceNumber = GenerateInvoiceNumber(paymentId),
-                    IsEmailed = true,
-                    Transfer = playerTransfer
-                };*/
-
-                _context.Update(payment);
-                await _context.SaveChangesAsync();
-
-            /*    string emailBody = $@"
-            <p>Dear {playerTransfer.CustomerClub.ClubName} Management,</p>
-            <p>We are pleased to inform you that the player transfer of {playerTransfer.Player.FirstName} {playerTransfer.Player.LastName} has been successfully completed.</p>
-            <p>The proof of this transfer is available on your club's portal.</p>
-            <p>Transfer Details:</p>
-            <ul>
-                <li><strong>Player:</strong> {playerTransfer.Player.FirstName} {playerTransfer.Player.LastName}</li>
-                <li><strong>Transfer Amount:</strong> {payment.AmountPaid:C}</li>
-                <li><strong>From Club:</strong> {playerTransfer.SellerClub.ClubName}</li>
-                <li><strong>To Club:</strong> {playerTransfer.CustomerClub.ClubName}</li>
-            </ul>
-            <p>If you have any questions, feel free to contact us.</p>
-            <p>Best regards,</p>
-            <p>Diski 360 Team</p>
-        ";
-
-
-                BackgroundJob.Enqueue(() => _emailService.SendEmailAsync(user.Email, "Proof of Player Transfer", emailBody, "Diski 360"));*/
-                TempData["Message"] = $"You have successfully cleared your  bills.";
-
-                return RedirectToAction("MyBills", "Billings");
-            }
-            catch (Exception ex)
-            {
-                return Json(new
-                {
-                    success = false,
-                    message = "Failed to process payment: " + ex.Message,
-                    errorDetails = new
-                    {
-                        InnerException = ex.InnerException?.Message,
-                        StackTrace = ex.StackTrace
-                    }
-                });
-            }
-        }
-
-        public async Task<IActionResult> OrderPlacedSuccessfully(string orderNumber, string orderStatus, decimal amountPaid)
+        public async Task<IActionResult> OrderPlacedSuccessfully(string orderNumber, string orderStatus, decimal amountPaid, int orderId)
         {
             ViewBag.AmountPaid = amountPaid;
             ViewBag.OrderStatus = orderStatus;
             ViewBag.OrderNumber = orderNumber;
+            ViewBag.OrderId = orderId;
 
             return View();
-        }
-
-        private string GeneratePayFastPaymentUrl(int paymentId, decimal amount, string returnUrl, string cancelUrl)
-        {
-            string merchantId = "10033052";
-            string merchantKey = "708c7udni72oo";
-            string amountString = amount.ToString().Replace(',', '.');
-
-            return $"https://sandbox.payfast.co.za/eng/process?merchant_id={merchantId}&merchant_key={merchantKey}&return_url={returnUrl}&cancel_url={cancelUrl}&amount={amountString}&item_name=Order+Payment&payment_id={paymentId}";
         }
 
         public async Task<List<CartItem>> GetCartItemsForCurrentUserAsync()

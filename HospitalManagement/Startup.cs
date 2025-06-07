@@ -129,7 +129,8 @@ public class Startup
         services.AddScoped<IPaymentService, PayFastPaymentService>();
         services.AddHttpClient<DeviceInfoService>();
         services.AddHttpClient();
-
+        services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+        services.AddScoped<IViewRenderService, ViewRenderService>();
 
         services.AddLogging(logging =>
         {

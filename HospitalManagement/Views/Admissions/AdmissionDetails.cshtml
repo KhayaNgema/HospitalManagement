@@ -26,10 +26,18 @@
     var prescribedList = (Model.PrescribedMedication ?? new List<Medication>()).ToList();
 }
 
-
-<a asp-controller="Admissions" asp-action="MyPatientAdmissions" class="text-decoration-none d-inline-flex align-items-center mt-4 ms-4">
-    <i class="bi bi-chevron-left me-2 fs-5"></i><span class="fw-semibold">Back to Patients</span>
-</a>
+@if (User.IsInRole("System Administrator") || User.IsInRole("Doctor"))
+{
+    <a asp-controller="Admissions" asp-action="MyPatientAdmissions" class="text-decoration-none d-inline-flex align-items-center mt-4 ms-4">
+        <i class="bi bi-chevron-left me-2 fs-5"></i><span class="fw-semibold">Back to Patients</span>
+    </a>
+}
+else
+{
+    <a asp-controller="Admissions" asp-action="MyAdmissions" class="text-decoration-none d-inline-flex align-items-center mt-4 ms-4">
+        <i class="bi bi-chevron-left me-2 fs-5"></i><span class="fw-semibold">Back to your admissions</span>
+    </a>
+}
 
 <form asp-action="DischargePatient" asp-controller="Admissions" method="post" asp-route-admissionId="@encryptedAdmissionId">
     @Html.AntiForgeryToken()
@@ -39,85 +47,95 @@
     <div class="container my-3 px-4">
         <div class="card shadow-lg border-0" style="border-left: 6px solid #48AAAD; border-radius: 10px;">
             <div class="card-header text-white" style="background-color: #48AAAD;">
-                <h3 class="mb-0">Patient Admission Details</h3>
+                @if (User.IsInRole("System Administrator") || User.IsInRole("Doctor"))
+                {
+                    <h3 class="mb-0">Patient Admission Details</h3>
+                }
+                else
+                {
+                    <h3 class="mb-0">Your @Model.AdmissionDate?.ToString("ddd,dd MMM yyyy") Admission</h3>
+                }
             </div>
             <div class="card-body px-4 py-4">
-                <div class="w-100 mt-4 mb-3">
-                    <h3 class="px-3 py-2 bg-light" style="color:#48AAAD; border-left: 5px solid #48AAAD;">
-                        Patient Information
-                    </h3>
-                </div>
-                <div class="row g-4 mb-4">
-                    <div class="col-md-12 text-center">
-                        <img src="~/@Model.ProfilePicture" alt="Profile Picture" class="img-thumbnail rounded-circle" style="width: 120px; height: 120px; object-fit: cover;" />
+                @if (User.IsInRole("System Administrator") || User.IsInRole("Doctor"))
+                {
+                    <div class="w-100 mt-4 mb-3">
+                        <h3 class="px-3 py-2 bg-light" style="color:#48AAAD; border-left: 5px solid #48AAAD;">
+                            Patient Information
+                        </h3>
                     </div>
-                </div>
-                <div class="row g-4 mb-4">
-                    <div class="col-md-6">
-                        <label class="fw-semibold text-muted">First Name</label>
-                        <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
-                            @Model.FirstName
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-12 text-center">
+                            <img src="~/@Model.ProfilePicture" alt="Profile Picture" class="img-thumbnail rounded-circle" style="width: 120px; height: 120px; object-fit: cover;" />
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <label class="fw-semibold text-muted">Last Name</label>
-                        <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
-                            @Model.LastName
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6">
+                            <label class="fw-semibold text-muted">First Name</label>
+                            <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                                @Model.FirstName
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="fw-semibold text-muted">Last Name</label>
+                            <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                                @Model.LastName
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="row g-4 mb-4">
-                    <div class="col-md-6">
-                        <label class="fw-semibold text-muted">Date of Birth</label>
-                        <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
-                            @Model.DateOfBirth?.ToString("yyyy/MM/dd")
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6">
+                            <label class="fw-semibold text-muted">Date of Birth</label>
+                            <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                                @Model.DateOfBirth?.ToString("yyyy/MM/dd")
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="fw-semibold text-muted">Gender</label>
+                            <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                                @Model.Gender
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <label class="fw-semibold text-muted">Gender</label>
-                        <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
-                            @Model.Gender
-                        </div>
-                    </div>
-                </div>
 
-                <div class="row g-4 mb-4">
-                    <div class="col-md-6">
-                        <label class="fw-semibold text-muted">ID Number</label>
-                        <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
-                            @Model.IdNumber
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6">
+                            <label class="fw-semibold text-muted">ID Number</label>
+                            <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                                @Model.IdNumber
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="fw-semibold text-muted">Phone Number</label>
+                            <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                                @Model.PhoneNumber
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <label class="fw-semibold text-muted">Phone Number</label>
-                        <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
-                            @Model.PhoneNumber
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6">
+                            <label class="fw-semibold text-muted">Alternate Phone</label>
+                            <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                                @Model.AlternatePhoneNumber
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="fw-semibold text-muted">Email</label>
+                            <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                                @Model.Email
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="row g-4 mb-4">
-                    <div class="col-md-6">
-                        <label class="fw-semibold text-muted">Alternate Phone</label>
-                        <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
-                            @Model.AlternatePhoneNumber
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="fw-semibold text-muted">Email</label>
-                        <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
-                            @Model.Email
-                        </div>
-                    </div>
-                </div>
 
 
-                <div class="mb-4">
-                    <label class="fw-semibold text-muted">Address</label>
-                    <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
-                        @Model.Address
+                    <div class="mb-4">
+                        <label class="fw-semibold text-muted">Address</label>
+                        <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                            @Model.Address
+                        </div>
                     </div>
-                </div>
+                }
 
                 <div class="w-100 mt-4 mb-3">
                     <h3 class="px-3 py-2 bg-light" style="color:#48AAAD; border-left: 5px solid #48AAAD;">
@@ -141,12 +159,18 @@
 
                 <div class="row g-4 mb-4">
                     <div class="col-md-6">
+                        <label class="fw-semibold text-muted">Department</label>
+                        <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                            @GetEnumDisplayName(Model.Department)
+                        </div>
+                    </div>
+                    <div class="col-md-3">
                         <label class="fw-semibold text-muted">Room Number</label>
                         <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
                             @Model.RoomNumber
                         </div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-3">
                         <label class="fw-semibold text-muted">Bed Number</label>
                         <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
                             @Model.BedNumber
@@ -155,26 +179,14 @@
                 </div>
 
                 <div class="row g-4 mb-4">
-                    <div class="col-md-6">
-                        <label class="fw-semibold text-muted">Ward</label>
-                        <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
-                            @GetEnumDisplayName(Model.Ward)
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="fw-semibold text-muted">Department</label>
-                        <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
-                            @GetEnumDisplayName(Model.Department)
-                        </div>
-                    </div>
-                </div>
-                <div class="row g-4 mb-4">
                     <label class="fw-semibold text-muted">Additional Notes</label>
                     <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
                         @(string.IsNullOrWhiteSpace(Model.AdditionalNotes) ? "N/A" : Model.AdditionalNotes)
                     </div>
                 </div>
 
+                @if (User.IsInRole("System Administrator") || User.IsInRole("Doctor"))
+                {
                 <div id="actionButtons" style="display: flex; justify-content: flex-end; margin-top: 3rem; gap: 1rem; visibility: visible;">
                     <button type="submit" style="background-color: #198754; color: white; padding: 0.375rem 0.75rem; font-size: 1rem; border: none; border-radius: 0.25rem; align-self: center; cursor: pointer;">
                         <i class="fas fa-pen" style="margin-right: 0.5rem;"></i> Update Admission
@@ -189,94 +201,96 @@
                     </button>
                 </div>
 
-                <div id="dischargePatientFields" style="display:none;">
-                    <div class="w-100 mt-4 mb-3">
-                        <h3 class="px-3 py-2 bg-light" style="color:#48AAAD; border-left: 5px solid #48AAAD;">
-                            Medication prescription
-                        </h3>
-                    </div>
-                    <div class="row g-4 mb-4">
-                        <div class="col-md-6">
-                            <label for="categoryDropdown">Medication to prescribe</label>
-                            <div class="d-flex flex-nowrap gap-2 align-items-center">
-                                <select id="categoryDropdown" class="form-select" style="flex: 0 0 66.6667%; min-width: 0;">
-                                    <option value="">-- Select Medication --</option>
-                                    @foreach (var medication in ViewBag.Medications)
+
+                    <div id="dischargePatientFields" style="display:none;">
+                        <div class="w-100 mt-4 mb-3">
+                            <h3 class="px-3 py-2 bg-light" style="color:#48AAAD; border-left: 5px solid #48AAAD;">
+                                Medication prescription
+                            </h3>
+                        </div>
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-6">
+                                <label for="categoryDropdown">Medication to prescribe</label>
+                                <div class="d-flex flex-nowrap gap-2 align-items-center">
+                                    <select id="categoryDropdown" class="form-select" style="flex: 0 0 66.6667%; min-width: 0;">
+                                        <option value="">-- Select Medication --</option>
+                                        @foreach (var medication in ViewBag.Medications)
+                                        {
+                                            <option value="@medication.MedicationId">
+                                                @medication.MedicationName (D @medication.DosageForm - S @medication.Strength - U @medication.UnitOfMeasure)
+                                            </option>
+                                        }
+                                    </select>
+
+                                    <button id="addMedicationBtn" type="button" class="btn btn-success btn-md" style="flex: 0 0 33.3333%; height: auto; white-space: nowrap;">
+                                        <i class="fas fa-plus me-1"></i> Add
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <span asp-validation-for="PrescribedMedication" class="text-danger small"></span>
+
+                                <div id="medicationsContainer" class="border rounded py-2 px-3 shadow-sm mt-3" style="min-height: 100px; background-color: #f9f9f9;">
+                                </div>
+
+                                <div id="hiddenInputsContainer">
+                                    @for (int i = 0; i < prescribedList.Count; i++)
                                     {
-                                        <option value="@medication.MedicationId">
-                                            @medication.MedicationName (D @medication.DosageForm - S @medication.Strength - U @medication.UnitOfMeasure)
-                                        </option>
+                                        <input type="hidden" name="PrescribedMedication[@i].MedicationId" value="@prescribedList[i].MedicationId" />
+                                        <input type="hidden" name="PrescribedMedication[@i].MedicationName" value="@prescribedList[i].MedicationName" />
                                     }
-                                </select>
-
-                                <button id="addMedicationBtn" type="button" class="btn btn-success btn-md" style="flex: 0 0 33.3333%; height: auto; white-space: nowrap;">
-                                    <i class="fas fa-plus me-1"></i> Add
-                                </button>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="col-md-6">
-                            <span asp-validation-for="PrescribedMedication" class="text-danger small"></span>
-
-                            <div id="medicationsContainer" class="border rounded py-2 px-3 shadow-sm mt-3" style="min-height: 100px; background-color: #f9f9f9;">
-                            </div>
-
-                            <div id="hiddenInputsContainer">
-                                @for (int i = 0; i < prescribedList.Count; i++)
-                                {
-                                    <input type="hidden" name="PrescribedMedication[@i].MedicationId" value="@prescribedList[i].MedicationId" />
-                                    <input type="hidden" name="PrescribedMedication[@i].MedicationName" value="@prescribedList[i].MedicationName" />
-                                }
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row g-4 mb-4">
-                        <label asp-for="PrescriptionType" class="form-label fw-semibold text-muted"></label>
-                        <select asp-for="PrescriptionType" class="form-select rounded-3" asp-items="Html.GetEnumSelectList<PrescriptionType>()">
-                            <option value="">-- Select Pescription Type --</option>
-                        </select>
-                        <span asp-validation-for="PrescriptionType" class="text-danger small"></span>
-                    </div>
-
-                    <div class="row g-4 mb-4">
-                        <div class="col-md-2">
-                            <label asp-for="CollectAfterCount" class="form-label fw-semibold text-muted"></label>
-                            <input asp-for="CollectAfterCount" class="form-control rounded-3" />
-                            <span asp-validation-for="CollectAfterCount" class="text-danger small"></span>
-                        </div>
-
-                        <div class="col-md-5">
-                            <label asp-for="CollectionInterval" class="form-label fw-semibold text-muted"></label>
-                            <select asp-for="CollectionInterval" class="form-select rounded-3" asp-items="Html.GetEnumSelectList<CollectionInterval>()">
-                                <option value="">-- Select Interval --</option>
+                        <div class="row g-4 mb-4">
+                            <label asp-for="PrescriptionType" class="form-label fw-semibold text-muted"></label>
+                            <select asp-for="PrescriptionType" class="form-select rounded-3" asp-items="Html.GetEnumSelectList<PrescriptionType>()">
+                                <option value="">-- Select Pescription Type --</option>
                             </select>
-                            <span asp-validation-for="CollectionInterval" class="text-danger small"></span>
+                            <span asp-validation-for="PrescriptionType" class="text-danger small"></span>
                         </div>
 
-                        <div class="col-md-5">
-                            <label asp-for="UntilDate" class="form-label fw-semibold text-muted"></label>
-                            <input asp-for="UntilDate" type="date" class="form-control rounded-3" />
-                            <span asp-validation-for="UntilDate" class="text-danger small"></span>
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-2">
+                                <label asp-for="CollectAfterCount" class="form-label fw-semibold text-muted"></label>
+                                <input asp-for="CollectAfterCount" class="form-control rounded-3" />
+                                <span asp-validation-for="CollectAfterCount" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-5">
+                                <label asp-for="CollectionInterval" class="form-label fw-semibold text-muted"></label>
+                                <select asp-for="CollectionInterval" class="form-select rounded-3" asp-items="Html.GetEnumSelectList<CollectionInterval>()">
+                                    <option value="">-- Select Interval --</option>
+                                </select>
+                                <span asp-validation-for="CollectionInterval" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-5">
+                                <label asp-for="UntilDate" class="form-label fw-semibold text-muted"></label>
+                                <input asp-for="UntilDate" type="date" class="form-control rounded-3" />
+                                <span asp-validation-for="UntilDate" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-12">
+                            <label asp-for="AdditionalNotes" class="form-label fw-semibold"></label>
+                            <textarea asp-for="AdditionalNotes" class="form-control rounded-3" rows="5"></textarea>
+                            <span asp-validation-for="AdditionalNotes" class="text-danger small"></span>
                         </div>
                     </div>
 
-                    <div class="col-md-12">
-                        <label asp-for="AdditionalNotes" class="form-label fw-semibold"></label>
-                        <textarea asp-for="AdditionalNotes" class="form-control rounded-3" rows="5"></textarea>
-                        <span asp-validation-for="AdditionalNotes" class="text-danger small"></span>
+                    <div id="confirmDischargeContainer" style="display: flex; justify-content: flex-end; margin-top: 3rem; gap: 1rem; visibility: hidden;">
+                        <button type="submit" name="action" value="Discharge" style="background-color: #dc3545; color: white; padding: 0.375rem 0.75rem; font-size: 1rem; border: none; border-radius: 0.25rem; align-self: center; cursor: pointer;">
+                            Confirm Discharge
+                        </button>
+                        <button type="button" id="cancelDischargeBtn" style="background-color: #6c757d; color: white; padding: 0.375rem 0.75rem; font-size: 1rem; border: none; border-radius: 0.25rem; align-self: center; cursor: pointer;">
+                            Cancel
+                        </button>
                     </div>
-                </div>
-
-                <div id="confirmDischargeContainer" style="display: flex; justify-content: flex-end; margin-top: 3rem; gap: 1rem; visibility: hidden;">
-                    <button type="submit" name="action" value="Discharge" style="background-color: #dc3545; color: white; padding: 0.375rem 0.75rem; font-size: 1rem; border: none; border-radius: 0.25rem; align-self: center; cursor: pointer;">
-                        Confirm Discharge
-                    </button>
-                    <button type="button" id="cancelDischargeBtn" style="background-color: #6c757d; color: white; padding: 0.375rem 0.75rem; font-size: 1rem; border: none; border-radius: 0.25rem; align-self: center; cursor: pointer;">
-                        Cancel
-                    </button>
-                </div>
-
+                
+                }
             </div>
         </div>
     </div>

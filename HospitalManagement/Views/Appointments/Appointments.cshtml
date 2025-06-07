@@ -15,8 +15,8 @@
             <h2 class="mb-0 text-white">Appointments</h2>
         </div>
         <div>
-            <button class="btn btn-light btn-sm me-2 filter-btn" data-filter="Pending">
-                <i class="bi bi-clock-history"></i> <span class="btn-text ms-1">Pending</span>
+            <button class="btn btn-light btn-sm me-2 filter-btn" data-filter="Assigned">
+                <i class="bi bi-clock-history"></i> <span class="btn-text ms-1">Assigned</span>
             </button>
             <button class="btn btn-light btn-sm me-2 filter-btn" data-filter="Completed">
                 <i class="bi bi-check-circle" style="color:green;"></i> <span class="btn-text ms-1">Completed</span>
@@ -112,13 +112,30 @@
 
 <script src="https://unpkg.com/html5-qrcode"></script>
 <script>
-    document.getElementById("qrSearchInput").addEventListener("keyup", function () {
-        let query = this.value.toLowerCase();
+    const qrInput = document.getElementById("qrSearchInput");
+    const qrReaderWrapper = document.getElementById("qr-reader-wrapper");
+    const qrReader = document.getElementById("qr-reader");
+    const openScanner = document.getElementById("openScanner");
+
+    let currentStatusFilter = "Assigned"; // Default filter, can be changed as needed
+    let currentSearchQuery = "";
+
+    // Unified filter function: filters by status AND booking reference search
+    function filterAppointments() {
+        const rows = document.querySelectorAll("#appointmentsTable tbody tr");
         let anyVisible = false;
 
-        document.querySelectorAll("tbody tr").forEach(row => {
-            let refCell = row.querySelector("td:first-child");
-            if (refCell && refCell.textContent.toLowerCase().includes(query)) {
+        rows.forEach(row => {
+            const status = row.querySelector("td:nth-child(7)").textContent.trim();
+            const bookingRef = row.querySelector("td:first-child").textContent.toLowerCase();
+
+            // Status filter: show all if 'All' else match
+            const statusMatches = (currentStatusFilter === "All") || (status === currentStatusFilter);
+
+            // Search filter on booking reference
+            const searchMatches = bookingRef.includes(currentSearchQuery);
+
+            if (statusMatches && searchMatches) {
                 row.style.display = "";
                 anyVisible = true;
             } else {
@@ -127,19 +144,43 @@
         });
 
         document.getElementById("noResultsMessage").style.display = anyVisible ? "none" : "block";
-    });
+    }
 
-    const openScanner = document.getElementById("openScanner");
-    const qrInput = document.getElementById("qrSearchInput");
-    const qrReader = document.getElementById("qr-reader-wrapper");
+    // Setup status filter buttons
+    function setupFilterButtons() {
+        const buttons = document.querySelectorAll(".filter-btn");
+        buttons.forEach(btn => {
+            btn.addEventListener("click", function () {
+                currentStatusFilter = this.getAttribute("data-filter");
 
+                // Update active button styling
+                buttons.forEach(b => b.classList.remove("active"));
+                this.classList.add("active");
+
+                filterAppointments();
+            });
+        });
+
+        // Initialize active filter button
+        buttons.forEach(btn => {
+            if (btn.getAttribute("data-filter") === currentStatusFilter) {
+                btn.classList.add("active");
+            }
+        });
+    }
+
+    // Setup search input listener
+    function setupSearchInput() {
+        qrInput.addEventListener("keyup", function () {
+            currentSearchQuery = this.value.trim().toLowerCase();
+            filterAppointments();
+        });
+    }
+
+    // QR code scanner setup
     openScanner.addEventListener("click", () => {
-        const wrapper = document.getElementById("qr-reader-wrapper");
-        const qrReader = document.getElementById("qr-reader");
-        const qrInput = document.getElementById("qrSearchInput");
-
-        wrapper.style.display = "block"; 
-        wrapper.classList.add("active");
+        qrReaderWrapper.style.display = "block";
+        qrReaderWrapper.classList.add("active");
 
         const html5QrCode = new Html5Qrcode("qr-reader");
 
@@ -148,21 +189,19 @@
                 const cameraId = devices[0].id;
                 html5QrCode.start(
                     cameraId,
-                    {
-                        fps: 10,
-                        qrbox: { width: 180, height: 180 }
-                    },
+                    { fps: 10, qrbox: { width: 180, height: 180 } },
                     qrCodeMessage => {
                         qrInput.value = qrCodeMessage;
                         qrInput.dispatchEvent(new Event("keyup"));
 
                         html5QrCode.stop().then(() => {
-                            wrapper.style.display = "none";
-                            wrapper.classList.remove("active");
+                            qrReaderWrapper.style.display = "none";
+                            qrReaderWrapper.classList.remove("active");
                             qrReader.innerHTML = "";
                         }).catch(err => console.error("Stop error", err));
                     },
                     errorMessage => {
+                        // You can log or handle scan errors here if needed
                     }
                 ).catch(err => {
                     console.error("QR code scan error:", err);
@@ -173,13 +212,22 @@
         });
     });
 
-    document.addEventListener('DOMContentLoaded', function () {
-           document.querySelectorAll('#appointmentsTable .clickable-row').forEach(row => {
-               row.addEventListener('click', function () {
-                   const encryptedAppointmentId = this.getAttribute('data-id');
-                   const url = '@Url.Action("AppointmentDetails", "Appointments")';
-                   window.location.href = `${url}?appointmentId=${encodeURIComponent(encryptedAppointmentId)}`;
-               });
-           });
-       });
+    // Setup row click navigation
+    function setupRowClicks() {
+        document.querySelectorAll('#appointmentsTable .clickable-row').forEach(row => {
+            row.addEventListener('click', function () {
+                const encryptedAppointmentId = this.getAttribute('data-id');
+                const url = '@Url.Action("AppointmentDetails", "Appointments")';
+                window.location.href = `${url}?appointmentId=${encodeURIComponent(encryptedAppointmentId)}`;
+            });
+        });
+    }
+
+    // Initialize all event handlers on DOM ready
+    document.addEventListener("DOMContentLoaded", function () {
+        setupFilterButtons();
+        setupSearchInput();
+        filterAppointments(); // Apply initial filter
+        setupRowClicks();
+    });
 </script>

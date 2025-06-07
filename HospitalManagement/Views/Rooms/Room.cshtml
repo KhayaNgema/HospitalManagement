@@ -1,0 +1,62 @@
+﻿@using HospitalManagement.Models
+@model Room
+@inject HospitalManagement.Interfaces.IEncryptionService encryptionService
+
+@{
+    ViewData["Title"] = "Room";
+    Layout = "~/Views/Shared/_PagesLayout.cshtml";
+    var encryptedRoomId = encryptionService.Encrypt(Model.RoomId);
+}
+<a asp-controller="Rooms" asp-action="Rooms" class="text-dark text-decoration-none d-inline-flex align-items-center back-link my-3 me-3">
+    <i class="bi bi-chevron-left me-1"></i> Back
+</a>
+<div class="container-fluid my-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6">
+            <div class="card shadow border-0" style="border-left: 6px solid #48AAAD; border-radius: 10px;">
+                <div class="card-header text-white" style="background-color: #48AAAD;">
+                    <h3 class="mb-0">Room @Model.RoomNumber</h3>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label text-muted fw-semibold">Department</label>
+                        <div class="border rounded p-3 bg-light">
+                            @Model.Department
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-muted fw-semibold">Number of Beds</label>
+                        <div class="border rounded p-3 bg-light">
+                            @Model.NoOfBeds
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-muted fw-semibold">Occupied Beds</label>
+                        <div class="border rounded p-3 bg-light">
+                            @Model.UsedBeds
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label text-muted fw-semibold">Room Status</label>
+                        <div class="border rounded p-3 bg-light">
+                            @Model.Status
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end">
+                        <a asp-controller="Rooms"
+                           asp-action="UpdateRoom"
+                           asp-route-roomId="@encryptedRoomId"
+                           class="btn btn-lg text-white"
+                           style="background-color: #48AAAD;">
+                            <i class="fas fa-pen me-2"></i> Update
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -21,9 +21,6 @@
             <button class="btn btn-light btn-sm me-2 filter-btn" data-filter="Discharged">
                 <i class="bi bi-door-open-fill" style="color:green;"></i> <span class="btn-text ms-1">Discharged</span>
             </button>
-            <button class="btn btn-light btn-sm filter-btn" data-filter="Deceased">
-                <i class="bi bi-person-x-fill" style="color:gray;"></i> <span class="btn-text ms-1">Deceased</span>
-            </button>
         </div>
     </div>
     <div class="d-flex justify-content-between align-items-center mb-4 px-3">
@@ -56,8 +53,7 @@
                         <th class="text-nowrap"><i class="fas fa-user me-1"></i> Patient</th>
                         <th class="text-nowrap"><i class="fas fa-calendar-plus me-1"></i> Admission Date</th>
                         <th class="text-nowrap"><i class="fas fa-calendar-minus me-1"></i> Discharge Date</th>
-                        <th class="text-nowrap"><i class="fas fa-stethoscope me-1"></i> Department</th>
-                        <th class="text-nowrap"><i class="fas fa-hospital me-1"></i> Ward</th>
+                        <th class="text-nowrap"><i class="fas fa-stethoscope me-1"></i> Department/Ward</th>
                         <th class="text-nowrap"><i class="fas fa-door-open me-1"></i> Room No.</th>
                         <th class="text-nowrap"><i class="fas fa-bed me-1"></i> Bed No.</th>
                         <th class="text-nowrap"><i class="fas fa-bed me-1"></i> Admitted by</th>
@@ -81,7 +77,6 @@
                             <td>@admission.AdmissionDate?.ToString("dd/MM/yyyy")</td>
                             <td>@(admission.DischargeDate?.ToString("dd/MM/yyyy") ?? "N/A")</td>
                             <td>@(admission.Department)</td>
-                            <td>@(admission.Ward)</td>
                             <td>@(string.IsNullOrEmpty(admission.RoomNumber) ? "N/A" : admission.RoomNumber)</td>
                             <td>@(string.IsNullOrEmpty(admission.BedNumber) ? "N/A" : admission.BedNumber)</td>
                             <td>@(admission.CreatedBy.FirstName) @(admission.CreatedBy.LastName)</td>
@@ -98,12 +93,21 @@
                     }
                 </tbody>
             </table>
+            <div class="alert alert-info text-center filter-empty-message d-none">
+                No admissions found for your filter.
+            </div>
         </div>
     }
 </div>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const redirectUrl = '@Url.Action("AdmissionDetails", "Admissions")';
+        const rows = document.querySelectorAll('#appointmentsTable tbody tr');
+        const emptyMessage = document.querySelector('.filter-empty-message');
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const searchInput = document.getElementById('qrSearchInput');
+
+        let currentStatusFilter = 'Admitted';
 
         document.querySelectorAll('#appointmentsTable .clickable-row').forEach(row => {
             row.addEventListener('click', function () {
@@ -118,5 +122,50 @@
             const msg = document.getElementById("tempDataMessage");
             if (msg) msg.style.display = "none";
         }, 7000);
+
+        function applyCombinedFilter() {
+            const searchValue = searchInput.value.trim().toLowerCase();
+            let matchFound = false;
+
+            rows.forEach(row => {
+                const status = row.children[7]?.textContent.trim();
+                const patient = row.children[0]?.textContent.trim().toLowerCase();
+                const department = row.children[3]?.textContent.trim().toLowerCase();
+
+                const matchesStatus = status === currentStatusFilter;
+                const matchesSearch = !searchValue || (patient.includes(searchValue) || department.includes(searchValue));
+
+                if (matchesStatus && matchesSearch) {
+                    row.style.display = '';
+                    matchFound = true;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            if (!matchFound) {
+                emptyMessage.classList.remove('d-none');
+            } else {
+                emptyMessage.classList.add('d-none');
+            }
+        }
+
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                currentStatusFilter = this.getAttribute('data-filter');
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                applyCombinedFilter();
+            });
+        });
+
+        searchInput.addEventListener('input', applyCombinedFilter);
+
+        filterButtons.forEach(btn => {
+            if (btn.getAttribute('data-filter') === currentStatusFilter) {
+                btn.classList.add('active');
+            }
+        });
+        applyCombinedFilter();
     });
 </script>

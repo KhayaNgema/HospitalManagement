@@ -14,6 +14,15 @@
             </a>
             <h2 class="mb-0 text-white">Appointments</h2>
         </div>
+        <div>
+            <button class="btn btn-light btn-sm me-2 filter-btn" data-filter="Assigned">
+                <i class="bi bi-hospital-fill text-primary"></i> <span class="btn-text ms-1">Assigned</span>
+            </button>
+            <button class="btn btn-light btn-sm me-2 filter-btn" data-filter="Completed">
+                <i class="bi bi-door-open-fill" style="color:green;"></i> <span class="btn-text ms-1">Completed</span>
+            </button>
+        </div>
+
     </div>
     <div class="d-flex justify-content-between align-items-center mb-4 px-3">
 
@@ -28,6 +37,7 @@
             <div class="scanner-line"></div>
         </div>
     </div>
+
 
 
     @if (!Model.Any())
@@ -64,7 +74,7 @@
                     {
                         var encryptedAppointmentId = encryptionService.Encrypt(booking.BookingId);
 
-                        <tr class="clickable-row ellipsis" data-id="@encryptedAppointmentId" style="cursor: pointer;">
+                        <tr class="clickable-row ellipsis" data-id="@encryptedAppointmentId" data-status="@booking.Status" style="cursor: pointer;">
                             <td>@booking.BookingReference</td>
                             <td>@booking.CreatedBy.FirstName @booking.CreatedBy.LastName</td>
                             <td>@booking.BookForDate.ToString("yyyy/MM/dd")</td>
@@ -101,13 +111,21 @@
 
 <script src="https://unpkg.com/html5-qrcode"></script>
 <script>
-    document.getElementById("qrSearchInput").addEventListener("keyup", function () {
-        let query = this.value.toLowerCase();
+    let currentStatusFilter = "";
+
+    function applyFilters() {
+        const query = document.getElementById("qrSearchInput").value.trim().toLowerCase();
+        const status = currentStatusFilter.toLowerCase();
         let anyVisible = false;
 
-        document.querySelectorAll("tbody tr").forEach(row => {
-            let refCell = row.querySelector("td:first-child");
-            if (refCell && refCell.textContent.toLowerCase().includes(query)) {
+        document.querySelectorAll("#appointmentsTable tbody tr").forEach(row => {
+            const bookingRef = row.querySelector("td:first-child")?.textContent.trim().toLowerCase() || "";
+            const statusText = row.querySelector("td:nth-child(7)")?.textContent.trim().toLowerCase() || "";
+
+            const matchesSearch = bookingRef.includes(query);
+            const matchesStatus = status === "" || statusText === status;
+
+            if (matchesSearch && matchesStatus) {
                 row.style.display = "";
                 anyVisible = true;
             } else {
@@ -116,19 +134,32 @@
         });
 
         document.getElementById("noResultsMessage").style.display = anyVisible ? "none" : "block";
-    });
+    }
+
+    function filterByStatus(status) {
+        currentStatusFilter = status;
+
+        document.querySelectorAll(".filter-btn").forEach(btn => {
+            btn.classList.remove("active");
+        });
+
+        const activeBtn = document.querySelector(`.filter-btn[data-filter="${status}"]`);
+        if (activeBtn) {
+            activeBtn.classList.add("active");
+        }
+
+        applyFilters();
+    }
+
+    document.getElementById("qrSearchInput").addEventListener("keyup", applyFilters);
 
     const openScanner = document.getElementById("openScanner");
     const qrInput = document.getElementById("qrSearchInput");
-    const qrReader = document.getElementById("qr-reader-wrapper");
+    const qrReaderWrapper = document.getElementById("qr-reader-wrapper");
 
     openScanner.addEventListener("click", () => {
-        const wrapper = document.getElementById("qr-reader-wrapper");
-        const qrReader = document.getElementById("qr-reader");
-        const qrInput = document.getElementById("qrSearchInput");
-
-        wrapper.style.display = "block";
-        wrapper.classList.add("active");
+        qrReaderWrapper.style.display = "block";
+        qrReaderWrapper.classList.add("active");
 
         const html5QrCode = new Html5Qrcode("qr-reader");
 
@@ -137,38 +168,41 @@
                 const cameraId = devices[0].id;
                 html5QrCode.start(
                     cameraId,
-                    {
-                        fps: 10,
-                        qrbox: { width: 180, height: 180 }
-                    },
+                    { fps: 10, qrbox: { width: 180, height: 180 } },
                     qrCodeMessage => {
                         qrInput.value = qrCodeMessage;
                         qrInput.dispatchEvent(new Event("keyup"));
 
                         html5QrCode.stop().then(() => {
-                            wrapper.style.display = "none";
-                            wrapper.classList.remove("active");
-                            qrReader.innerHTML = "";
+                            qrReaderWrapper.style.display = "none";
+                            qrReaderWrapper.classList.remove("active");
+                            document.getElementById("qr-reader").innerHTML = "";
                         }).catch(err => console.error("Stop error", err));
                     },
                     errorMessage => {
                     }
-                ).catch(err => {
-                    console.error("QR code scan error:", err);
-                });
+                ).catch(err => console.error("QR scan error:", err));
             }
-        }).catch(err => {
-            console.error("Camera access error:", err);
-        });
+        }).catch(err => console.error("Camera error:", err));
     });
 
     document.addEventListener('DOMContentLoaded', function () {
-           document.querySelectorAll('#appointmentsTable .clickable-row').forEach(row => {
-               row.addEventListener('click', function () {
-                   const encryptedAppointmentId = this.getAttribute('data-id');
-                   const url = '@Url.Action("XRayAppointmentDetails", "Appointments")';
-                   window.location.href = `${url}?appointmentId=${encodeURIComponent(encryptedAppointmentId)}`;
-               });
+
+        filterByStatus("Assigned");
+
+       document.querySelectorAll(".filter-btn").forEach(btn => {
+           btn.addEventListener("click", function () {
+               const status = this.getAttribute("data-filter");
+               filterByStatus(status);
            });
        });
+
+        document.querySelectorAll('#appointmentsTable .clickable-row').forEach(row => {
+            row.addEventListener('click', function () {
+                const encryptedAppointmentId = this.getAttribute('data-id');
+                const url = '@Url.Action("XRayAppointmentDetails", "Appointments")';
+                window.location.href = `${url}?appointmentId=${encodeURIComponent(encryptedAppointmentId)}`;
+            });
+        });
+    });
 </script>

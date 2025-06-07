@@ -1,0 +1,41 @@
+﻿@model HospitalManagement.Models.Order
+
+
+<div class="receipt-container">
+    <div class="receipt-header">
+        <h4>MediConnect</h4>
+        <div>Order #: @Model.LastFourDigitsOfOrderNumber</div>
+        <div>Date: @Model.OrderDate.ToString("yyyy-MM-dd HH:mm")</div>
+    </div>
+
+    <dl class="receipt-details">
+        <dt>Payment Status:</dt>
+        <dd>@(Model.IsPaid ? "Paid" : "Unpaid")</dd>
+    </dl>
+
+    <!-- Header row -->
+    <div class="items-header">
+        <div class="item-name">Item</div>
+        <div class="item-qty">Qty</div>
+        <div class="item-subtotal">Subtotal (R)</div>
+    </div>
+
+    <!-- Items -->
+    @foreach (var item in Model.OrderItems)
+    {
+        <div class="item-row">
+            <div class="item-name">@item.MenuItem.ItemName</div>
+            <div class="item-qty">@item.Quantity</div>
+            <div class="item-subtotal">@item.SubTotal.ToString("F2")</div>
+        </div>
+    }
+
+    <!-- Summary -->
+    <div class="summary-row">
+        Total Amount: R @Model.TotalPrice.ToString("F2")
+    </div>
+
+    <div class="receipt-footer">
+        Thank you for your order!
+    </div>
+</div>

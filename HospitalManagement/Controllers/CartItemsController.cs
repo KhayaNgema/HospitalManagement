@@ -88,6 +88,9 @@ namespace Cafeteria.Controllers
 
                 cartItem.Quantity = quantity;
                 cartItem.Subtotal = quantity * price;
+
+                _context.Update(cartItem);
+
                 await _context.SaveChangesAsync();
 
                 return Json(new { success = true });

@@ -15,8 +15,6 @@ namespace HospitalManagement.ViewModels
         [DataType(DataType.Date, ErrorMessage = "Invalid discharge date format.")]
         public DateTime? DischargeDate { get; set; }
 
-        public Ward Ward { get; set; }
-
         [StringLength(10, ErrorMessage = "Room number cannot exceed 10 characters.")]
         public string? RoomNumber { get; set; }
 

@@ -21,11 +21,10 @@
         </div>
 
 
-        <div class="mb-3">
-            <label asp-for="Quantity" class="form-label fw-semibold">Select Quantity</label>
-            <input asp-for="Quantity" class="form-control rounded-3" id="quantityInput_@Model.MenuItemId" />
-            <span asp-validation-for="Quantity" class="text-danger small"></span>
-        </div>
+        <input asp-for="Quantity"
+               class="form-control rounded-3 quantity-input"
+               id="quantityInput_@Model.MenuItemId"
+               data-price="@Model.MenuItemPrice" />
 
         <div class="mb-3">
             <label class="form-label fw-semibold">Subtotal</label>

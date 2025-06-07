@@ -40,6 +40,7 @@ namespace HospitalManagement.Controllers
                 .Include(pa => pa.Patient)
                 .Include(pa => pa.CreatedBy)
                 .Where(pa => pa.CreatedById == user.Id)
+                .OrderByDescending(pa => pa.CreatedAt)
                 .ToListAsync();
 
             return View(admissions);
@@ -54,6 +55,7 @@ namespace HospitalManagement.Controllers
                     .Include(pa => pa.Patient)
                     .Include(pa => pa.CreatedBy)
                     .Where(pa => pa.PatientId == user.Id)
+                    .OrderByDescending(pa => pa.CreatedAt)
                     .ToListAsync();
 
             return View(admissions);
@@ -74,6 +76,7 @@ namespace HospitalManagement.Controllers
                 admissions = await _context.Admissions
                     .Include(pa => pa.Patient)
                     .Include(pa => pa.CreatedBy)
+                    .OrderByDescending(pa => pa.CreatedAt)
                     .ToListAsync();
             }
             else if (roles.Contains("Doctor"))
@@ -81,7 +84,8 @@ namespace HospitalManagement.Controllers
                 admissions = await _context.Admissions
                     .Include(pa => pa.Patient)
                     .Include(pa => pa.CreatedBy)
-                    .Where(pa => pa.CreatedById == user.Id) 
+                    .Where(pa => pa.CreatedById == user.Id)
+                    .OrderByDescending(pa => pa.CreatedAt)
                     .ToListAsync();
             }
             else
@@ -93,7 +97,7 @@ namespace HospitalManagement.Controllers
         }
 
 
-        [Authorize(Roles = "Doctor, System Administrator")]
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> AdmissionDetails(string admissionId)
         {
@@ -109,7 +113,6 @@ namespace HospitalManagement.Controllers
                 AdmissionId = decryptedAdmissionId,
                 PatientId = admission.PatientId,
                 BookingId = admission.BookingId,
-                Ward = admission.Ward,
                 AdditionalNotes = admission.AdditionalNotes,
                 Address = admission.Patient.Address,
                 AdmissionDate = admission.AdmissionDate,
@@ -159,6 +162,9 @@ namespace HospitalManagement.Controllers
                 .OrderByDescending(pmh => pmh.CreatedAt)
                 .FirstOrDefaultAsync();
 
+            var rooms = await _context.Rooms
+                .ToListAsync();
+
             var viewModel = new AdmitPatientViewModel
             {
                 BookingId = decryptedAppointmentId,
@@ -179,6 +185,8 @@ namespace HospitalManagement.Controllers
                 ProfilePicture = appointment.CreatedBy.ProfilePicture,
                 
             };
+
+            ViewBag.Rooms = rooms;
 
             return View(viewModel);
         }
@@ -207,7 +215,6 @@ namespace HospitalManagement.Controllers
                     PatientId= viewModel.PatientId,
                     PatientStatus = PatientStatus.Admitted,
                     RoomNumber = viewModel.RoomNumber,
-                    Ward = viewModel.Ward,
                     UpdatedById = user.Id,
                     BookingId = viewModel.BookingId,
                 };
@@ -225,7 +232,7 @@ namespace HospitalManagement.Controllers
                 await _context.SaveChangesAsync();
 
                 TempData["Message"] = $"You have successfully admitted {viewModel.FirstName} {viewModel.LastName} " +
-                    $"to {viewModel.Department} in the {viewModel.Ward} at rom {viewModel.RoomNumber} " +
+                    $"to {viewModel.Department} department/ ward at room {viewModel.RoomNumber} " +
                     $"on bed {viewModel.BedNumber}.";
 
                 return RedirectToAction(nameof(MyPatientAdmissions));

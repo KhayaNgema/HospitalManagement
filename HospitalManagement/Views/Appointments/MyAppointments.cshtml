@@ -9,36 +9,36 @@
     <style>
         .btn-details,
         .btn-cancel {
-            font-size: 1rem;
-            padding: 4px 10px;
-            border-radius: 20px;
+        font-size: 1rem;
+        padding: 4px 10px;
+        border-radius: 20px;
         }
 
         .btn-details {
-            background-color: #48AAAD;
-            color: white;
-            border: none;
-            margin-right: 6px;
+        background-color: #48AAAD;
+        color: white;
+        border: none;
+        margin-right: 6px;
         }
 
-            .btn-details:hover {
-                background-color: #3c979a;
-            }
+        .btn-details:hover {
+        background-color: #3c979a;
+        }
 
         .btn-cancel {
-            background-color: transparent;
-            border: 1px solid #ff4d4d;
-            color: #ff4d4d;
+        background-color: transparent;
+        border: 1px solid #ff4d4d;
+        color: #ff4d4d;
         }
 
-            .btn-cancel:hover {
-                background-color: #ff4d4d;
-                color: white;
-            }
+        .btn-cancel:hover {
+        background-color: #ff4d4d;
+        color: white;
+        }
 
         .filter-btn.active {
-            background-color: #022D36;
-            color: white;
+        background-color: #022D36;
+        color: white;
         }
     </style>
 </head>
@@ -52,9 +52,10 @@
             <h2 class="mb-0 text-white">My appointments</h2>
         </div>
         <div>
-            <button class="btn btn-light btn-sm me-2 filter-btn" data-filter="Awaiting">
+            <button class="btn btn-light btn-sm me-2 filter-btn active" data-filter="Assigned">
                 <i class="bi bi-clock-history"></i> <span class="btn-text ms-1">Assigned</span>
             </button>
+
             <button class="btn btn-light btn-sm me-2 filter-btn" data-filter="Completed">
                 <i class="bi bi-check-circle" style="color:green;"></i> <span class="btn-text ms-1">Completed</span>
             </button>
@@ -66,6 +67,9 @@
         <a href="@Url.Action("MakeAppointment", "Appointments")" class="btn btn-primary" id="addButton">
             <i class="bi bi-plus-circle me-1"></i> New Appointment
         </a>
+    </div>
+    <div class="alert alert-info text-center" id="noDataAlert" style="display:none;">
+        You have no appointments matching the selected filter.
     </div>
 
     @if (!Model.Any())
@@ -102,11 +106,13 @@
                             </p>
 
                         </div>
-
-                        <div class="card-actions">
-                            <button class="btn btn-details" data-bs-toggle="modal" data-bs-target="#@detailsModalId">Details</button>
-                            <button class="btn btn-cancel" data-bs-toggle="modal" data-bs-target="#@cancelModalId">Cancel</button>
-                        </div>
+                        @if (booking.Status != BookingStatus.Completed)
+                        {
+                            <div class="card-actions">
+                                <button class="btn btn-details" data-bs-toggle="modal" data-bs-target="#@detailsModalId">Details</button>
+                                <button class="btn btn-cancel" data-bs-toggle="modal" data-bs-target="#@cancelModalId">Cancel</button>
+                            </div>
+                        }
                     </div>
 
 
@@ -135,19 +141,23 @@
                                         <dd class="col-sm-8">@booking.AdditionalNotes</dd>
                                     </dl>
                                 </div>
-                                <div class="modal-footer justify-content-center">
-                                    <form asp-controller="Appointments" asp-action="CancelBooking" method="post">
-                                        <input type="hidden" name="id" value="@booking.BookingId" />
-                                        <button type="submit" class="btn btn-danger px-4">Yes, Cancel</button>
-                                    </form>
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
-                                </div>
+                                @if (booking.Status != BookingStatus.Completed)
+                                {
+                                    <div class="modal-footer justify-content-center">
+                                        <form asp-controller="Appointments" asp-action="CancelBooking" method="post">
+                                            <input type="hidden" name="id" value="@booking.BookingId" />
+                                            <button type="submit" class="btn btn-danger px-4">Yes, Cancel</button>
+                                        </form>
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                                    </div>
+                                }
+
                             </div>
                         </div>
                     </div>
 
                     <div class="modal fade" id="@detailsModalId" tabindex="-1" aria-labelledby="@($"{detailsModalId}_Label")" aria-hidden="true">
-                        <div class="modal-dialog modal-dialog-centered modal-lg">
+                        <div class="modal-dialog modal-dialog-centered modal-md">
                             <div class="modal-content rounded-4">
                                 <div class="modal-header modal-header-custom">
                                     <h5 class="modal-title" id="@($"{detailsModalId}_Label")">Appointment Details</h5>
@@ -186,10 +196,14 @@
                                     </dl>
 
                                 </div>
-                                <div class="modal-footer">
+                                @if (booking.Status != BookingStatus.Completed)
+                                {
+                                    <div class="modal-footer">
                                     <a class="btn btn-outline-primary" asp-controller="Appointments" asp-action="RescheduleAppointment" asp-route-id="@booking.BookingId">Reschedule</a>
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                </div>
+                                    </div>
+                                }
+
                             </div>
                         </div>
                     </div>
@@ -201,9 +215,10 @@
 
 @section Scripts {
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', function () {
             const filterButtons = document.querySelectorAll('.filter-btn');
             const appointmentCards = document.querySelectorAll('.appointment-card-wrapper');
+            const noDataAlert = document.getElementById('noDataAlert');
 
             function normalize(text) {
                 return text?.toLowerCase().trim();
@@ -211,34 +226,37 @@
 
             function filterAppointments(status) {
                 const normalizedStatus = normalize(status);
+                let anyVisible = false;
 
                 appointmentCards.forEach(card => {
                     const cardStatus = normalize(card.getAttribute('data-status'));
                     if (cardStatus === normalizedStatus) {
                         card.style.display = '';
+                        anyVisible = true;
                     } else {
                         card.style.display = 'none';
                     }
                 });
 
+                if (noDataAlert) {
+                    noDataAlert.style.display = anyVisible ? 'none' : 'block';
+                }
+
                 filterButtons.forEach(btn => {
-                    if (normalize(btn.getAttribute('data-filter')) === normalizedStatus) {
-                        btn.classList.add('active');
-                    } else {
-                        btn.classList.remove('active');
-                    }
+                    const btnStatus = normalize(btn.getAttribute('data-filter'));
+                    btn.classList.toggle('active', btnStatus === normalizedStatus);
                 });
             }
 
-        filterAppointments('Assigned');
+            filterAppointments('Assigned');
 
             filterButtons.forEach(button => {
-                button.addEventListener('click', () => {
+                button.addEventListener('click', function () {
                     const filter = button.getAttribute('data-filter');
                     filterAppointments(filter);
                 });
             });
         });
     </script>
-
 }
+

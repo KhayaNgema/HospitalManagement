@@ -3,6 +3,44 @@ html, body {
     width: 100%;
 }
 
+.filter-btn.active {
+    background-color: #0d6efd;
+    color: white;
+    border-color: #0d6efd;
+}
+
+.loading-container {
+    text-align: center;
+    color: white;
+}
+
+.medical-icon {
+    font-size: 60px;
+    color: #48AAAD;
+    animation: pulse 2s infinite ease-in-out;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.1);
+        opacity: 0.7;
+    }
+}
+
+.loading-text {
+    color: white;
+    font-size: 18px;
+    margin-top: 20px;
+}
+
+
+
+
 .receipt {
         font-family: 'Courier New', monospace;
         max-width: 100%;
@@ -973,7 +1011,7 @@ html {
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 1000; /* Ensure it's above other content */
+    z-index: 1000; 
 }
 
 /* Overlay background */
@@ -990,12 +1028,12 @@ html {
     justify-content: center;
 }
 
-/* Center container */
+
 .loading-container {
     text-align: center;
 }
 
-/* Rotating ring */
+
 .circle-loader {
     position: relative;
     width: 150px;
@@ -1003,7 +1041,7 @@ html {
     animation: rotate-ring 3s linear infinite;
 }
 
-/* Each ball in the ring */
+
 .ball {
     position: absolute;
     top: 50%;
@@ -1013,7 +1051,6 @@ html {
     transform: rotate(calc(51.42deg * var(--i))) translate(30px) rotate(calc(-51.42deg * var(--i)));
 }
 
-/* Spin the full ring */
 @keyframes rotate-ring {
     0% {
         transform: rotate(0deg);
@@ -1024,7 +1061,7 @@ html {
     }
 }
 
-/* Loading text */
+
 .loading-text {
     color: white;
     font-size: 18px;
@@ -1059,16 +1096,16 @@ html {
 
     /* CSS */
     .card-title {
-        white-space: nowrap; /* Prevents wrapping by default */
-        overflow: hidden; /* Hides overflow content */
-        text-overflow: ellipsis; /* Shows an ellipsis (...) when content overflows */
+        white-space: nowrap; 
+        overflow: hidden; 
+        text-overflow: ellipsis;
     }
 
     @media screen and (max-width: 768px) {
         .card-title {
-            white-space: normal; /* Allows the club name to wrap to the next line */
-            overflow: unset; /* Resets overflow property */
-            text-overflow: unset; /* Resets text-overflow property */
+            white-space: normal; 
+            overflow: unset; 
+            text-overflow: unset; 
         }
     }
 }
@@ -1085,11 +1122,11 @@ html {
 
 @media screen and (max-width: 768px) {
     .row.align-items-center.justify-content-center {
-        flex-direction: row; /* Ensure flex items stay in a row */
+        flex-direction: row;
     }
 
     .col-sm-3.text-center {
-        flex-basis: 33.33%; /* Set flex basis to 33.33% for equal distribution */
+        flex-basis: 33.33%; 
     }
 }
 

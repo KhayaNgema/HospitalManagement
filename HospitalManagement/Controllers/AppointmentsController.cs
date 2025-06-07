@@ -62,7 +62,8 @@ namespace HospitalManagement.Controllers
             {
                 var allAppointments = await query
                     .Where(ap => ap.Status == BookingStatus.Awaiting ||
-                    ap.Status == BookingStatus.Assigned)
+                    ap.Status == BookingStatus.Assigned ||
+                    ap.Status == BookingStatus.Completed)
                     .OrderBy(ap => ap.BookForDate)
                     .ThenBy(ap => ap.BookForTimeSlot)
                     .ToListAsync();
@@ -122,12 +123,16 @@ namespace HospitalManagement.Controllers
         [HttpGet]
         public async Task<IActionResult> X_RayAppointments()
         {
+            var user = await _userManager.GetUserAsync(User);
+
             var appointments = await _context.X_RayAppointments
                  .Where(a => a.Status == BookingStatus.Awaiting ||
-                 a.Status == BookingStatus.Assigned)
+                 a.Status == BookingStatus.Assigned &&
+                 a.AssignedUserId == user.Id)
                 .Include(a => a.CreatedBy)
                 .Include(a => a.Doctor)
                 .Include(a => a.ModifiedBy)
+                .Include(a => a.AssignedTo)
                 .Include(a => a.Booking)
                 .ToListAsync();
 
@@ -405,7 +410,7 @@ namespace HospitalManagement.Controllers
 
                 var returnUrl = Url.Action("PayFastReturn", "Appointments", new { paymentId, appointmentId, amount }, Request.Scheme);
                 returnUrl = HttpUtility.UrlEncode(returnUrl);
-                var cancelUrl = "https://102.37.16.88:2002/";
+                var cancelUrl = "https://102.37.16.88:2002/Appointments/MyAppointments";
 
                 string paymentUrl = await GeneratePayFineFastPaymentUrl(paymentId, amount, appointmentId, returnUrl, cancelUrl);
 
@@ -526,8 +531,10 @@ namespace HospitalManagement.Controllers
                 var patient = appointment.CreatedBy;
 
                 appointment.Status = BookingStatus.Assigned;
+                payment.Status = PaymentPaymentStatus.Successful;
 
                 _context.Update(appointment);
+                _context.Update(payment);
                 await _context.SaveChangesAsync();
 
                 TempData["Message"] = $"You have successfully booked an appointment for {appointment.MedicalCondition} on {appointment.BookForDate:MMMM dd, yyyy} at {appointment.BookForTimeSlot}. " +

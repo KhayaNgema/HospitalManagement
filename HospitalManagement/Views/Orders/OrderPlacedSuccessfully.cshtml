@@ -13,6 +13,7 @@
     .content {
         text-align: center;
     }
+
 </style>
 
 <div class="center-content">
@@ -35,8 +36,12 @@
             </p>
 
             <p class="fs-5">
-                <a class="fw-bold" href="@Url.Action("MyInvoices", "Invoices")">Proof of Purchase</a>
+                <a class="fw-bold" asp-action="MyProofOfPurchasePDF" asp-controller="Billings" asp-route-orderId="@ViewBag.OrderId">Proof of Purchase</a>
             </p>
+
+            <div class="mt-4">
+                <a href="@Url.Action("MyOrders", "Orders")" id="addButton" class="btn btn-md">View My Orders</a>
+            </div>
         </div>
     </div>
 </div>

@@ -18,6 +18,7 @@ using HospitalManagement.Models;
 using Microsoft.EntityFrameworkCore;
 using HospitalManagement.Interfaces;
 using HospitalManagement.Data;
+using System.ComponentModel;
 
 namespace HospitalManagement.Areas.Identity.Pages.Account
 {
@@ -82,8 +83,8 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
             ///     directly from your code. This API may change or be removed in future releases.
             /// </summary>
             [Required]
-            [EmailAddress]
-            public string Email { get; set; }
+            [DisplayName("Email or phone")]
+            public string EmailOrPhone { get; set; }
 
             /// <summary>
             ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
@@ -125,7 +126,11 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
 
             if (ModelState.IsValid)
             {
-                var user = await _userManager.FindByEmailAsync(Input.Email);
+                var isEmail = new EmailAddressAttribute().IsValid(Input.EmailOrPhone);
+
+                var user = isEmail ?
+                            await _userManager.FindByEmailAsync(Input.EmailOrPhone) :
+                            await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == Input.EmailOrPhone);
 
                 if (user != null)
                 {

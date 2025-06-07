@@ -206,7 +206,12 @@
 
 <div class="container-fluid">
     <div class="d-flex align-items-center justify-content-between px-3 py-3 mb-4" style="background-color:#48AAAD;">
-        <h2 class="mb-0 text-white">Order your favourite healthy meals from our kitchen!</h2>
+        <div class="d-flex align-items-center">
+            <a asp-controller="Home" asp-action="Index" class="text-white text-decoration-none d-inline-flex align-items-center back-link me-3">
+                <i class="bi bi-chevron-left me-1"></i> Back
+            </a>
+            <h2 class="mb-0 text-white">Order your favourite healthy meals from our kitchen!</h2>
+        </div>
     </div>
 
     <div class="d-flex justify-content-between align-items-center mb-4 px-3">
@@ -265,10 +270,10 @@
                                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                                         </div>
                                         <div class="modal-body d-flex flex-column align-items-center">
-                                        
+
                                             <img src="~/@menuItem.ItemImage" alt="@menuItem.ItemName" class="img-fluid img-thumbnail mb-3 rounded-3" style="max-height: 250px;" />
 
-                                           
+
                                             <div class="w-100">
                                                 <h6 class="fw-semibold text-secondary">Description</h6>
                                                 <p class="text-muted">@menuItem.ItemDescription</p>
@@ -311,7 +316,7 @@
                     }
                 </div>
             }
-                  
+
         }
         else
         {
@@ -319,26 +324,25 @@
         }
     </div>
 
-<div class="cart-icon" id="cartIcon">
-    <i class="fas fa-shopping-basket"></i>
-    <span id="cartItemCount">@Model.CartItems.Count()</span>
-</div>
+    <div class="cart-icon" id="cartIcon">
+        <i class="fas fa-shopping-basket"></i>
+        <span id="cartItemCount">@Model.CartItems.Count()</span>
+    </div>
 
-<div class="cart-items">
-    <div class="container">
-        <br />
-        <h4 class="text-center"><i class="fas fa-shopping-cart"></i> Shopping Basket</h4>
-        <br />
+    <div class="cart-items">
+        <div class="container">
+            <br />
+            <h4 class="text-center"><i class="fas fa-shopping-cart"></i> Shopping Basket</h4>
+            <br />
 
-        <div class="Cart">
-            <div id="cartItemsBody">
+            <div class="Cart">
+                <div id="cartItemsBody">
+                </div>
             </div>
+            <br />
         </div>
-        <br />
     </div>
 </div>
-
-
 
 
 
@@ -346,15 +350,13 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script>
         $(document).ready(function () {
-
             $('.modal').modal();
+
             $.ajaxSetup({
                 headers: {
                     RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
                 }
             });
-
-
 
             $(document).on('change', '.quantity-input', function () {
                 var $row = $(this).closest('tr');
@@ -362,153 +364,107 @@
                 var quantity = parseInt($(this).val());
                 var price = parseFloat($row.find('.subtotal').data('price'));
                 var subtotal = quantity * price;
+
                 $row.find('.subtotal').text('R ' + subtotal.toFixed(2));
 
-                $.ajax({
-                        url: '/CartItems/UpdateQuantity',
-                    type: 'POST',
-                    data: { id: cartItemId, quantity: quantity, price: price },
-                    success: function (response) {
-                        console.log('Quantity updated successfully in the database.');
-
-                        updateTotalPrice();
-                    },
-                    error: function (xhr, status, error) {
-                        console.error('Error updating quantity:', error);
-                    }
+                $.post('/CartItems/UpdateQuantity', {
+                    id: cartItemId,
+                    quantity: quantity,
+                    price: price
+                }).done(function () {
+                    updateTotalPrice();
+                }).fail(function (xhr, status, error) {
+                    console.error('Error updating quantity:', error);
                 });
             });
 
+
+            // Delete cart item
             $(document).on('click', '.delete-cart-item', function () {
-                var cartItemId = $(this).data('cartitemid');
                 var $row = $(this).closest('tr');
-                $.ajax({
-                        url: '/CartItems/Delete',
-                    type: 'POST',
-                    data: { id: cartItemId },
-                    success: function (response) {
+                var cartItemId = $(this).data('cartitemid');
+
+                $.post('/CartItems/Delete', { id: cartItemId })
+                    .done(function () {
                         $row.remove();
                         var currentCount = parseInt($('#cartItemCount').text());
                         $('#cartItemCount').text(currentCount - 1);
                         updateTotalPrice();
                         fetchCartItems();
-                    },
-                    error: function (xhr, status, error) {
+                    }).fail(function (xhr, status, error) {
                         console.error('Error deleting cart item:', error);
-                    }
-                });
+                    });
             });
 
-            $(document).on('click', '#cartIcon', function () {
-                console.log('Cart icon clicked');
+            // Toggle cart panel
+            $('#cartIcon').click(function () {
                 $('.cart-items').toggleClass('show');
             });
 
-
+            // Quantity input logic in modal
             $(document).on('input', '.quantity-input', function () {
-                var quantityInput = $(this);
-                var addToCartButton = quantityInput.closest('.modal-content').find('.add-to-cart-item');
+                var $input = $(this);
+                var $modal = $input.closest('.modal-content');
+                var $addButton = $modal.find('.add-to-cart-item');
 
-                var quantity = parseInt(quantityInput.val());
+                var quantity = parseInt($input.val());
                 if (isNaN(quantity) || quantity < 0) {
-                    quantityInput.val('');
+                    $input.val('');
                     quantity = 0;
-                } else if (quantity <= 0) {
-                    quantityInput.val('0');
                 }
 
-                toggleAddToCartButton(quantityInput, addToCartButton);
+                toggleAddToCartButton($input, $addButton);
 
-                // Retrieve the price from the menuItemPrice span
-                var priceString = quantityInput.closest('.modal-content').find('.menuItemPrice').text().replace('R ', '');
-                var price = parseFloat(priceString);
-
+                var price = parseFloat($modal.find('.menuItemPrice').text().replace('R ', ''));
                 var subtotal = quantity * price;
+                $modal.find('#subtotal').text('R ' + subtotal.toFixed(2));
 
-                // Update the subtotal display
-                quantityInput.closest('.modal-content').find('#subtotal').text('R ' + subtotal.toFixed(2));
-
-                // Update the total price if needed
                 updateTotalPrice();
             });
 
+            function toggleAddToCartButton(input, button) {
+                var quantity = parseInt(input.val());
+                button.prop('disabled', isNaN(quantity) || quantity <= 0);
+            }
 
-
-            function toggleAddToCartButton(quantityInput, addToCartButton) {
-                var quantity = parseInt(quantityInput.val());
-                if (isNaN(quantity) || quantity <= 0) {
-                    addToCartButton.prop('disabled', true);
-                } else {
-                    addToCartButton.prop('disabled', false);
-                }
-           }
-
-
-
+            // Open product modal
             $(document).on('click', '.read-more', function () {
                 var itemId = $(this).data('itemid');
-                var modal = $('#productModal_' + itemId);
-
-                var currentItemId = itemId;
-
-                modal.removeClass('show');
-                modal.modal('show');
+                $('#productModal_' + itemId).modal('show');
             });
 
-
-            $(document).on('click', '.read-more', function () {
-                var itemId = $(this).data('itemid');
-                var modal = $('#productModal_' + itemId);
-
-                var currentItemId = itemId;
-
-                modal.removeClass('show');
-                modal.modal('show');
-            });
-
-
-
+            // Open add-to-cart modal
             $('.add-to-cart-card').click(function () {
                 var itemId = $(this).data('itemid');
                 var itemName = $(this).data('itemname');
                 var itemPrice = parseFloat($(this).data('itemprice'));
 
-                console.log("Add to Cart button clicked for item:", itemId, itemName, itemPrice);
+                var $modal = $('#addToCartModal_' + itemId);
+                $modal.find('#SelectedItemName').text(itemName);
+                $modal.find('#SelectedItemPrice').text('R ' + itemPrice.toFixed(2));
+                $modal.find('#MenuItemId').val(itemId);
+                $modal.find('#MenuItemName').val(itemName);
+                $modal.find('#MenuItemPrice').val(itemPrice);
 
-                // Reset modal content
-                var modal = $('#addToCartModal_' + itemId);
-                modal.find('#SelectedItemName').text(itemName);
-                modal.find('#SelectedItemPrice').text('R ' + itemPrice.toFixed(2));
-                modal.find('#MenuItemId').val(itemId);
-                modal.find('#MenuItemName').val(itemName);
-                modal.find('#MenuItemPrice').val(itemPrice);
-
-                // Show the modal
-                modal.modal('show');
+                $modal.modal('show');
             });
 
-
-            $(document).on('click', '.add-to-cart-item', function (event) {
-                event.preventDefault();
+            // Submit add-to-cart
+            $(document).on('click', '.add-to-cart-item', function (e) {
+                e.preventDefault();
                 var $form = $(this).closest('.modal-content').find('form');
                 var formData = $form.serialize();
                 var itemId = $form.find('#MenuItemId').val();
-                var itemName = $form.find('#MenuItemName').val();
-                var itemPrice = parseFloat($form.find('#MenuItemPrice').val());
-                $.ajax({
-                        url: '@Url.Action("AddCartItem", "CartItems")',
-                    type: 'POST',
-                    data: formData,
-                    success: function () {
+
+                $.post('@Url.Action("AddCartItem", "CartItems")', formData)
+                    .done(function () {
                         var currentCount = parseInt($('#cartItemCount').text());
                         $('#cartItemCount').text(currentCount + 1);
                         $('#addToCartModal_' + itemId).modal('hide');
                         fetchCartItems();
-                    },
-                    error: function () {
+                    }).fail(function () {
                         alert("Failed to add item to cart.");
-                    }
-                });
+                    });
             });
 
             function updateCartItemCount(count) {
@@ -522,88 +478,53 @@
                 });
                 $('#totalPrice').text('R ' + totalPrice.toFixed(2));
             }
-            updateTotalPrice();
 
-
-            function filterCards() {
-                var searchInput = $('#searchInput').val().toLowerCase();
-                var selectedCategory = $('#categoryDropdown').val();
-
-                $('.custom-card').each(function () {
-                    var cardName = $(this).find('.card-title').text().toLowerCase();
-                    var cardCategory = $(this).data('category').toString();
-
-                    // Check if card matches the search input and selected category
-                    if ((cardName.includes(searchInput) || searchInput === '') &&
-                        (selectedCategory === '' || cardCategory === selectedCategory)) {
-                        $(this).show();
-                    } else {
-                        $(this).hide();
-                    }
-                });
-            }
-
-            // Function to show or hide the "No items found" message
-            function toggleNoItemsMessage() {
-                var productsContainer = $('#productsContainer');
-                var noItemsMessage = $('#noItemsMessage');
-
-                if (productsContainer.children('.custom-card:visible').length === 0) {
-                    noItemsMessage.show();
-                } else {
-                    noItemsMessage.hide();
-                }
-            }
-
+            // Fetch cart items
             function fetchCartItems() {
-                $.ajax({
-                      url: '@Url.Action("GetCartItems", "CartItems")',
-                    type: 'GET',
-                    success: function (data) {
+                $.get('@Url.Action("GetCartItems", "CartItems")')
+                    .done(function (data) {
                         $('#cartItemsBody').html(data);
-                    },
-                    error: function (xhr, status, error) {
+                    }).fail(function (xhr, status, error) {
                         console.error(xhr.responseText);
                         alert("Failed to fetch cart items. Error: " + error);
-                    }
-
-                })
+                    });
             }
 
+            // Filter product cards
+            function filterCards() {
+                var search = $('#searchInput').val().toLowerCase();
+                var category = $('#categoryDropdown').val();
+
+                $('.custom-card').each(function () {
+                    var name = $(this).find('.card-title').text().toLowerCase();
+                    var cardCategory = $(this).data('category').toString();
+
+                    var matches = (!search || name.includes(search)) &&
+                                  (!category || cardCategory === category);
+
+                    $(this).toggle(matches);
+                });
+
+                toggleNoItemsMessage();
+            }
+
+            function toggleNoItemsMessage() {
+                var hasVisible = $('#productsContainer').children('.custom-card:visible').length > 0;
+                $('#noItemsMessage').toggle(!hasVisible);
+            }
+
+            // Modal close buttons
+            $('.custom-close-btn, .custom-close-btn-close').click(function () {
+                var itemId = $(this).closest('.modal').attr('id').split('_')[1];
+                $('#productModal_' + itemId).modal('hide');
+                $('#addToCartModal_' + itemId).modal('hide');
+            });
+
+            // Initial setup
+            updateTotalPrice();
             fetchCartItems();
 
-
-            // Call filterCards initially and whenever the search input or category dropdown changes
-            $('#searchInput, #categoryDropdown').on('input change', function () {
-                filterCards();
-                toggleNoItemsMessage(); // Call toggleNoItemsMessage after filtering the cards
-            });
-
-            $('.custom-close-btn').click(function () {
-                // Retrieve the item ID from the modal's ID attribute
-                var itemId = $(this).closest('.modal').attr('id').split('_')[1];
-                $('#productModal_' + itemId).modal('hide');
-            });
-
-            $('.custom-close-btn-close').click(function () {
-                // Retrieve the item ID from the modal's ID attribute
-                var itemId = $(this).closest('.modal').attr('id').split('_')[1];
-                $('#productModal_' + itemId).modal('hide');
-            });
-
-            $('.custom-close-btn').click(function () {
-                // Retrieve the item ID from the modal's ID attribute
-                var itemId = $(this).closest('.modal').attr('id').split('_')[1];
-                $('#addToCartModal_' + itemId).modal('hide');
-            });
-
-            $('.custom-close-btn-close').click(function () {
-                // Retrieve the item ID from the modal's ID attribute
-                var itemId = $(this).closest('.modal').attr('id').split('_')[1];
-                $('#addToCartModal_' + itemId).modal('hide');
-            });
-
-
+            $('#searchInput, #categoryDropdown').on('input change', filterCards);
         });
     </script>
-    }
+}

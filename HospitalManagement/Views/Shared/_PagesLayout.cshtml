@@ -205,6 +205,15 @@
                                     <li style="margin-top: 10px;"><a asp-controller="Categories" asp-action="Categories" class="nav-link text-light">Meals categories</a></li>
                                 </ul>
                             </li>
+
+                            <hr style="background-color: white; opacity: 0.2; margin: 15px 20px; cursor:pointer;">
+
+                            <li style="margin: 20px 0 0 30px; display: flex; align-items: center;">
+                            <i class="fa fa-bed fa-lg" style="color: white; margin-right: 10px;"></i>
+                            <a asp-controller="Rooms" asp-action="Rooms" class="nav-link text-light" style="font-weight: bold;">Room Management</a>
+                            </li>
+
+
                             <hr style="background-color: white; opacity: 0.2; margin: 15px 20px;">
 
                             <li style="margin-left: 30px; cursor:pointer;">
@@ -589,7 +598,7 @@
 
                             <li style="margin: 20px 0 0 30px; display: flex; align-items: center;">
                                 <i class="fa fa-exchange-alt fa-lg" style="color: white; margin-right: 10px;"></i>
-                                <a asp-controller="Billings" asp-action="MyTransactions" class="nav-link text-light" style="font-weight: bold;">Transactions</a>
+                                <a asp-controller="Billings" asp-action="Transactions" class="nav-link text-light" style="font-weight: bold;">Transactions</a>
                             </li>
 
                             <hr style="background-color: white; opacity: 0.2; margin: 15px 20px;">
@@ -617,15 +626,7 @@
     </header>
     <div id="loading-overlay">
         <div class="loading-container">
-            <div class="circle-loader">
-                <i class="fas fa-futbol ball" style="--i: 0;"></i>
-                <i class="fas fa-futbol ball" style="--i: 1;"></i>
-                <i class="fas fa-futbol ball" style="--i: 2;"></i>
-                <i class="fas fa-futbol ball" style="--i: 3;"></i>
-                <i class="fas fa-futbol ball" style="--i: 4;"></i>
-                <i class="fas fa-futbol ball" style="--i: 5;"></i>
-                <i class="fas fa-futbol ball" style="--i: 6;"></i>
-            </div>
+            <i class="fas fa-heartbeat medical-icon"></i>
             <div class="loading-text">Loading...</div>
         </div>
     </div>
@@ -640,9 +641,9 @@
     </div>
     
 
-    <a asp-controller="Reports" asp-action="TestFeedback" class="floating-button">
+@*     <a asp-controller="Reports" asp-action="TestFeedback" class="floating-button">
         <span class="rotate"><i class="fa fa-comment"></i> Share Feedback</span>
-    </a>
+    </a> *@
     @* <div class="cookie-banner" style="display: none;"> *@
     @*     <div class="cookie-content"> *@
     @*         <span class="cookie-message">We use cookies to improve your experience on our website.<a class="cookie-link" href="/Home/PrivacyPolicy" id="manage-cookies">Learn more</a>/ <a class="cookie-link" href="/CookiePreferences/Index" id="manage-cookies">Manage Cookies</a></span> *@
@@ -654,20 +655,23 @@
         <div class="container">
             <div class="row">
                 <div class="col-md-3">
-                    <h5>About Us</h5>
+                    <div class="w-100 mt-4 mb-3">
+                        <h5 class="px-3 py-2" style="color:white; border-left: 3px solid White;">
+                            About Us
+                        </h5>
+                    </div>
                     <p>
                         Learn more about our mission, values, and team. Visit our
                         <a href="@Url.Action("AboutUs", "Home")" class="text-white">About Us</a> page for more details.
                     </p>
-                    <h5 style="padding-top:25px;">Join Us</h5>
-                    <p>
-                        Do you want to become one of our valued customers? <br />
-                        <a asp-controller="Divisions" asp-action="MakeOnboardingRequest" class="text-white font-weight-bold">Click here to join Diski60!</a>
-                    </p>
                 </div>
 
                 <div class="col-md-3">
-                    <h5>Quick Links</h5>
+                    <div class="w-100 mt-4 mb-3">
+                        <h5 class="px-3 py-2" style="color:white; border-left: 3px solid White;">
+                            Quick Links
+                        </h5>
+                    </div>
                     <ul class="list-unstyled">
                         <li><a asp-controller="Home" asp-action="PrivacyPolicy" class="text-white">Privacy Policy</a></li>
                         <li><a asp-controller="Home" asp-action="TermsAndConditions" class="text-white">Terms & Conditions</a></li>
@@ -676,30 +680,29 @@
                     </ul>
                 </div>
                 <div class="col-md-3">
-                    <h5>Contact Us</h5>
+                    <div class="w-100 mt-4 mb-3">
+                        <h5 class="px-3 py-2" style="color:white; border-left: 3px solid White;">
+                            Contact Us
+                        </h5>
+                    </div>
                     <p>Have questions? Get in touch with us via email or phone.</p>
-                    <p><i class="fa fa-envelope"></i> <a href="mailto:info@diski360.com" class="text-white">info@diski360.com</a></p>
+                    <p><i class="fa fa-envelope"></i> <a href="mailto:info@mediconnect.org" class="text-white">info@mediconnect.org</a></p>
                     <p><i class="fa fa-phone"></i> +27732871256</p>
                 </div>
                 <div class="col-md-3">
-                    <h5>Our Customers</h5>
-                    @*  @if (customers != null && customers.Count > 0)
-                    {
-                        <ul>
-                            @foreach (var customer in customers)
-                            {
-                                <li style="padding:5px;">
-                                    <img src="@Url.Content("~/" + customer.DivisionBadge)" alt="@customer.DivisionName" style="width:40px; height:40px; object-fit:cover; background-color:white; border-radius:8px;" />
-                                    @customer.DivisionName (@customer.DivisionAbbr)
-                                </li>
-                            }
-                        </ul>
-                    }
-                    else
-                    {
-                        <p>We currently do not have customers but are in the process of acquiring some.</p>
-                    } *@
+                    <div class="w-100 mt-4 mb-3">
+                        <h5 class="px-3 py-2" style="color:white; border-left: 3px solid White;">
+                            Join Us
+                        </h5>
+                    </div>
+                    <p>
+                        Do you want to become one of our valued patients? <br />
+                        <a asp-area="Identity" asp-page="/Account/Register" class="text-white font-weight-bold">
+                            Click here to join MediConnect!
+                        </a>
+                    </p>
                 </div>
+
             </div>
             <hr style="border-color: white; margin: 20px 0;">
             <div class="text-center mt-3">
