@@ -125,31 +125,68 @@ namespace Cafeteria.Controllers
                     return NotFound("Cart not found for the current user.");
                 }
 
-                var subtotal = viewModel.Quantity * viewModel.MenuItemPrice;
+                var existingCartItem = await _context.CartItems
+                    .Where(ci => ci.CartId == cartId && ci.MenuItemId == viewModel.MenuItemId && !ci.Deleted)
+                    .FirstOrDefaultAsync();
 
-                var cartItem = new CartItem
+                if (existingCartItem != null)
                 {
-                    PatientId = userId,
-                    CartId = cartId,
-                    MenuItemId = viewModel.MenuItemId,
-                    Quantity = viewModel.Quantity,
-                    Subtotal = subtotal,
-                    Deleted = false
-                };
+                    existingCartItem.Quantity += viewModel.Quantity;
+                    existingCartItem.Subtotal = existingCartItem.Quantity * viewModel.MenuItemPrice;
 
-                _context.CartItems.Add(cartItem);
+                    _context.CartItems.Update(existingCartItem);
+                }
+                else
+                {
+                    var newCartItem = new CartItem
+                    {
+                        PatientId = userId,
+                        CartId = cartId,
+                        MenuItemId = viewModel.MenuItemId,
+                        Quantity = viewModel.Quantity,
+                        Subtotal = viewModel.Quantity * viewModel.MenuItemPrice,
+                        Deleted = false
+                    };
+
+                    _context.CartItems.Add(newCartItem);
+                }
+
                 await _context.SaveChangesAsync();
 
-                TempData["SuccessMessage"] = $"You have added {viewModel.Quantity} {viewModel.MenuItemName}(s) that cost R {subtotal:F2} to the cart.";
+                TempData["SuccessMessage"] = $"You have added {viewModel.Quantity} {viewModel.MenuItemName}(s) to the cart.";
                 return RedirectToAction("Index", "Home");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error creating cart item");
+                _logger.LogError(ex, "Error adding/updating cart item");
                 TempData["ErrorMessage"] = "Failed to add item to cart.";
                 return RedirectToAction("Index", "Home");
             }
         }
+
+
+        [HttpGet]
+        public async Task<IActionResult> GetCartItemCount()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var cartId = await _context.Carts
+                .Where(c => c.UserId == userId)
+                .Select(c => c.CartId)
+                .FirstOrDefaultAsync();
+
+            if (cartId == 0)
+                return Json(0);
+
+            var count = await _context.CartItems
+                .Where(ci => ci.CartId == cartId && !ci.Deleted)
+                .Select(ci => ci.MenuItemId)
+                .Distinct()
+                .CountAsync();
+
+            return Json(count);
+        }
+
 
         [HttpGet]
         public async Task<IActionResult> GetCartItems()

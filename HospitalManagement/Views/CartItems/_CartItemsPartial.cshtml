@@ -1,34 +1,121 @@
 ﻿@model IEnumerable<HospitalManagement.Models.CartItem>
 
 <style>
+    /* Make table look like a receipt */
+    #cartTable {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-size: 14px;
+        background: #fff;
+        box-shadow: 0 0 8px rgba(0,0,0,0.1);
+        border: 1px solid #ccc;
+        padding: 10px;
+    }
+
+        /* Header styling */
+        #cartTable thead th {
+            border-bottom: 1px dashed #aaa;
+            color: #333;
+            font-weight: 600;
+            padding: 8px;
+            text-align: left;
+        }
+
+        /* Dotted lines for rows like receipt printout */
+        #cartTable tbody tr {
+            border-bottom: 1px dotted #999;
+        }
+
+        #cartTable td {
+            padding: 6px 8px;
+            vertical-align: middle;
+            color: #333;
+        }
+
+        /* Subtotal and total emphasis */
+        #cartTable .subtotal,
+        #totalPrice {
+            font-family: monospace;
+            font-weight: bold;
+            color: #000;
+        }
+
+        /* Total row */
+        #cartTable tfoot td {
+            border-top: 1px dashed #aaa;
+            padding-top: 10px;
+        }
+
+    /* Input box */
+    .quantity-input {
+        width: 50px;
+        padding: 4px;
+        text-align: center;
+        font-size: 14px;
+    }
+
+    /* Delete icon style */
     .delete-icon {
         color: red;
         background: none;
         border: none;
+        font-size: 16px;
+        cursor: pointer;
     }
 
-    .h-delete-icon {
-        color: black;
-        background: none;
-        border: none;
-    }
-
-    .no-items-message {
+    /* Button container styling */
+    .button-container {
         text-align: center;
-        vertical-align: middle;
+        margin-top: 20px;
     }
 
+    #checkoutButton {
+        background-color: #333;
+        color: #fff;
+        padding: 8px 20px;
+        font-size: 15px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+        #checkoutButton:hover {
+            background-color: #555;
+        }
+
+    /* Empty cart center */
     .center {
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
         height: 40vh;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .no-items-message {
+        margin-top: 10px;
+        color: #666;
+    }
+
+
+    .cart-container {
+        margin: 0 auto; /* Center the table if needed */
+        padding: 0; /* Remove inner padding */
+        max-width: 100%; /* Make sure it doesn't exceed full width */
+    }
+
+    #cartTable {
+        width: 100%;
+        margin: 0; /* Remove default margin */
     }
 </style>
 
+
 @if (Model != null && Model.Any())
 {
+    <div class="cart-container">
     <table class="table" id="cartTable">
         <thead>
             <tr>
@@ -48,9 +135,10 @@
                         <input type="number" class="quantity-input" value="@cartItem.Quantity" min="1" />
                     </td>
                     <td>R @cartItem.MenuItem?.Price</td>
-                    <td class="subtotal" data-price="@cartItem">
-                        R @(cartItem.Quantity * (cartItem.MenuItem?.Price))
+                    <td class="subtotal" data-price="@cartItem.MenuItem?.Price.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)">
+                        R @((cartItem.Quantity * (cartItem.MenuItem?.Price ?? 0)).ToString("0.00"))
                     </td>
+
                     <td>
                         <button class="btn delete-cart-item" data-cartitemid="@cartItem.CartItemId">
                             <i class="fas fa-trash-alt delete-icon"></i>
@@ -70,14 +158,12 @@
             </tr>
         </tfoot>
     </table>
-
+    </div>
     <br />
     <p>Please note: Changing quantity may affect each item's subtotal as well as the total amount of all items in your basket.</p>
 
     <div class="button-container btn-md">
-        <a href="/Orders/NewOrder">
-            <button id="checkoutButton">Checkout</button>
-        </a>
+        <a href="/Orders/NewOrder" class="btn" id="addButton">Checkout</a>
     </div>
 
     <br />

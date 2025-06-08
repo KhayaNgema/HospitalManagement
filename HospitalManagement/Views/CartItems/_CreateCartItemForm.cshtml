@@ -20,11 +20,18 @@
             <div class="form-control rounded-3 bg-light fw-bold">R @Model.MenuItemPrice</div>
         </div>
 
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Quantity</label>
+            <input asp-for="Quantity"
+                   class="form-control rounded-3 quantity-input w-100"
+                   id="quantityInput_@Model.MenuItemId"
+                   data-price="@Model.MenuItemPrice.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)"
+                   value="1"
+                   min="1"
+                   type="number"
+                   style="appearance: textfield;" />
+        </div>
 
-        <input asp-for="Quantity"
-               class="form-control rounded-3 quantity-input"
-               id="quantityInput_@Model.MenuItemId"
-               data-price="@Model.MenuItemPrice" />
 
         <div class="mb-3">
             <label class="form-label fw-semibold">Subtotal</label>
