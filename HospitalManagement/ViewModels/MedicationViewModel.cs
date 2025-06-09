@@ -30,5 +30,7 @@ namespace HospitalManagement.ViewModels
         public DateTime? ExpiryDate { get; set; }
 
         public IFormFile MedicationImages { get; set; }
+
+        public int CategoryId { get; set; }
     }
 }

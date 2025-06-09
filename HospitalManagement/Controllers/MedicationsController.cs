@@ -75,7 +75,7 @@ namespace HospitalManagement.Controllers
             return View(medications);
         }
 
-
+        [Authorize(Roles = "Pharmacist")]
         [HttpGet]
         public async Task<IActionResult> MedicationPescriptionRequests()
         {
@@ -87,22 +87,45 @@ namespace HospitalManagement.Controllers
                 .ThenInclude(mp => mp.Booking)
                 .Include(mp => mp.CreatedBy)
                 .Include(mp => mp.ModifiedBy)
+                .Where(mp => mp.Status == MedicationPescriptionStatus.Pending ||
+                mp.Status == MedicationPescriptionStatus.Collecting)
                 .OrderByDescending(mp => mp.CreatedAt)
                 .ToListAsync();
 
             return View(medications);
         }
 
-
+        [Authorize(Roles = "Pharmacist")]
         [HttpGet]
-        public async Task<IActionResult> Medications()
+        public async Task<IActionResult> PreviousMedicationRequests()
         {
-            var medications = await _context.Medications
+            var medications = await _context.MedicationPescription
+                .Include(mp => mp.PrescribedMedication)
+                .Include(mp => mp.Booking)
+                .ThenInclude(mp => mp.CreatedBy)
+                .Include(mp => mp.Admission)
+                .ThenInclude(mp => mp.Booking)
+                .Include(mp => mp.CreatedBy)
+                .Include(mp => mp.ModifiedBy)
+                .Where(mp => mp.Status == MedicationPescriptionStatus.Collected)
+                .OrderByDescending(mp => mp.CreatedAt)
                 .ToListAsync();
 
             return View(medications);
         }
 
+        [Authorize(Roles = "Pharmacist")]
+        [HttpGet]
+        public async Task<IActionResult> Medications()
+        {
+            var medications = await _context.Medications
+                .Include(m => m.Category)
+                .ToListAsync();
+
+            return View(medications);
+        }
+
+        [Authorize(Roles = "Pharmacist Doctor")]
         [HttpGet]
         public async Task<IActionResult> PescriptionRequest(string medicationPescriptionId)
         {
@@ -160,20 +183,28 @@ namespace HospitalManagement.Controllers
                 CollectAfterCount = pescriptionRequest.CollectAfterCount,
                 CollectInterval = pescriptionRequest.CollectionInterval,
                 CollectUntilDate = pescriptionRequest.ExpiresAt,
-                DoctorDepartment = doctor.Department
+                DoctorDepartment = doctor.Department,
+                Status = pescriptionRequest.Status,
                 
             };
 
             return View(viewModel);
         }
 
-
+        [Authorize(Roles = "Pharmacist")]
         [HttpGet]
         public async Task<IActionResult> NewMedication()
         {
+
+            var categories = await _context.MedicationCategories
+                .ToListAsync();
+
+            ViewBag.Categories = categories;
+
             return View();
         }
 
+        [Authorize(Roles = "Pharmacist")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> NewMedication(MedicationViewModel viewModel, IFormFile MedicationImages)
@@ -198,7 +229,7 @@ namespace HospitalManagement.Controllers
                     LastUpdatedAt = DateTime.Now,
                     UpdatedById = user.Id,
                     IsPrescriptionRequired = true,
-                    
+                    CategoryId = viewModel.CategoryId,
                 };
 
                 if (viewModel.MedicationImages != null && viewModel.MedicationImages.Length > 0)
@@ -226,16 +257,20 @@ namespace HospitalManagement.Controllers
                         StackTrace = ex.StackTrace
                     }
                 });
-
-                return View(viewModel);
             }
+            var categories = await _context.MedicationCategories
+                .ToListAsync();
+
+            ViewBag.Categories = categories;
+
+            return View(viewModel);
         }
 
 
         [Authorize(Roles = "Pharmacist, System Administrator")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpdateStatusRedirect(int prescriptionRequestId, MedicationPescriptionStatus status)
+        public async Task<IActionResult> UpdateStatus(int prescriptionRequestId, MedicationPescriptionStatus status)
         {
             var user = await _userManager.GetUserAsync(User);
 
@@ -254,9 +289,10 @@ namespace HospitalManagement.Controllers
                 await _context.SaveChangesAsync();
             }
 
-            TempData["Message"] = $"You have successfully updated the medication prescription request status to {status}.";
+            TempData["Message"] = $"You have successfully updated the medication prescription request status to {medicationprescriptionRequest.Status}.";
 
-            var encryptedId = _encryptionService.Encrypt(prescriptionRequestId);
+            var encryptedId = _encryptionService.Encrypt(medicationprescriptionRequest.MedicationPescriptionId);
+
             return RedirectToAction(nameof(PescriptionRequest), new { medicationPescriptionId = encryptedId });
         }
     }

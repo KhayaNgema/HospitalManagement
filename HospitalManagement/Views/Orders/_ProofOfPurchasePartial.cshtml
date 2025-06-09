@@ -3,24 +3,23 @@
 
 <div class="receipt-container">
     <div class="receipt-header">
-        <h4>MediConnect</h4>
+        <span style="color: #022D36;font-size:30px; font-weight:bold;">Medi</span><span style="color: #48AAAD; font-size:30px; font-weight:bold;">Connect</span>
+        <div>PATIENT/CUSTOMER COPY</div>
         <div>Order #: @Model.LastFourDigitsOfOrderNumber</div>
-        <div>Date: @Model.OrderDate.ToString("yyyy-MM-dd HH:mm")</div>
+        <div>Date: @Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</div>
     </div>
 
     <dl class="receipt-details">
-        <dt>Payment Status:</dt>
-        <dd>@(Model.IsPaid ? "Paid" : "Unpaid")</dd>
+        <dt>Order Status:</dt>
+        <dd>@(Model.Status)</dd>
     </dl>
 
-    <!-- Header row -->
     <div class="items-header">
         <div class="item-name">Item</div>
         <div class="item-qty">Qty</div>
         <div class="item-subtotal">Subtotal (R)</div>
     </div>
 
-    <!-- Items -->
     @foreach (var item in Model.OrderItems)
     {
         <div class="item-row">
@@ -30,9 +29,8 @@
         </div>
     }
 
-    <!-- Summary -->
     <div class="summary-row">
-        Total Amount: R @Model.TotalPrice.ToString("F2")
+        Total: R @Model.TotalPrice.ToString("F2")
     </div>
 
     <div class="receipt-footer">

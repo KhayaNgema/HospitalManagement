@@ -117,10 +117,9 @@
     const qrReader = document.getElementById("qr-reader");
     const openScanner = document.getElementById("openScanner");
 
-    let currentStatusFilter = "Assigned"; // Default filter, can be changed as needed
+    let currentStatusFilter = "Assigned"; 
     let currentSearchQuery = "";
 
-    // Unified filter function: filters by status AND booking reference search
     function filterAppointments() {
         const rows = document.querySelectorAll("#appointmentsTable tbody tr");
         let anyVisible = false;
@@ -129,10 +128,8 @@
             const status = row.querySelector("td:nth-child(7)").textContent.trim();
             const bookingRef = row.querySelector("td:first-child").textContent.toLowerCase();
 
-            // Status filter: show all if 'All' else match
             const statusMatches = (currentStatusFilter === "All") || (status === currentStatusFilter);
 
-            // Search filter on booking reference
             const searchMatches = bookingRef.includes(currentSearchQuery);
 
             if (statusMatches && searchMatches) {
@@ -146,14 +143,12 @@
         document.getElementById("noResultsMessage").style.display = anyVisible ? "none" : "block";
     }
 
-    // Setup status filter buttons
     function setupFilterButtons() {
         const buttons = document.querySelectorAll(".filter-btn");
         buttons.forEach(btn => {
             btn.addEventListener("click", function () {
                 currentStatusFilter = this.getAttribute("data-filter");
 
-                // Update active button styling
                 buttons.forEach(b => b.classList.remove("active"));
                 this.classList.add("active");
 
@@ -161,7 +156,6 @@
             });
         });
 
-        // Initialize active filter button
         buttons.forEach(btn => {
             if (btn.getAttribute("data-filter") === currentStatusFilter) {
                 btn.classList.add("active");
@@ -169,7 +163,6 @@
         });
     }
 
-    // Setup search input listener
     function setupSearchInput() {
         qrInput.addEventListener("keyup", function () {
             currentSearchQuery = this.value.trim().toLowerCase();
@@ -177,7 +170,6 @@
         });
     }
 
-    // QR code scanner setup
     openScanner.addEventListener("click", () => {
         qrReaderWrapper.style.display = "block";
         qrReaderWrapper.classList.add("active");
@@ -201,7 +193,6 @@
                         }).catch(err => console.error("Stop error", err));
                     },
                     errorMessage => {
-                        // You can log or handle scan errors here if needed
                     }
                 ).catch(err => {
                     console.error("QR code scan error:", err);
@@ -212,7 +203,6 @@
         });
     });
 
-    // Setup row click navigation
     function setupRowClicks() {
         document.querySelectorAll('#appointmentsTable .clickable-row').forEach(row => {
             row.addEventListener('click', function () {
@@ -223,11 +213,10 @@
         });
     }
 
-    // Initialize all event handlers on DOM ready
     document.addEventListener("DOMContentLoaded", function () {
         setupFilterButtons();
         setupSearchInput();
-        filterAppointments(); // Apply initial filter
+        filterAppointments();
         setupRowClicks();
     });
 </script>

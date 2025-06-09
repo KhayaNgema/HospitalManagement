@@ -22,8 +22,11 @@
             <form asp-action="NewMedicalRecord" asp-controller="MedicalHistories" method="post" novalidate>
                 <input type="hidden" asp-for="PatientId" />
 
-                <h5 class="text-muted mb-3">Patient Details</h5>
-
+                <div class="w-100 mt-4 mb-3">
+                    <h3 class="px-3 py-2 bg-light" style="color:#48AAAD; border-left: 5px solid #48AAAD;">
+                        Patient Information
+                    </h3>
+                </div>
                 <div class="text-center mb-3">
                     <img src="~/@Model.ProfilePicture" alt="Profile Picture" class="img-thumbnail rounded-circle" style="width: 120px; height: 120px; object-fit: cover;" />
                 </div>
@@ -46,8 +49,11 @@
                     </div>
                 </div>
 
-                <h5 class="text-muted mb-3 mt-4">Medical Record Details</h5>
-
+                <div class="w-100 mt-4 mb-3">
+                    <h3 class="px-3 py-2 bg-light" style="color:#48AAAD; border-left: 5px solid #48AAAD;">
+                        Medical Record Information
+                    </h3>
+                </div>
                 <div class="mb-3">
                     <label asp-for="ChiefComplaint" class="form-label fw-semibold text-muted"></label>
                     <textarea asp-for="ChiefComplaint" class="form-control" rows="2"></textarea>
@@ -100,46 +106,75 @@
                     <span asp-validation-for="Treatment" class="text-danger"></span>
                 </div>
 
-                <div id="dischargePatientFields">
-                    <div class="row g-4 mb-4">
-                        <div class="col-md-6">
-                            <label for="categoryDropdown">Medication to prescribe</label>
-                            <div class="d-flex flex-nowrap gap-2 align-items-center">
-                                <select id="categoryDropdown" class="form-select" style="flex: 0 0 66.6667%; min-width: 0;">
-                                    <option value="">-- Select Medication --</option>
-                                    @foreach (var medication in ViewBag.Medications)
+                @if(ViewBag.Admission == null)
+                {
+                    <div id="dischargePatientFields">
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-6">
+                                <label for="categoryDropdown">Medication to prescribe</label>
+                                <div class="d-flex flex-nowrap gap-2 align-items-center">
+                                    <select id="categoryDropdown" class="form-select" style="flex: 0 0 66.6667%; min-width: 0;">
+                                        <option value="">-- Select Medication --</option>
+                                        @foreach (var medication in ViewBag.Medications)
+                                        {
+                                            <option value="@medication.MedicationId">
+                                                @medication.MedicationName (D @medication.DosageForm - S @medication.Strength - U @medication.UnitOfMeasure)
+                                            </option>
+                                        }
+                                    </select>
+
+                                    <button id="addMedicationBtn" type="button" class="btn btn-success btn-md" style="flex: 0 0 33.3333%; height: auto; white-space: nowrap;">
+                                        <i class="fas fa-plus me-1"></i> Add
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <span asp-validation-for="PrescribedMedication" class="text-danger small"></span>
+
+                                <div id="medicationsContainer" class="border rounded py-2 px-3 shadow-sm mt-3" style="min-height: 100px; background-color: #f9f9f9;">
+                                </div>
+
+                                <div id="hiddenInputsContainer">
+                                    @for (int i = 0; i < prescribedList.Count; i++)
                                     {
-                                        <option value="@medication.MedicationId">
-                                            @medication.MedicationName (D @medication.DosageForm - S @medication.Strength - U @medication.UnitOfMeasure)
-                                        </option>
+                                        <input type="hidden" name="PrescribedMedication[@i].MedicationId" value="@prescribedList[i].MedicationId" />
+                                        <input type="hidden" name="PrescribedMedication[@i].MedicationName" value="@prescribedList[i].MedicationName" />
                                     }
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="row g-4 mb-4">
+                            <label class="form-label fw-semibold text-muted">Collection Type</label>
+                            <select asp-for="PrescriptionType" class="form-select rounded-3" asp-items="Html.GetEnumSelectList<PrescriptionType>()" id="prescriptionType">
+                                <option value="">-- Select Collection Type --</option>
+                            </select>
+                            <span asp-validation-for="PrescriptionType" class="text-danger small"></span>
+                        </div>
+                        <div id="recurringFields" class="row g-4 mb-4" style="display: none;">
+                            <div class="col-md-2">
+                                <label asp-for="CollectAfterCount" class="form-label fw-semibold text-muted"></label>
+                                <input asp-for="CollectAfterCount" class="form-control rounded-3" />
+                                <span asp-validation-for="CollectAfterCount" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-5">
+                                <label asp-for="CollectionInterval" class="form-label fw-semibold text-muted"></label>
+                                <select asp-for="CollectionInterval" class="form-select rounded-3" asp-items="Html.GetEnumSelectList<CollectionInterval>()">
+                                    <option value="">-- Select Interval --</option>
                                 </select>
+                                <span asp-validation-for="CollectionInterval" class="text-danger small"></span>
+                            </div>
 
-                                <button id="addMedicationBtn" type="button" class="btn btn-success btn-md" style="flex: 0 0 33.3333%; height: auto; white-space: nowrap;">
-                                    <i class="fas fa-plus me-1"></i> Add
-                                </button>
+                            <div class="col-md-5">
+                                <label asp-for="UntilDate" class="form-label fw-semibold text-muted"></label>
+                                <input asp-for="UntilDate" type="date" class="form-control rounded-3" />
+                                <span asp-validation-for="UntilDate" class="text-danger small"></span>
                             </div>
                         </div>
-
-                        <div class="col-md-6">
-                            <span asp-validation-for="PrescribedMedication" class="text-danger small"></span>
-
-                            <div id="medicationsContainer" class="border rounded py-2 px-3 shadow-sm mt-3" style="min-height: 100px; background-color: #f9f9f9;">
-                            </div>
-
-                            <div id="hiddenInputsContainer">
-                                @for (int i = 0; i < prescribedList.Count; i++)
-                                {
-                                    <input type="hidden" name="PrescribedMedication[@i].MedicationId" value="@prescribedList[i].MedicationId" />
-                                    <input type="hidden" name="PrescribedMedication[@i].MedicationName" value="@prescribedList[i].MedicationName" />
-                                }
-                            </div>
-                        </div>
-
                     </div>
-                </div>
-
-
+                }
                 <div class="mb-3">
                     <label asp-for="FollowUpInstructions" class="form-label fw-semibold text-muted"></label>
                     <textarea asp-for="FollowUpInstructions" class="form-control" rows="3" placeholder="Enter follow-up instructions separated by commas"></textarea>
@@ -268,5 +303,24 @@
 
         renderMedications();
     });
+    document.addEventListener('DOMContentLoaded', function () {
+                const select = document.getElementById('prescriptionType');
+                const recurringFields = document.getElementById('recurringFields');
+
+                function toggleRecurringFields() {
+                    const selectedValue = select.options[select.selectedIndex].text;
+                    if (selectedValue === 'Recurring') {
+                        recurringFields.style.display = 'flex';
+                    } else {
+                        recurringFields.style.display = 'none';
+                    }
+                }
+
+               
+                toggleRecurringFields();
+
+              
+                select.addEventListener('change', toggleRecurringFields);
+            });
 </script>
 

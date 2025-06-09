@@ -32,6 +32,8 @@ namespace HospitalManagement.Controllers
             _qrCodeService = qrCodeService;
 
         }
+
+        [Authorize(Roles = "System Administrator, Receptionist")]
         public async Task<IActionResult> Doctors()
         {
             var doctors = await _context.Doctors
@@ -40,6 +42,7 @@ namespace HospitalManagement.Controllers
             return View(doctors);
         }
 
+        [Authorize(Roles = "System Administrator, Receptionist")]
         public async Task<IActionResult> Receptionists()
         {
             var receptionists = await _context.Receptionists
@@ -48,6 +51,7 @@ namespace HospitalManagement.Controllers
             return View(receptionists);
         }
 
+        [Authorize(Roles = "System Administrator, Receptionist")]
         public async Task<IActionResult> KitchenStaff()
         {
             var kitchenStaff = await _context.KitchenStaff
@@ -56,6 +60,7 @@ namespace HospitalManagement.Controllers
             return View(kitchenStaff);
         }
 
+        [Authorize(Roles = "System Administrator, Receptionist")]
         public async Task<IActionResult> Pharmacists()
         {
             var pharmacists = await _context.Pharmacists
@@ -64,6 +69,7 @@ namespace HospitalManagement.Controllers
             return View(pharmacists);
         }
 
+        [Authorize(Roles = "System Administrator, Receptionist")]
         public async Task<IActionResult> Patients()
         {
             var kitchenStaff = await _context.Patients

@@ -117,9 +117,6 @@ namespace HospitalManagement.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("Ward")
-                        .HasColumnType("int");
-
                     b.HasKey("AdmissionId");
 
                     b.HasIndex("BookingId");
@@ -368,6 +365,12 @@ namespace HospitalManagement.Data.Migrations
                     b.Property<string>("ChiefComplaint")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("CollectAfterCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("CollectionInterval")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -407,6 +410,9 @@ namespace HospitalManagement.Data.Migrations
                     b.Property<int?>("PatientMedicalHistoryId")
                         .HasColumnType("int");
 
+                    b.Property<int>("PrescriptionType")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("RecordedAt")
                         .HasColumnType("datetime2");
 
@@ -418,6 +424,9 @@ namespace HospitalManagement.Data.Migrations
 
                     b.Property<string>("Treatment")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UntilDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("UpdatedById")
                         .IsRequired()
@@ -454,6 +463,9 @@ namespace HospitalManagement.Data.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MedicationId"));
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -516,6 +528,8 @@ namespace HospitalManagement.Data.Migrations
 
                     b.HasKey("MedicationId");
 
+                    b.HasIndex("CategoryId");
+
                     b.HasIndex("CreatedById");
 
                     b.HasIndex("MedicalHistoryId");
@@ -525,6 +539,41 @@ namespace HospitalManagement.Data.Migrations
                     b.HasIndex("UpdatedById");
 
                     b.ToTable("Medications");
+                });
+
+            modelBuilder.Entity("HospitalManagement.Models.MedicationCategory", b =>
+                {
+                    b.Property<int>("CategoryId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CategoryId"));
+
+                    b.Property<string>("CategoryName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedById")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("LastUpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedById")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("CategoryId");
+
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("UpdatedById");
+
+                    b.ToTable("MedicationCategories");
                 });
 
             modelBuilder.Entity("HospitalManagement.Models.MedicationInventory", b =>
@@ -1605,6 +1654,12 @@ namespace HospitalManagement.Data.Migrations
 
             modelBuilder.Entity("HospitalManagement.Models.Medication", b =>
                 {
+                    b.HasOne("HospitalManagement.Models.MedicationCategory", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("HospitalManagement.Models.UserBaseModel", "CreatedBy")
                         .WithMany()
                         .HasForeignKey("CreatedById")
@@ -1618,6 +1673,27 @@ namespace HospitalManagement.Data.Migrations
                     b.HasOne("HospitalManagement.Models.MedicalHistory", null)
                         .WithMany("PrescribedMedication")
                         .HasForeignKey("MedicalHistoryId1");
+
+                    b.HasOne("HospitalManagement.Models.UserBaseModel", "ModifiedBy")
+                        .WithMany()
+                        .HasForeignKey("UpdatedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("ModifiedBy");
+                });
+
+            modelBuilder.Entity("HospitalManagement.Models.MedicationCategory", b =>
+                {
+                    b.HasOne("HospitalManagement.Models.UserBaseModel", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("HospitalManagement.Models.UserBaseModel", "ModifiedBy")
                         .WithMany()

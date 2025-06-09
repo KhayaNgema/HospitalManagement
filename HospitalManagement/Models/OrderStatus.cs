@@ -8,7 +8,7 @@ namespace HospitalManagement.Models
         Pending,
 
         [Display(Name = "Ready for collection")]
-        Ready_For_Collection,
+        Ready_For_Delivery,
 
         [Display(Name = "Delivered")]
         Collected,

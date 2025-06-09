@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HospitalManagement.Models
@@ -64,6 +65,19 @@ namespace HospitalManagement.Models
 
         [ForeignKey("DoctorId")]
         public virtual Doctor Doctor { get; set; }
+
+        [DisplayName("Until date")]
+        public DateTime? UntilDate { get; set; }
+
+        [DisplayName("Collect after")]
+        public int? CollectAfterCount { get; set; }
+
+        [DisplayName("Interval")]
+        public CollectionInterval? CollectionInterval { get; set; }
+
+        [DisplayName("Pescription type")]
+        public PrescriptionType PrescriptionType { get; set; }
+
 
         [Display(Name = "Recorded On")]
         public DateTime RecordedAt { get; set; } = DateTime.Now;

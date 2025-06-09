@@ -31,14 +31,6 @@
                 <strong>Total Order Amount:</strong> R <span id="amountPaid">@ViewBag.AmountPaid</span><br />
             </p>
             <br />
-            <p class="fs-5 mt-3">
-                Click here to download your proof of purchase:
-            </p>
-
-            <p class="fs-5">
-                <a class="fw-bold" asp-action="MyProofOfPurchasePDF" asp-controller="Billings" asp-route-orderId="@ViewBag.OrderId">Proof of Purchase</a>
-            </p>
-
             <div class="mt-4">
                 <a href="@Url.Action("MyOrders", "Orders")" id="addButton" class="btn btn-md">View My Orders</a>
             </div>

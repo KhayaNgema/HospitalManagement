@@ -1,6 +1,7 @@
 ﻿using HospitalManagement.Models;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel;
 
 namespace HospitalManagement.ViewModels
 {
@@ -63,5 +64,17 @@ namespace HospitalManagement.ViewModels
 
         [Display(Name = "Pescribed medication")]
         public ICollection<Medication> PrescribedMedication { get; set; }
+
+        [DisplayName("Until date")]
+        public DateTime? UntilDate { get; set; }
+
+        [DisplayName("Collect after")]
+        public int? CollectAfterCount { get; set; }
+
+        [DisplayName("Interval")]
+        public CollectionInterval? CollectionInterval { get; set; }
+
+        [DisplayName("Pescription type")]
+        public PrescriptionType PrescriptionType { get; set; }
     }
 }

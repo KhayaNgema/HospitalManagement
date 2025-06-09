@@ -3,6 +3,7 @@ using HospitalManagement.Interfaces;
 using HospitalManagement.Models;
 using HospitalManagement.Services;
 using HospitalManagement.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -96,6 +97,7 @@ namespace HospitalManagement.Controllers
             return View(menuItems);
         }
 
+        [Authorize(Roles = "Kitchen Staff")]
         [HttpGet]
         public async Task<IActionResult> NewItem()
         {
@@ -108,6 +110,7 @@ namespace HospitalManagement.Controllers
             return View();
         }
 
+        [Authorize(Roles = "Kitchen Staff")]
         [HttpPost]
         public async Task<IActionResult> NewItem(MenuItemViewModel viewModel)
         {

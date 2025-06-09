@@ -8,6 +8,9 @@ namespace HospitalManagement.Models
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int MedicationId { get; set; }
 
+        public int CategoryId { get; set; }
+        public virtual MedicationCategory Category { get; set; }
+
         [Required]
         [StringLength(100)]
         public string MedicationName { get; set; }

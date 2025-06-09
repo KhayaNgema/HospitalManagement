@@ -1,6 +1,7 @@
 ﻿@using System.Reflection
 @using System.ComponentModel.DataAnnotations
-@model HospitalManagement.ViewModels.XRayAppointmentDetailsViewModel
+@using HospitalManagement.ViewModels
+@model XRayAppointmentDetailsViewModel
 @inject HospitalManagement.Interfaces.IEncryptionService encryptionService
 
 @functions {
@@ -19,6 +20,15 @@
     ViewData["Title"] = "Appointment Details";
     Layout = "~/Views/Shared/_PagesLayout.cshtml";
     var encryptedAppointmentId = encryptionService.Encrypt(Model.BookingId);
+
+    var statusItems = Enum.GetValues(typeof(BookingStatus))
+           .Cast<BookingStatus>()
+           .Where(s => s != BookingStatus.Pending && s != BookingStatus.Awaiting)
+           .Select(s => new SelectListItem
+           {
+               Text = s.ToString(),
+               Value = ((int)s).ToString()
+           }).ToList();
 }
 
 <a asp-controller="Appointments" asp-action="X_RayAppointments" class="text-decoration-none d-inline-flex align-items-center back-link mt-4 ms-4">
@@ -146,9 +156,9 @@
                 <div class="row mb-3">
                     @if (ViewBag.Specialization == Specialization.Radiologist)
                     {
-                        <div class="col-md-6 mb-3">
-                            <label asp-for="Status" class="fw-semibold text-muted">Status</label>
-                            <select asp-for="Status" class="form-select rounded-3" asp-items="Html.GetEnumSelectList<HospitalManagement.Models.BookingStatus>()">
+                        <div class="col-md-6">
+                            <label asp-for="Status" class="fw-semibold text-muted"></label>
+                            <select asp-for="Status" class="form-select form-select-lg rounded-3" asp-items="statusItems">
                                 <option value="">-- Select Status --</option>
                             </select>
                             <span asp-validation-for="Status" class="text-danger small"></span>

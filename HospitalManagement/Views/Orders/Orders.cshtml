@@ -1,5 +1,105 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model IEnumerable<HospitalManagement.Models.Order>
+
 @{
+    ViewData["Title"] = "Previous Orders";
+    Layout = "~/Views/Shared/_PagesLayout.cshtml";
 }
+
+<div class="container-fluid">
+    <div class="d-flex align-items-center justify-content-between px-3 py-3 mb-4" style="background-color:#48AAAD;">
+        <div class="d-flex align-items-center">
+            <a asp-controller="Home" asp-action="Index" class="text-white text-decoration-none d-inline-flex align-items-center back-link me-3">
+                <i class="bi bi-chevron-left me-1"></i> Back
+            </a>
+            <h2 class="mb-0 text-white">Previous Orders</h2>
+        </div>
+    </div>
+    <div class="d-flex justify-content-between align-items-center mb-4 px-3">
+
+        <div class="input-group w-50">
+            <input type="text" class="form-control" placeholder="Search by order number..." id="qrSearchInput">
+        </div>
+    </div>
+    @if (TempData["Message"] != null)
+    {
+        <div id="tempDataMessage" class="alert @(TempData["Message"].ToString().Contains("successfully") ? "alert-success" : "alert-danger")" role="alert">
+            @Html.Raw(TempData["Message"])
+            <span class="close" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </span>
+        </div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info text-center">
+            No orders found.
+        </div>
+    }
+    else
+    {
+            <div class="table-responsive mb-5">
+            <table class="table table-striped table-borderless" id="ordersTable">
+                    <thead class="custom-thead text-nowrap">
+                        <tr>
+                            <th><i class="fas fa-user me-1"></i>#Order Number</th>
+                            <th><i class="fas fa-user me-1"></i>Total Amount</th>
+                            <th><i class="fas fa-envelope me-1"></i>Date & Time</th>
+                            <th><i class="fas fa-envelope me-1"></i>Status</th>
+                            @if (User.IsInRole("System Administrator"))
+                            {
+                                <th><i class="fas fa-user-shield me-1"></i>Created By</th>
+                                <th><i class="fas fa-calendar-plus me-1"></i>Created At</th>
+
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var order in Model)
+                        {
+                            <tr class="ellipsis">
+                                <td>@order.OrderNumber</td>
+                                <td>@order.TotalPrice</td>
+                                <td>@order.OrderDate.ToString("yyyy/MM/dd HH:mm")</td>
+                                <td>@order.Status</td>
+                                @if (User.IsInRole("System Administrator"))
+                                {
+                                <td>@order.User.FirstName @order.User.LastName</td>
+                                <td>@order.OrderDate.ToString("yyyy/MM/dd HH:mm")</td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            <div class="alert alert-info text-center d-none" id="noOrdersMessage">
+                No orders with that order number found.
+            </div>
+            </div>
+        }
+
+</div>
+<script>
+    document.getElementById("qrSearchInput").addEventListener("input", function () {
+            const filter = this.value.trim().toLowerCase();
+            const rows = document.querySelectorAll("#ordersTable tbody tr");
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const orderNumber = row.cells[0].textContent.trim().toLowerCase();
+                const match = orderNumber.includes(filter);
+                row.style.display = match ? "" : "none";
+                if (match) visibleCount++;
+            });
+
+            const noOrdersMessage = document.getElementById("noOrdersMessage");
+            if (visibleCount === 0) {
+                noOrdersMessage.classList.remove("d-none");
+            } else {
+                noOrdersMessage.classList.add("d-none");
+            }
+        });
+
+    setTimeout(function () {
+        document.getElementById("tempDataMessage").style.display = "none";
+    }, 7000);
+</script>

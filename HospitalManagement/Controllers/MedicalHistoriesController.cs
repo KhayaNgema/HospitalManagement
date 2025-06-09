@@ -3,6 +3,7 @@ using HospitalManagement.Interfaces;
 using HospitalManagement.Models;
 using HospitalManagement.Services;
 using HospitalManagement.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -32,6 +33,7 @@ namespace HospitalManagement.Controllers
 
         }
 
+        [Authorize(Roles = "Doctor")]
         [HttpGet]
         public async Task<IActionResult> PatientsMedicalHistory()
         {
@@ -42,7 +44,7 @@ namespace HospitalManagement.Controllers
             return View(medicalHistory);
         }
 
-
+        [Authorize(Roles = "Doctor")]
         [HttpGet]
         public async Task<IActionResult> PatientMedicalRecord(string medicalHistoryId)
         {
@@ -66,8 +68,47 @@ namespace HospitalManagement.Controllers
             return View(medicalRecord);
         }
 
+        [Authorize(Roles = "Doctor")]
+        [HttpGet]
+        public async Task<IActionResult> MedicalHistory(string medicalHistoryId)
+        {
+            var decryptedMedicalHistoryId = _encryptionService.DecryptToInt(medicalHistoryId);
+
+            var medicalHistory = await _context.MedicalHistorys
+                .Where(mh => mh.MedicalHistoryId == decryptedMedicalHistoryId)
+                .Include(mh => mh.Patient)
+                .FirstOrDefaultAsync();
+
+            var viewModel = new MedicalHistoryViewModel
+            {
+                CollectAfterCount = medicalHistory.CollectAfterCount,
+                ChiefComplaint = medicalHistory.ChiefComplaint,
+                CollectionInterval = medicalHistory.CollectionInterval,
+                FirstName = medicalHistory.Patient.FirstName,
+                DateOfBirth = medicalHistory.Patient.DateOfBirth,
+                Diagnosis = medicalHistory.Diagnosis,
+                FollowUpInstructions = medicalHistory.FollowUpInstructions,
+                HeightCm = medicalHistory.HeightCm,
+                Immunizations = medicalHistory.Immunizations,
+                LabResults = medicalHistory.LabResults,
+                LastName  = medicalHistory.Patient?.LastName,
+                PrescribedMedication = medicalHistory.PrescribedMedication,
+                PrescriptionType = medicalHistory.PrescriptionType,
+                ProfilePicture = medicalHistory.Patient.ProfilePicture,
+                Notes = medicalHistory.Notes,
+                Surgeries = medicalHistory.Surgeries,
+                Symptoms = medicalHistory.Symptoms,
+                Treatment = medicalHistory.Treatment,
+                UntilDate = medicalHistory.UntilDate,
+                Vitals = medicalHistory.Vitals,
+                WeightKg = medicalHistory.WeightKg
+            };
+
+            return View(viewModel);
+        }
 
 
+        [Authorize(Roles = "Doctor")]
         [HttpGet]
         public async Task<IActionResult> NewMedicalRecord(string medicalHistoryId)
         {
@@ -99,11 +140,20 @@ namespace HospitalManagement.Controllers
             var medication = await _context.Medications
                 .ToListAsync();
 
+            var admission = await _context.Admissions
+                .Where(m => m.PatientId == patient.Id &&
+                m.PatientStatus == PatientStatus.Admitted)
+                .FirstOrDefaultAsync();
+
             ViewBag.Medications = medication;
+
+            ViewBag.Admission = admission;
+
 
             return View(viewModel);
         }
 
+        [Authorize(Roles = "Doctor")]
         [HttpPost]
         public async Task<IActionResult> NewMedicalRecord(NewMedicalRecordViewModel viewModel)
         {
@@ -135,6 +185,10 @@ namespace HospitalManagement.Controllers
                     CreatedById = user.Id,
                     UpdatedById = user.Id,
                     PrescribedMedication = null,
+                    CollectAfterCount = viewModel.CollectAfterCount,
+                    CollectionInterval = viewModel.CollectionInterval,
+                    UntilDate = DateTime.Now,
+                    PrescriptionType = viewModel.PrescriptionType
                 };
 
                 _context.MedicalHistorys.Add(newMedicalRecord);
@@ -149,7 +203,7 @@ namespace HospitalManagement.Controllers
                     .Where(b => b.BookingId == viewModel.BookingId)
                     .FirstOrDefaultAsync();
 
-                if (admission != null || booking != null)
+                if (booking != null)
                 {
                     var patientBill = await _context.PatientBills
                         .Where(pb => pb.PatientId == viewModel.PatientId)
@@ -188,7 +242,8 @@ namespace HospitalManagement.Controllers
                         }
                     }
                 }
-                else
+
+                if(booking != null)
                 {
                     var medicationPescription = new MedicationPescription
                     {
@@ -235,6 +290,7 @@ namespace HospitalManagement.Controllers
                     _context.Update(medicationPescription);
                     await _context.SaveChangesAsync();
                 }
+
 
                 TempData["Message"] = $"You have successfully added new medical record for {viewModel.FirstName} {viewModel.LastName}";
 

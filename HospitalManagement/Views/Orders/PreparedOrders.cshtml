@@ -98,11 +98,56 @@
                                 </div>
                             </div>
                             <div class="order-footer">
+                                <button class="btn btn-outline-danger"
+                                        style="margin-bottom:10px;"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#modal-@order.OrderId">
+                                    <i class="fa fa-info"></i> Delivery Info
+                                </button>
+
                                 <button class="btn btn-danger order-ready-btn" data-order-id="@order.OrderId">Delivered</button>
                             </div>
                         </div>
                     </div>
+
+             
+                    <div class="modal fade" id="modal-@order.OrderId" tabindex="-1" aria-labelledby="modalLabel-@order.OrderId" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header bg-danger text-white">
+                                    <h5 class="modal-title" id="modalLabel-@order.OrderId">Order-#@order.LastFourDigitsOfOrderNumber Delivery Information</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+
+                                <div class="modal-body">
+                                    <dl class="row">
+                                        <dt class="col-sm-4">Patient:</dt>
+                                        <dd class="col-sm-8">@order.User.FirstName @order.User.LastName</dd>
+
+                                        <dt class="col-sm-4">Ward/Department:</dt>
+                                        <dd class="col-sm-8">@ViewBag.Department</dd>
+
+                                        <dt class="col-sm-4">Room No:</dt>
+                                        <dd class="col-sm-8">@ViewBag.RoomNo</dd>
+
+                                        <dt class="col-sm-4">Bed No:</dt>
+                                        <dd class="col-sm-8">@ViewBag.BedNo</dd>
+
+                                        <dt class="col-sm-4">Phone No:</dt>
+                                        <dd class="col-sm-8">@ViewBag.PhoneNo</dd>
+
+                                        <dt class="col-sm-4">Email Address:</dt>
+                                        <dd class="col-sm-8">@ViewBag.Email</dd>
+                                    </dl>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 }
+
             </div>
         </div>
     }

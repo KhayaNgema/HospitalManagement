@@ -78,6 +78,18 @@ namespace HospitalManagement.Controllers
             {
                 var user = await _userManager.GetUserAsync(User);
 
+                var existingRoom = await _context.Rooms
+                    .Where(er => er.RoomNumber == model.RoomNumber &&
+                    er.Department == model.Department)
+                    .FirstOrDefaultAsync();
+
+                if(existingRoom != null)
+                {
+                    TempData["Message"] = $"You cannot add/create a room with the same name in the {model.Department} department.";
+
+                    return View(model);
+                }
+
                 var newRoom = new Room
                 {
                     RoomNumber = model.RoomNumber,

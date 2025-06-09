@@ -65,7 +65,6 @@ namespace Cafeteria.Controllers
                 _context.CartItems.Remove(cartItem);
                 await _context.SaveChangesAsync();
 
-                TempData["ErrorMessage"] = "You have removed one item from the shopping basket.";
                 return Json(new { success = true });
             }
             catch (Exception ex)
@@ -153,7 +152,6 @@ namespace Cafeteria.Controllers
 
                 await _context.SaveChangesAsync();
 
-                TempData["SuccessMessage"] = $"You have added {viewModel.Quantity} {viewModel.MenuItemName}(s) to the cart.";
                 return RedirectToAction("Index", "Home");
             }
             catch (Exception ex)

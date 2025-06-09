@@ -11,7 +11,7 @@
         return status switch
         {
             HospitalManagement.Models.OrderStatus.Pending => "status-pending",
-            HospitalManagement.Models.OrderStatus.Ready_For_Collection => "status-ready",
+            HospitalManagement.Models.OrderStatus.Ready_For_Delivery => "status-ready",
             HospitalManagement.Models.OrderStatus.Collected => "status-collected",
             _ => ""
         };
@@ -19,33 +19,11 @@
 }
 
 <style>
-    .btn-details {
-        font-size: 1rem;
-        padding: 6px 14px;
-        border-radius: 20px;
-        background-color: #48AAAD;
-        color: white;
-        border: none;
-        margin-top: 15px;
-        cursor: pointer;
-        display: inline-block;
-        transition: background-color 0.3s ease;
-        text-align: center;
-        width: 100%;
-        max-width: 120px;
-    }
-
-        .btn-details:hover {
-            background-color: #3c979a;
-        }
-
-    .card-actions {
-        padding: 0 15px 15px 15px;
-        display: flex;
-        justify-content: flex-end;
-    }
-
     .order-card {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 100%;
         border: 1px solid #ccc;
         border-left: 6px solid #48AAAD;
         border-radius: 5px;
@@ -59,6 +37,14 @@
             background-color: #f9f9f9;
             transform: translateY(-2px);
         }
+
+    .card-actions {
+        padding: 0 15px 15px 15px;
+        display: flex;
+        justify-content: flex-end;
+        margin-top: auto; 
+    }
+
 
     .order-header {
         background-color: #48AAAD;
@@ -134,8 +120,7 @@
         color: #333;
     }
 
-    /* Header row with flex columns */
-    .items-header, .item-row {
+   .items-header, .item-row {
         display: flex;
         padding: 6px 0;
         font-size: 14px;
@@ -183,6 +168,24 @@
         border-top: 1px dashed #ccc;
         padding-top: 10px;
     }
+
+    .btn-details,
+    .btn-cancel {
+        font-size: 1rem;
+        padding: 4px 10px;
+        border-radius: 20px;
+    }
+
+    .btn-details {
+        background-color: #48AAAD;
+        color: white;
+        border: none;
+        margin-right: 6px;
+    }
+
+        .btn-details:hover {
+            background-color: #3c979a;
+        }
 </style>
 
 <div class="container-fluid">
@@ -199,9 +202,9 @@
                 <span class="btn-text ms-1">Pending</span>
             </button>
 
-            <button class="btn btn-light btn-sm me-2 filter-btn" data-filter="Ready_For_Collection">
+            <button class="btn btn-light btn-sm me-2 filter-btn" data-filter="Ready_For_Delivery">
                 <i class="bi bi-box-seam text-primary"></i>
-                <span class="btn-text ms-1">Ready for Collection</span>
+                <span class="btn-text ms-1">Ready for Delivery</span>
             </button>
 
             <button class="btn btn-light btn-sm filter-btn" data-filter="Collected">
@@ -230,9 +233,6 @@
 
 @if (!Model.Any())
 {
-    <div class="alert alert-info text-center">
-        You don't have any meals orders.
-    </div>
 }
 else
 {
@@ -242,11 +242,10 @@ else
             {
                 var purchaseModalId = $"purchaseModal_{item.OrderId}";
                 <div class="col-12 col-md-6 col-lg-3">
-                    <!-- Card -->
                     <div class="order-card h-100" data-id="@item.OrderId" data-status="@item.Status">
                         <div class="order-header">#@item.LastFourDigitsOfOrderNumber</div>
                         <div class="order-body">
-                            <p><strong>Date:</strong> @item.OrderDate.ToString("yyyy-MM-dd HH:mm")</p>
+                            <p><strong>Date:</strong> @item.OrderDate.ToString("dd/MM/yyyy  HH:mm")</p>
                             <p><strong>Total:</strong> @item.TotalPrice.ToString("C")</p>
                             <p>
                                 <strong>Status:</strong>
@@ -254,13 +253,12 @@ else
                             </p>
                         </div>
                         <div class="card-actions">
-                            <button class="btn btn-details" data-bs-toggle="modal" data-bs-target="#@purchaseModalId">Details</button>
+                            <button class="btn btn-details" data-bs-toggle="modal" data-bs-target="#@purchaseModalId">Proof Of Purchase</button>
                         </div>
                     </div>
 
-                    <!-- Modal -->
                     <div class="modal fade" id="@purchaseModalId" tabindex="-1" aria-labelledby="@($"{purchaseModalId}_Label")" aria-hidden="true">
-                        <div class="modal-dialog modal-dialog-centered modal-md">
+                        <div class="modal-dialog modal-dialog-centered modal-sm">
                             <div class="modal-content rounded-4">
                                 <div class="modal-header modal-header-custom">
                                     <h5 class="modal-title" id="@($"{purchaseModalId}_Label")">Order - #@item.LastFourDigitsOfOrderNumber</h5>

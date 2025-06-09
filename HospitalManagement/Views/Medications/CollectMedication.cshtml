@@ -75,7 +75,7 @@
                             <h5 class="appointment-header mb-3">
                                 @(medication.Admission?.Booking?.MedicalCondition ?? medication.Booking?.MedicalCondition)
                             </h5>
-                            <p class="mb-1"><strong>Collection Date:</strong> @medication.NextCollectionDate</p>
+                            <p class="mb-1"><strong>Next Collection Date:</strong> @medication.NextCollectionDate</p>
                             <p class="mb-1"><strong>Status:</strong> <span class="badge badge-status">@medication.Status</span></p>
                         </div>
 
@@ -123,7 +123,7 @@
                                             }
                                         </dd>
 
-                                        <dt class="col-sm-3 fw-semibold">Collection Date:</dt>
+                                        <dt class="col-sm-3 fw-semibold">Next Collection Date:</dt>
                                         <dd class="col-sm-9">@medication.NextCollectionDate?.ToString("dd MMM yyyy")</dd>
 
                                         <dt class="col-sm-3 fw-semibold">Last Collected:</dt>
@@ -132,7 +132,7 @@
                                         <dt class="col-sm-3 fw-semibold">Status:</dt>
                                         <dd class="col-sm-9"><span class="badge badge-status">@medication.Status</span></dd>
 
-                                        <dt class="col-sm-3 fw-semibold">Expiry Date:</dt>
+                                        <dt class="col-sm-3 fw-semibold">Final Collection Date:</dt>
                                         <dd class="col-sm-9">@medication.ExpiresAt?.ToString("dd MMM yyyy")</dd>
 
                                     </dl>

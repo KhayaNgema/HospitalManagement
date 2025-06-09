@@ -1,0 +1,261 @@
+﻿@using System.Reflection
+@using System.ComponentModel.DataAnnotations
+@model HospitalManagement.ViewModels.UpdateAdmissionViewModel
+@inject HospitalManagement.Interfaces.IEncryptionService encryptionService
+
+@functions {
+    public string GetEnumDisplayName(Enum enumValue)
+    {
+        var displayAttr = enumValue.GetType()
+                                   .GetMember(enumValue.ToString())
+                                   .First()
+                                   .GetCustomAttribute<DisplayAttribute>();
+
+        return displayAttr?.Name ?? enumValue.ToString();
+    }
+}
+
+@{
+    ViewData["Title"] = "Update Admission Details";
+    Layout = "~/Views/Shared/_PagesLayout.cshtml";
+
+    var encryptedPatientId = encryptionService.Encrypt(Model.PatientId);
+
+    var encryptedAdmissionId = encryptionService.Encrypt(Model.AdmissionId);
+
+    var encryptedAppointmentId = encryptionService.Encrypt(Model.BookingId);
+
+    var prescribedList = (Model.PrescribedMedication ?? new List<Medication>()).ToList();
+}
+
+@if (User.IsInRole("System Administrator") || User.IsInRole("Doctor"))
+{
+    <a asp-controller="Admissions" asp-action="MyPatientAdmissions" class="text-decoration-none d-inline-flex align-items-center mt-4 ms-4">
+        <i class="bi bi-chevron-left me-2 fs-5"></i><span class="fw-semibold">Back to Admissions</span>
+    </a>
+}
+else
+{
+    <a asp-controller="Admissions" asp-action="MyAdmissions" class="text-decoration-none d-inline-flex align-items-center mt-4 ms-4">
+        <i class="bi bi-chevron-left me-2 fs-5"></i><span class="fw-semibold">Back to your admissions</span>
+    </a>
+}
+
+<form asp-action="UpdateAdmission" asp-controller="Admissions" method="post" asp-route-admissionId="@encryptedAdmissionId">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="PatientId" />
+    <input type="hidden" asp-for="AdmissionId" />
+
+    <div class="container my-3 px-4">
+        <div class="card shadow-lg border-0" style="border-left: 6px solid #48AAAD; border-radius: 10px;">
+            <div class="card-header text-white" style="background-color: #48AAAD;">
+                @if (User.IsInRole("System Administrator") || User.IsInRole("Doctor"))
+                {
+                    <h3 class="mb-0">Patient Admission Details</h3>
+                }
+                else
+                {
+                    <h3 class="mb-0">Your @Model.AdmissionDate?.ToString("ddd,dd MMM yyyy") Admission</h3>
+                }
+            </div>
+            <div class="card-body px-4 py-4">
+                @if (User.IsInRole("System Administrator") || User.IsInRole("Doctor"))
+                {
+                    <div class="w-100 mt-4 mb-3">
+                        <h3 class="px-3 py-2 bg-light" style="color:#48AAAD; border-left: 5px solid #48AAAD;">
+                            Patient Information
+                        </h3>
+                    </div>
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-12 text-center">
+                            <img src="~/@Model.ProfilePicture" alt="Profile Picture" class="img-thumbnail rounded-circle" style="width: 120px; height: 120px; object-fit: cover;" />
+                        </div>
+                    </div>
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6">
+                            <label class="fw-semibold text-muted">First Name</label>
+                            <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                                @Model.FirstName
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="fw-semibold text-muted">Last Name</label>
+                            <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                                @Model.LastName
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6">
+                            <label class="fw-semibold text-muted">Date of Birth</label>
+                            <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                                @Model.DateOfBirth?.ToString("yyyy/MM/dd")
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="fw-semibold text-muted">Gender</label>
+                            <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                                @Model.Gender
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6">
+                            <label class="fw-semibold text-muted">ID Number</label>
+                            <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                                @Model.IdNumber
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="fw-semibold text-muted">Phone Number</label>
+                            <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                                @Model.PhoneNumber
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6">
+                            <label class="fw-semibold text-muted">Alternate Phone</label>
+                            <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                                @Model.AlternatePhoneNumber
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="fw-semibold text-muted">Email</label>
+                            <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                                @Model.Email
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="mb-4">
+                        <label class="fw-semibold text-muted">Address</label>
+                        <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                            @Model.Address
+                        </div>
+                    </div>
+                }
+
+                <div class="w-100 mt-4 mb-3">
+                    <h3 class="px-3 py-2 bg-light" style="color:#48AAAD; border-left: 5px solid #48AAAD;">
+                        Admission Details
+                    </h3>
+                </div>
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <label asp-for="AdmissionDate" class="fw-semibold text-muted"></label>
+                        <input asp-for="AdmissionDate" class="form-control shadow-sm" type="date" readonly />
+                        <span asp-validation-for="AdmissionDate" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="DischargeDate" class="fw-semibold text-muted"></label>
+                        <input asp-for="DischargeDate" class="form-control shadow-sm" type="date" />
+                        <span asp-validation-for="DischargeDate" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <label asp-for="Department" class="fw-semibold text-muted"></label>
+                        <select asp-for="Department" id="Department" class="form-select rounded-3 shadow-sm"
+                                asp-items="Html.GetEnumSelectList<Department>()">
+                            <option value="">-- Select Department --</option>
+                        </select>
+                        <span asp-validation-for="Department" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="roomsDropdown">Room</label>
+                        <select asp-for="RoomNumber" id="roomsDropdown" class="form-select">
+                            <option value="">-- Select Room --</option>
+                            @foreach (var room in ViewBag.Rooms)
+                            {
+                                <option value="@room.RoomNumber"
+                                        data-department="@((int)room.Department)"
+                                        data-beds="@room.NoOfBeds">
+                                    @room.RoomNumber
+                                </option>
+                            }
+                        </select>
+                        <span asp-validation-for="RoomNumber" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="bedDropdown">Bed Number</label>
+                        <select asp-for="BedNumber" id="bedDropdown" class="form-select">
+                            <option value="">-- Select Bed --</option>
+                        </select>
+                        <span asp-validation-for="BedNumber" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="row g-4 mb-4">
+                    <div class="col-12">
+                        <label asp-for="AdditionalNotes" class="fw-semibold text-muted"></label>
+                        <textarea asp-for="AdditionalNotes" class="form-control shadow-sm" rows="3"></textarea>
+                        <span asp-validation-for="AdditionalNotes" class="text-danger"></span>
+                    </div>
+                </div>
+
+
+                @if (User.IsInRole("System Administrator") || User.IsInRole("Doctor"))
+                {
+                    <button type="submit" class="btn btn-success px-4 py-2 fs-5">
+                        <i class="fa fa-save me-2" style="font-size: 1.5rem;"></i> Save
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+</form>
+@section Scripts {
+    <script>
+        const allRoomOptions = Array.from(document.querySelectorAll('#roomsDropdown option')).slice(1); // Skip placeholder
+        const departmentSelect = document.querySelector('[name="Department"]');
+        const roomsDropdown = document.getElementById('roomsDropdown');
+        const bedDropdown = document.getElementById('bedDropdown');
+
+        function filterRoomsByDepartment(selectedDepartment) {
+            roomsDropdown.innerHTML = '<option value="">-- Select Room --</option>';
+            bedDropdown.innerHTML = '<option value="">-- Select Bed --</option>';
+
+            allRoomOptions.forEach(option => {
+                if (option.getAttribute('data-department') === selectedDepartment) {
+                    roomsDropdown.appendChild(option.cloneNode(true));
+                }
+            });
+        }
+
+        departmentSelect.addEventListener('change', function () {
+            filterRoomsByDepartment(this.value);
+        });
+
+        roomsDropdown.addEventListener('change', function () {
+            const selectedOption = this.options[this.selectedIndex];
+            const numberOfBeds = parseInt(selectedOption.getAttribute('data-beds'));
+
+            bedDropdown.innerHTML = '<option value="">-- Select Bed --</option>';
+            if (!isNaN(numberOfBeds)) {
+                for (let i = 1; i <= numberOfBeds; i++) {
+                    const option = document.createElement('option');
+                    option.value = i;
+                    option.text = `Bed ${i}`;
+                    bedDropdown.appendChild(option);
+                }
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const initialDepartment = departmentSelect.value;
+            if (initialDepartment) {
+                filterRoomsByDepartment(initialDepartment);
+            }
+        });
+
+            setTimeout(function () {
+                const msg = document.getElementById("tempDataMessage");
+                if (msg) msg.style.display = "none";
+            }, 7000);
+    </script>
+}

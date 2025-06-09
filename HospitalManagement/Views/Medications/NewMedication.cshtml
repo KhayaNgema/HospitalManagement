@@ -61,6 +61,18 @@
                     </div>
 
                     <div class="mb-4">
+                        <label for="categoryDropdown">Category</label>
+                        <select asp-for="CategoryId" id="categoryDropdown" class="form-select">
+                            <option value="">-- Select Category --</option>
+                            @foreach (var category in ViewBag.Categories)
+                            {
+                                <option value="@category.CategoryId">@category.CategoryName</option>
+                            }
+                        </select>
+                        <span asp-validation-for="CategoryId" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-4">
                         <label asp-for="MedicationName"></label>
                         <input asp-for="MedicationName" class="form-control" />
                         <span asp-validation-for="MedicationName" class="text-danger small"></span>

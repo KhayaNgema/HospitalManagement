@@ -1,0 +1,221 @@
+﻿@using HospitalManagement.ViewModels
+@model MedicalHistoryViewModel
+@inject HospitalManagement.Interfaces.IEncryptionService encryptionService
+
+@{
+    ViewData["Title"] = "Medical History";
+    Layout = "~/Views/Shared/_PagesLayout.cshtml";
+    var prescribedList = (Model.PrescribedMedication ?? new List<Medication>()).ToList();
+}
+
+<a href="javascript:history.back()" class="text-decoration-none d-inline-flex align-items-center back-link mt-4 ms-4">
+    <i class="bi bi-chevron-left me-1"></i>Medical History
+</a>
+
+
+<div class="container py-3">
+    <div class="card shadow-lg border-0" style="border-left: 6px solid #48AAAD; border-radius: 10px;">
+        <div class="card-header text-white" style="background-color: #48AAAD;">
+            <h3 class="mb-0">Medical record</h3>
+        </div>
+        <div class="card-body px-4 py-4">
+
+
+            <input type="hidden" asp-for="PatientId" />
+            <input type="hidden" asp-for="PatientMedicalHistoryId" />
+            <input type="hidden" asp-for="BookingId" />
+
+            <div class="w-100 mt-4 mb-3">
+                <h3 class="px-3 py-2 bg-light" style="color:#48AAAD; border-left: 5px solid #48AAAD;">
+                    Patient Information
+                </h3>
+            </div>
+            <div class="text-center mb-3">
+                <img src="~/@Model.ProfilePicture" alt="Profile Picture" class="img-thumbnail rounded-circle" style="width: 120px; height: 120px; object-fit: cover;" />
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="fw-semibold text-muted">First Name</label>
+                    <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                        @Model.FirstName
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label class="fw-semibold text-muted">Last Name</label>
+                    <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                        @Model.LastName
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="fw-semibold text-muted">Date Of Birth</label>
+                    <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                        @Model.DateOfBirth?.ToString("yyyy/MM/dd")
+                    </div>
+                </div>
+            </div>
+
+            <div class="w-100 mt-4 mb-3">
+                <h3 class="px-3 py-2 bg-light" style="color:#48AAAD; border-left: 5px solid #48AAAD;">
+                    Medical Record Information
+                </h3>
+            </div>
+            <div class="mb-3">
+                <label class="fw-semibold text-muted">Chief Complaint</label>
+                <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                    @Model.ChiefComplaint
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="fw-semibold text-muted">Symptoms</label>
+                <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                    <ul class="mb-0">
+                        @foreach (var symptom in Model.Symptoms)
+                        {
+                            <li>@symptom</li>
+                        }
+                    </ul>
+                </div>
+            </div>
+
+
+            <div class="mb-3">
+                <label class="fw-semibold text-muted">Diagnosis</label>
+                <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                    @Model.Diagnosis
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="fw-semibold text-muted">Surgeries</label>
+                <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                    <ul class="mb-0">
+                        @foreach (var surgery in Model.Surgeries)
+                        {
+                            <li>@surgery</li>
+                        }
+                    </ul>
+                </div>
+            </div>
+
+
+            <div class="mb-3">
+                <label class="fw-semibold text-muted">Immunizations</label>
+                <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                    <ul class="mb-0">
+                        @foreach (var immunization in Model.Immunizations)
+                        {
+                            <li>@immunization</li>
+                        }
+                    </ul>
+                </div>
+            </div>
+
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="fw-semibold text-muted">Height (cm)</label>
+                    <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                        @Model.HeightCm
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label class="fw-semibold text-muted">Weight (kg)</label>
+                    <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                        @Model.WeightKg
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="fw-semibold text-muted">Treatment</label>
+                <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                    @Model.Treatment
+                </div>
+            </div>
+
+            @if (ViewBag != null)
+            {
+                <div id="dischargePatientFields">
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6">
+                            <label class="fw-semibold text-muted">Medication to prescribe</label>
+                            <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                                @foreach (var med in prescribedList)
+                                {
+                                    <div>@med.MedicationName (D @med.DosageForm - S @med.Strength - U @med.UnitOfMeasure)</div>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="fw-semibold text-muted">Collection Type</label>
+                            <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                                @Model.PrescriptionType
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-2">
+                            <label class="fw-semibold text-muted">Collect After Count</label>
+                            <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                                @Model.CollectAfterCount
+                            </div>
+                        </div>
+                        <div class="col-md-5">
+                            <label class="fw-semibold text-muted">Collection Interval</label>
+                            <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                                @Model.CollectionInterval
+                            </div>
+                        </div>
+                        <div class="col-md-5">
+                            <label class="fw-semibold text-muted">Until Date</label>
+                            <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                                @(Model.UntilDate?.ToString("yyyy-MM-dd") ?? "")
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <div class="mb-3">
+                <label class="fw-semibold text-muted">Follow Up Instructions</label>
+                <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                    <ul class="mb-0">
+                        @foreach (var instruction in Model.FollowUpInstructions)
+                        {
+                            <li>@instruction</li>
+                        }
+                    </ul>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="fw-semibold text-muted">Vitals</label>
+                <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                    @Model.Vitals
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="fw-semibold text-muted">Lab Results</label>
+                <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                    @Model.LabResults
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="fw-semibold text-muted">Notes</label>
+                <div class="border rounded py-3 px-3 shadow-sm" style="border-left: 5px solid #48AAAD;">
+                    @Model.Notes
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

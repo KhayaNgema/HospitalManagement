@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Hangfire;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 
 namespace Cafeteria.Controllers
 {
@@ -60,6 +61,7 @@ namespace Cafeteria.Controllers
                 var allOrders = await _context.Orders
                     .Include(o => o.User)
                     .Include(o => o.OrderItems)
+                    .Where(o => o.Status == OrderStatus.Collected)
                     .ToListAsync();
 
                 var latestUpdatedOrders = allOrders
@@ -106,11 +108,30 @@ namespace Cafeteria.Controllers
         public async Task<IActionResult> PreparedOrders()
         {
             var orders = await _context.Orders
-                .Where(o => o.Status == OrderStatus.Ready_For_Collection)
+                .Where(o => o.Status == OrderStatus.Ready_For_Delivery)
                 .Include(o => o.User)
                 .Include(o => o.OrderItems)
                 .ThenInclude(o => o.MenuItem)
                 .ToListAsync();
+
+
+            foreach(var order in orders)
+            {
+                var patient = await _context.Patients
+                    .Where(p => p.Id == order.PatientId)
+                    .FirstOrDefaultAsync();
+
+                var admission = await _context.Admissions
+                    .Where(a => a.PatientId == patient.Id &&
+                    a.PatientStatus == PatientStatus.Admitted)
+                    .FirstOrDefaultAsync();
+
+                ViewBag.Department = admission.Department;
+                ViewBag.RoomNo = admission.RoomNumber;
+                ViewBag.BedNo = admission.BedNumber;
+                ViewBag.PhoneNo = patient.PhoneNumber;
+                ViewBag.Email = patient.Email;
+            }
 
             return View(orders);
         }
@@ -121,7 +142,7 @@ namespace Cafeteria.Controllers
             try
             {
                 var newOrderIds = await _context.Orders
-                    .Where(o => o.Status == OrderStatus.Ready_For_Collection)
+                    .Where(o => o.Status == OrderStatus.Ready_For_Delivery)
                     .Select(o => o.OrderId)
                     .ToListAsync();
 
@@ -316,7 +337,7 @@ namespace Cafeteria.Controllers
 
                 Debug.WriteLine("Order found: " + order.OrderNumber);
 
-                order.Status = OrderStatus.Ready_For_Collection;
+                order.Status = OrderStatus.Ready_For_Delivery;
                 order.LastUpdated = DateTime.Now;
                 _context.SaveChanges();
 

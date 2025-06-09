@@ -21,7 +21,15 @@
             <form asp-action="AdmitPatient" asp-controller="Admissions" method="post" novalidate>
                 <input type="hidden" asp-for="BookingId" />
                 <input type="hidden" asp-for="PatientId" />
-
+                @if (TempData["Message"] != null)
+                {
+            <div id="tempDataMessage" class="alert @(TempData["Message"].ToString().Contains("successfully") ? "alert-success" : "alert-danger")" role="alert">
+                        @Html.Raw(TempData["Message"])
+                <span class="close" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </span>
+            </div>
+                }
                 <div class="w-100 mt-4 mb-3">
                     <h3 class="px-3 py-2 bg-light" style="color:#48AAAD; border-left: 5px solid #48AAAD;">
                         Patient Information
@@ -86,7 +94,7 @@
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label asp-for="AdmissionDate" class="form-label fw-semibold text-muted"></label>
-                        <input asp-for="AdmissionDate" class="form-control" type="date" />
+                        <input asp-for="AdmissionDate" class="form-control" type="date" readonly/>
                         <span asp-validation-for="AdmissionDate" class="text-danger"></span>
                     </div>
                     <div class="col-md-6">
@@ -185,6 +193,11 @@
                 filterRoomsByDepartment(initialDepartment);
             }
         });
+
+            setTimeout(function () {
+                const msg = document.getElementById("tempDataMessage");
+                if (msg) msg.style.display = "none";
+            }, 7000);
     </script>
 }
 

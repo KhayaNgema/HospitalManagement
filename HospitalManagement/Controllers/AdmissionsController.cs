@@ -32,6 +32,8 @@ namespace HospitalManagement.Controllers
             _qrCodeService = qrCodeService;
         }
 
+
+        [Authorize(Roles ="Doctor")]
         public async Task<IActionResult> MyPatientAdmissions()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -45,6 +47,7 @@ namespace HospitalManagement.Controllers
 
             return View(admissions);
         }
+
 
         [Authorize]
         public async Task<IActionResult> MyAdmissions()
@@ -198,7 +201,28 @@ namespace HospitalManagement.Controllers
 
             try
             {
+
+
                 var user = await _userManager.GetUserAsync(User);
+
+                var existingAdmission = await _context.Admissions
+                    .Where(ae => ae.PatientId == viewModel.PatientId &&
+                    ae.PatientStatus == PatientStatus.Admitted)
+                    .FirstOrDefaultAsync();
+
+                if(existingAdmission != null)
+                {
+                    TempData["Message"] = $"You cannot admit {viewModel.FirstName} {viewModel.LastName} " +
+                        $"since they are currently admitted by {existingAdmission.Department}" +
+                        $"at {existingAdmission.RoomNumber} on bed {existingAdmission.BedNumber}";
+
+                    var rooms = await _context.Rooms
+                        .ToListAsync();
+
+                    ViewBag.Rooms = rooms;
+
+                    return View(viewModel);
+                }
 
                 var admission = new Admission
                 {
@@ -257,20 +281,89 @@ namespace HospitalManagement.Controllers
 
         [Authorize(Roles = "Doctor, System Administrator")]
         [HttpGet]
-        public async Task<IActionResult> UpdateAdmission()
+        public async Task<IActionResult> UpdateAdmission(string admissionId)
         {
-            return View();
+            var decryptedAdmissionId = _encryptionService.DecryptToInt(admissionId);
+
+            var admission = await _context.Admissions
+                .Where(a => a.AdmissionId == decryptedAdmissionId)
+                .Include(a => a.Patient)
+                .FirstOrDefaultAsync();
+
+            var rooms = await _context.Rooms
+                .ToListAsync();
+
+            var viewModel = new UpdateAdmissionViewModel
+            {
+                AdmissionId = decryptedAdmissionId,
+                PatientId = admission.PatientId,
+                BookingId = admission.BookingId,
+                AdditionalNotes = admission.AdditionalNotes,
+                Address = admission.Patient.Address,
+                AdmissionDate = admission.AdmissionDate,
+                AlternatePhoneNumber = admission.Patient.AlternatePhoneNumber,
+                CollectAfterCount = 0,
+                NextAppointmentDate = DateTime.Now,
+                BedNumber = admission.BedNumber,
+                DateOfBirth = admission.Patient.DateOfBirth,
+                Department = admission.Department,
+                DischargeDate = admission.DischargeDate,
+                Email = admission.Patient.Email,
+                FirstName = admission.Patient.FirstName,
+                Gender = admission.Patient.Gender,
+                IdNumber = admission.Patient.IdNumber,
+                LastName = admission.Patient.LastName,
+                LastVisitDate = admission.LastVisitDate,
+                PatientMedicalHistoryId = admission.PatientMedicalHistoryId,
+                PatientStatus = admission.PatientStatus,
+                PhoneNumber = admission.Patient.PhoneNumber,
+                ProfilePicture = admission.Patient.ProfilePicture,
+                UntilDate = DateTime.Now,
+                RoomNumber = admission.RoomNumber,
+            };
+
+            var medication = await _context.Medications
+                .ToListAsync();
+
+            ViewBag.Medications = medication;
+
+            ViewBag.Rooms = rooms;
+
+            return View(viewModel);
         }
 
 
         [Authorize(Roles = "Doctor, System Administrator")]
         [HttpPost]
-        public async Task<IActionResult> UpdateAdmission(UpdateAdmissionViewModel viewModel)
+        public async Task<IActionResult> UpdateAdmission(UpdateAdmissionViewModel viewModel, string admissionId)
         {
-            if (ModelState.IsValid)
-            {
+            var decryptedAdmissionId = _encryptionService.DecryptToInt(admissionId);
 
-            }
+            var admission = await _context.Admissions
+                .Where(a => a.AdmissionId == decryptedAdmissionId)
+                .Include(a => a.Patient)
+                .FirstOrDefaultAsync();
+
+
+            admission.RoomNumber = viewModel.RoomNumber;
+            admission.BedNumber = viewModel.BedNumber;
+            admission.Department = viewModel.Department;
+            admission.AdditionalNotes = viewModel.AdditionalNotes;
+            admission.DischargeDate = viewModel.DischargeDate;
+
+            _context.Update(admission);
+            await _context.SaveChangesAsync();
+
+            TempData["Message"] = $"You have successfully updated {admission.Patient.FirstName}  {admission.Patient.LastName} admission";
+
+            var encryptedAdmissionId = _encryptionService.Encrypt(admission.AdmissionId);
+
+            return RedirectToAction(nameof(AdmissionDetails), new { admissionId = encryptedAdmissionId });
+
+            var rooms = await _context.Rooms
+                .ToListAsync();
+
+            ViewBag.Rooms = rooms;
 
             return View(viewModel);
         }
@@ -405,7 +498,7 @@ namespace HospitalManagement.Controllers
                     }
                 }
 
-                TempData["Message"] = $"You have successfully discharged {viewModel.FirstName} {viewModel.LastName}";
+                TempData["Message"] = $"You have successfully discharged {admission.Patient.FirstName} {admission.Patient.LastName}";
 
 
                 return RedirectToAction(nameof(MyPatientAdmissions));
