@@ -107,5 +107,16 @@ namespace HospitalManagement.Data
         public DbSet<HospitalManagement.Models.Room> Rooms { get; set; }
 
         public DbSet<HospitalManagement.Models.MedicationCategory> MedicationCategories { get; set; }
+
+        public DbSet<HospitalManagement.Models.DeliveryPersonnel> DeliveryPersonnels { get; set; }
+        public DbSet<HospitalManagement.Models.Vehicle> Vehicles { get; set; }
+
+        public DbSet<HospitalManagement.Models.DeliveryRequest> DeliveryRequests { get; set; }
+
+        public DbSet<HospitalManagement.Models.Package> Packages { get; set; }
+
+        public DbSet<HospitalManagement.Models.Delivery> Deliveries { get; set; }
+
+        public DbSet<HospitalManagement.Models.MedicationReminder> MedicationReminders { get; set; }
     }
 }

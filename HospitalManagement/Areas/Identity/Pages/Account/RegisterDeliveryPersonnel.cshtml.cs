@@ -25,7 +25,7 @@ using HospitalManagement.Services;
 
 namespace HospitalManagement.Areas.Identity.Pages.Account
 {
-    public class RegisterKitchenStaffModel : PageModel
+    public class RegisterDeliveryPersonnelModel : PageModel
     {
         private readonly SignInManager<UserBaseModel> _signInManager;
         private readonly UserManager<UserBaseModel> _userManager;
@@ -40,7 +40,7 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
         private readonly HospitalManagementDbContext _context;
         private readonly IActivityLogger _activityLogger;
 
-        public RegisterKitchenStaffModel(
+        public RegisterDeliveryPersonnelModel(
             UserManager<UserBaseModel> userManager,
             IUserStore<UserBaseModel> userStore,
             SignInManager<UserBaseModel> signInManager,
@@ -128,6 +128,14 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
             [Required]
             [Display(Name = "Identity number")]
             public string IdNumber { get; set; }
+
+            [Required]
+            [Display(Name = "Driver License Number")]
+            public string DriverLicenseNumber { get; set; }
+
+            [Required]
+            [Display(Name = "Licence Expiry Date")]
+            public DateTime LicenseExpiryDate { get; set; }
         }
 
         public async Task OnGetAsync(string returnUrl = null)
@@ -162,7 +170,7 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
 
                 var user = await _userManager.GetUserAsync(User);
 
-                var doctor = new KitchenStaff
+                var doctor = new DeliveryPersonnel
                 {
                     FirstName = Input.FirstName,
                     LastName = Input.LastName,
@@ -184,6 +192,9 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
                     Gender = Input.Gender,
                     IdNumber = Input.IdNumber,
                     IsDeleted = false,
+                    IsAvailable = true,
+                    DriverLicenseNumber = Input.DriverLicenseNumber,
+                    LicenseExpiryDate = Input.LicenseExpiryDate
                 };
 
                 if (Input.ProfilePicture != null && Input.ProfilePicture.Length > 0)
@@ -202,7 +213,7 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
                 {
                     _logger.LogInformation("Doctor a new account with password.");
 
-                    await _userManager.AddToRoleAsync(doctor, "Kitchen Staff");
+                    await _userManager.AddToRoleAsync(doctor, "Delivery Personnel");
 
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(doctor);
                     code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
@@ -229,8 +240,8 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
                     BackgroundJob.Enqueue(() => _emailService.SendEmailAsync(doctor.Email, "Confirm Your Email Address", emailConfirmationEmailBody, "Diski 360"));
 
 
-                    TempData["Message"] = $"{doctor.FirstName} {doctor.LastName}  has been successfully added as your new kitchen staff";
-                    return RedirectToAction("KitchenStaff", "Users");
+                    TempData["Message"] = $"{doctor.FirstName} {doctor.LastName}  has been successfully added as your new delivery personnel";
+                    return RedirectToAction("DeliveryPersonnels", "Users");
                 }
                 foreach (var error in result.Errors)
                 {

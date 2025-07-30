@@ -14,5 +14,15 @@ namespace HospitalManagement.Models
         public int Quantity { get; set; }
 
         public MedicationAvailability Availability { get; set; }
+
+        public StockLevel StockLevel { get; set; }
+    }
+
+    public enum StockLevel
+    {
+        High,
+        Moderate,
+        Low,
+        Critical
     }
 }

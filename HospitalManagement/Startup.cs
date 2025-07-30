@@ -120,6 +120,8 @@ public class Startup
         services.AddScoped<IActivityLogger, ActivityLogger>();
         services.AddScoped<FileUploadService>();
         services.AddScoped<QrCodeService>();
+        services.AddScoped<SmsService>();
+        services.AddScoped<MedicationReminder>();
         services.AddScoped<CartService>();
         services.AddHttpClient<IFaceService, AzureFaceService>();
         services.AddScoped<OrderNumberGenerator>();
@@ -220,21 +222,10 @@ public class Startup
 
         app.UseSerilogRequestLogging();
 
-        /*RecurringJob.AddOrUpdate<FixtureService>(
-            "schedule-fixtures",
-            service => service.ScheduleFixturesAsync(),
-            Cron.Weekly(DayOfWeek.Monday, 0, 0));
-
-        RecurringJob.AddOrUpdate<SubscriptionCheckerService>(
-          "check-expired-subscriptions",
-          service => service.CheckExpiredSubscriptions(),
-          Cron.Minutely);
-
-        RecurringJob.AddOrUpdate<CompetitionService>(
-            "end-monthly-competition",
-            service => service.EndCurrentCompetitionAndStartNewOne(),
-            "59 23 L * *");*/
-
+        RecurringJob.AddOrUpdate<MedicationCollectionReminder>(
+            "send-medication-reminders",
+            service => service.SendRemindersAsync(),
+            Cron.Minutely);
 
         app.UseEndpoints(endpoints =>
         {

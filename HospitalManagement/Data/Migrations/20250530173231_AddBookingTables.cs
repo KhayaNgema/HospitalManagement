@@ -149,7 +149,6 @@ namespace HospitalManagement.Data.Migrations
                     PatientId = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     BookForDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    BookForTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     MedicalCondition = table.Column<int>(type: "int", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)

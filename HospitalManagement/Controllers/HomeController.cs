@@ -88,6 +88,10 @@ namespace HospitalManagement.Controllers
             {
                 return View("KitchenStaffDashboard");
             }
+            else if (roles.Contains("Delivery Personnel"))
+            {
+                return View("DeliveryPersonnelDashboard");
+            }
             else if (roles.Contains("Pharmacist"))
             {
                 return View("PharmacistDashboard");

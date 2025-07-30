@@ -1,11 +1,12 @@
-﻿@model IEnumerable<HospitalManagement.Models.MedicationPescription>
+﻿@model CollectMedicationViewModel
 @inject HospitalManagement.Interfaces.IEncryptionService encryptionService
+
+@using System
 
 @{
     ViewData["Title"] = "Medication";
     Layout = "~/Views/Shared/_PagesLayout.cshtml";
 }
-
 
 <head>
     <style>
@@ -23,9 +24,9 @@
             margin-right: 6px;
         }
 
-            .btn-details:hover {
-                background-color: #3c979a;
-            }
+        .btn-details:hover {
+            background-color: #3c979a;
+        }
 
         .btn-cancel {
             background-color: transparent;
@@ -33,10 +34,10 @@
             color: #ff4d4d;
         }
 
-            .btn-cancel:hover {
-                background-color: #ff4d4d;
-                color: white;
-            }
+        .btn-cancel:hover {
+            background-color: #ff4d4d;
+            color: white;
+        }
 
         .filter-btn.active {
             background-color: #022D36;
@@ -55,7 +56,18 @@
         </div>
     </div>
 
-    @if (!Model.Any())
+@if (Model.Reminders != null && Model.Reminders.Any())
+{
+    <div id="tempDataMessage" class="alert alert-warning d-flex justify-content-between align-items-center" role="alert">
+        <div>
+            <strong>@Model.Reminders.Count</strong> medication collection reminder@(Model.Reminders.Count > 1 ? "s" : "") available.
+        </div>
+        <div class="d-flex gap-2">
+            <a href="@Url.Action("Reminders", "Medications")" class="btn btn-sm btn-warning">View Reminders</a>
+        </div>
+    </div>
+}
+    @if (Model.Medications == null || !Model.Medications.Any())
     {
         <div class="alert alert-info text-center">
             You have no appointments booked yet.
@@ -64,7 +76,7 @@
     else
     {
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="appointmentsContainer">
-            @foreach (var medication in Model)
+            @foreach (var medication in Model.Medications)
             {
                 var cancelModalId = $"cancelModal_{medication.MedicationPescriptionId}";
                 var detailsModalId = $"detailsModal_{medication.MedicationPescriptionId}";
@@ -75,7 +87,7 @@
                             <h5 class="appointment-header mb-3">
                                 @(medication.Admission?.Booking?.MedicalCondition ?? medication.Booking?.MedicalCondition)
                             </h5>
-                            <p class="mb-1"><strong>Next Collection Date:</strong> @medication.NextCollectionDate</p>
+                            <p class="mb-1"><strong>Next Collection Date:</strong> @medication.NextCollectionDate?.ToString("dd MMM yyyy")</p>
                             <p class="mb-1"><strong>Status:</strong> <span class="badge badge-status">@medication.Status</span></p>
                         </div>
 

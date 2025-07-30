@@ -52,6 +52,15 @@ namespace HospitalManagement.Controllers
         }
 
         [Authorize(Roles = "System Administrator, Receptionist")]
+        public async Task<IActionResult> DeliveryPersonnels()
+        {
+            var deliveryPersonnels = await _context.DeliveryPersonnels
+                .ToListAsync();
+
+            return View(deliveryPersonnels);
+        }
+
+        [Authorize(Roles = "System Administrator, Receptionist")]
         public async Task<IActionResult> KitchenStaff()
         {
             var kitchenStaff = await _context.KitchenStaff

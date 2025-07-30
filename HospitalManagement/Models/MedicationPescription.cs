@@ -60,6 +60,8 @@ namespace HospitalManagement.Models
 
         public MedicationPescriptionStatus Status { get; set; }
 
+        [DisplayName("Reminders")]
+        public virtual ICollection<MedicationReminder> Reminders { get; set; } = new List<MedicationReminder>();
 
     }
 }

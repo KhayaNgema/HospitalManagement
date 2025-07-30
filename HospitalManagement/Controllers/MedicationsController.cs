@@ -53,6 +53,68 @@ namespace HospitalManagement.Controllers
             _activityLogger = activityLogger;
         }
 
+        [HttpGet]
+        public async Task<IActionResult> Reminders()
+        {
+            var user = await _userManager.GetUserAsync(User);
+
+            var medications = await _context.MedicationPescription
+                .Include(mp => mp.Admission).ThenInclude(a => a.Patient)
+                .Include(mp => mp.Booking).ThenInclude(b => b.CreatedBy)
+                .Where(mp =>
+                    (mp.Admission != null && mp.Admission.Patient != null && mp.Admission.Patient.Id == user.Id) ||
+                    (mp.Booking != null && mp.Booking.CreatedBy != null && mp.Booking.CreatedBy.Id == user.Id)
+                )
+                .Select(mp => mp.MedicationPescriptionId)
+                .ToListAsync();
+
+            var reminders = await _context.MedicationReminders
+                .Where(r => medications.Contains(r.MedicationPescriptionId)
+                            && r.Status == ReminderStatus.Sent
+                            && r.ExpiryDate >= DateTime.Now)
+                .ToListAsync();
+
+            var deliveryRequests = new Dictionary<int, NewDeliveryRequestViewModel>();
+
+            foreach (var reminder in reminders)
+            {
+                var pescription = await _context.MedicationPescription
+                    .Where(mp => mp.MedicationPescriptionId == reminder.MedicationPescriptionId)
+                    .Include(mp => mp.Admission).ThenInclude(a => a.Patient)
+                    .Include(mp => mp.Booking).ThenInclude(b => b.Patient)
+                    .FirstOrDefaultAsync();
+
+                var address = pescription?.Admission?.Patient?.Address ?? pescription?.Booking?.Patient?.Address;
+
+                var parts = address?.Split(',')?.Select(p => p.Trim()).ToArray();
+
+                if (parts != null && parts.Length >= 5)
+                {
+                    if (Enum.TryParse<Province>(parts[2].Replace(" ", "").Replace("-", ""), ignoreCase: true, out var prov))
+                    {
+                        var deliveryRequestVM = new NewDeliveryRequestViewModel
+                        {
+                            PescriptionId = pescription.MedicationPescriptionId,
+                            Street = parts[0],
+                            City = parts[1],
+                            Province = prov,
+                            PostalCode = parts[3],
+                            Country = parts[4],
+                        };
+
+                        deliveryRequests[pescription.MedicationPescriptionId] = deliveryRequestVM;
+                    }
+                }
+            }
+
+            var viewModel = new MedicationRemindersWithDeliveryViewModel
+            {
+                Reminders = reminders,
+                DeliveryRequests = deliveryRequests
+            };
+
+            return View(viewModel);
+        }
 
 
         [HttpGet]
@@ -71,9 +133,23 @@ namespace HospitalManagement.Controllers
                 )
                 .ToListAsync();
 
+            var medicationIds = medications.Select(m => m.MedicationPescriptionId).ToList();
 
-            return View(medications);
+            var reminders = await _context.MedicationReminders
+                .Where(r => medicationIds.Contains(r.MedicationPescriptionId)
+                            && r.Status == ReminderStatus.Sent
+                            && r.ExpiryDate >= DateTime.Now)
+                .ToListAsync();
+
+            var viewModel = new CollectMedicationViewModel
+            {
+                Medications = medications,
+                Reminders = reminders
+            };
+
+            return View(viewModel);
         }
+
 
         [Authorize(Roles = "Pharmacist")]
         [HttpGet]

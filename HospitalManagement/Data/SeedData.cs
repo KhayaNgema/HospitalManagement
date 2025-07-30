@@ -23,6 +23,7 @@ public static class SeedData
                 "Paramedic",
                 "Pharmacist",
                 "Kitchen Staff",
+                "Delivery Personnel",
                 "Receptionist"
             };
 

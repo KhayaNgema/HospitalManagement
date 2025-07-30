@@ -1,5 +1,5 @@
 ﻿@{
-    ViewData["Title"] = "Kitchen Staff";
+    ViewData["Title"] = "Delivery Personnel";
     Layout = "~/Views/Shared/_PagesLayout.cshtml";
 }
 
@@ -78,11 +78,11 @@
             <div class="card officials-card">
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title">
-                        <i class="fas fa-clipboard-list text-primary me-2"></i> New Orders
+                        <i class="fas fa-truck-loading text-warning me-2"></i> Pending Deliveries
                     </h5>
-                    <p class="card-text">New orders are listed here</p>
-                    <a asp-controller="Orders" asp-action="PendingOrders" class="btn btn-primary mt-auto align-self-end styled-button">
-                        <span>New Orders</span>
+                    <p class="card-text">Deliveries that are assigned but not yet completed.</p>
+                    <a asp-controller="Deliveries" asp-action="PendingDeliveries" class="btn btn-primary mt-auto align-self-end styled-button">
+                        <span>View Pending</span>
                         <span class="arrow">&#10148;</span>
                     </a>
                 </div>
@@ -93,11 +93,11 @@
             <div class="card officials-card">
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title">
-                        <i class="fas fa-box-open text-success me-2"></i> Prepared Orders
+                        <i class="fas fa-history text-success me-2"></i> Previous Deliveries
                     </h5>
-                    <p class="card-text">Prepared orders are listed here</p>
-                    <a asp-controller="Orders" asp-action="PreparedOrders" class="btn btn-primary mt-auto align-self-end styled-button">
-                        <span>Prepared Orders</span>
+                    <p class="card-text">Completed delivery history is listed here.</p>
+                    <a asp-controller="Deliveries" asp-action="PreviousDeliveries" class="btn btn-primary mt-auto align-self-end styled-button">
+                        <span>View History</span>
                         <span class="arrow">&#10148;</span>
                     </a>
                 </div>
@@ -105,5 +105,4 @@
         </div>
     </div>
 </div>
-
 
