@@ -1,0 +1,603 @@
+﻿@model HospitalManagement.ViewModels.StockMenuViewModel
+
+@using System.Linq
+
+
+@{
+    var successMessage = TempData["SuccessMessage"] as string;
+    ViewData["Title"] = "Menu";
+    Layout = "~/Views/Shared/_PagesLayout.cshtml";
+
+    var groupedItems = Model.MedicationStockItems
+        .OrderBy(item => item.StockCategory.CategoryName)
+        .GroupBy(item => item.StockCategory.CategoryName);
+}
+
+<style>
+    .custom-card {
+        margin-bottom: 20px;
+        margin-right: -10px;
+        padding-right: 15px;
+        border-bottom-left-radius: 15px;
+        border-bottom-right-radius: 15px;
+        overflow: hidden;
+    }
+
+        .custom-card img {
+            width: 100%;
+            height: 30vh;
+            object-fit: cover;
+            margin: 0 auto;
+        }
+
+    .modal-content {
+        width: 90%;
+        margin: auto;
+    }
+
+
+    .modal {
+        overflow-y: auto;
+    }
+
+    .modal-body {
+        padding: 30px;
+    }
+
+    .modal-footer {
+    }
+
+
+    .modal-body img {
+        width: 100%;
+        height: auto;
+    }
+
+    .modal-title {
+    }
+
+.cart-icon {
+    position: fixed;
+    top: 14px;
+    right: 80px;
+    background: linear-gradient(135deg, #2d6336, #4caf50);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 50px; 
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 9999;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    transition: background-color 0.3s ease;
+}
+
+.cart-icon:hover {
+    background: linear-gradient(135deg, #255a2f, #43a047);
+}
+
+.cart-icon i {
+    font-size: 1.2rem;
+}
+
+.cart-icon span {
+    font-size: 16px;
+}
+
+
+    .cart-items {
+        display: none;
+        position: fixed;
+        top: 55px;
+        right: 426px; 
+        max-width: 440px;
+        min-width: 440px;
+        background-color: #fff;
+        box-shadow: -2px 0px 5px rgba(0, 0, 0, 0.3);
+        height: calc(100vh - 50px);
+        overflow-y: auto;
+        z-index: 999;
+        transform: translateX(100%);
+        padding: 0 12px;
+        padding-top:50px;
+    }
+
+
+
+    .quantity-input {
+        width: 60px;
+    }
+
+    .tempdata-message {
+        position: fixed;
+        top: 50px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #4caf50;
+        color: white;
+        padding: 15px 30px 25px 30px;
+        border-radius: 5px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        z-index: 9999;
+        max-width: 120%; 
+        word-wrap: break-word; 
+    }
+
+    .delete-tempdata-message {
+        position: fixed;
+        top: 50px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #b60b0b;
+        color: white;
+        padding: 15px 30px 25px 30px;
+        border-radius: 5px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        z-index: 9999;
+        max-width: 120%; 
+        word-wrap: break-word; 
+    }
+
+    .cart-items {
+        display: none; 
+    }
+
+        .cart-items.show {
+            display: block; 
+        }
+
+    .text-center {
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .custom-button {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+
+    .card-img-top {
+        width: 100%;
+        height: 15vh;
+        object-fit: cover;
+        margin: 0 auto;
+    }
+
+    .no-items-message {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    .custom-close-btn {
+        background: none;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+        color: #000;
+        font-size: 22px;
+        font-weight: bold;
+    }
+
+    .custom-close-btn-close {
+        background: #808080;
+        border: 1px;
+        padding: 7px;
+        cursor: pointer;
+        color: #ffffff;
+        font-size: 16px;
+        border-radius: 5px;
+    }
+
+    .button-container {
+        display: flex;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+    }
+
+    #checkoutButton {
+        background-color: #2d6336;
+        color: white;
+        border-radius: 5px;
+        padding: 8px 16px;
+        font-size: 14px;
+        transition: background-color 0.3s ease;
+        margin: 5px;
+    }
+
+        #checkoutButton:hover {
+            background-color: #4caf50;
+            cursor: pointer;
+        }
+
+</style>
+
+<div class="container-fluid">
+    <div class="d-flex align-items-center justify-content-between px-3 py-3 mb-4" style="background-color:#48AAAD;">
+        <div class="d-flex align-items-center">
+            <a asp-controller="Home" asp-action="Index" class="text-white text-decoration-none d-inline-flex align-items-center back-link me-3">
+                <i class="bi bi-chevron-left me-1"></i> Back
+            </a>
+            <h2 class="mb-0 text-white">Order medication from our suppliers</h2>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-4 px-3">
+        <div class="input-group w-50 me-2">
+            <input type="text" class="form-control" placeholder="Search by supplier, medication" id="searchInput">
+        </div>
+
+        <div class="input-group w-25 me-2">
+            <select id="categoryDropdown" class="form-select custom-select">
+                <option value="">All Categories</option>
+                @foreach (var category in ViewBag.Categories)
+                {
+                    <option value="@category.StockCategoryId">@category.CategoryName</option>
+                }
+            </select>
+        </div>
+    </div>
+
+
+    <div class="row" id="productsContainer">
+        @if (Model != null && Model.MedicationStockItems != null && Model.MedicationStockItems.Any())
+        {
+            @foreach (var group in groupedItems)
+            {
+                <div class="w-100 mt-4 mb-3">
+                    <h3 class="px-3 py-2 bg-light" style="color:#48AAAD; border-left: 5px solid #48AAAD;">
+                        @group.Key's
+                    </h3>
+                </div>
+
+                <div class="row">
+                    @foreach (var menuItem in group)
+                    {
+                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 custom-card" data-category="@menuItem.StockCategoryId">
+                            <div class="card">
+                                <img src="~/@menuItem.Medication.MedicationImage" alt="@menuItem.Medication.MedicationName" class="img-thumbnail img-fluid card-img-top" />
+                                <div class="card-body">
+                                    <h5 class="card-title text-truncate">@menuItem.Medication.MedicationName</h5>
+                                    <h6 class="card-price">Quantity: @menuItem.Quantity</h6>
+                                    <p class="card-text text-truncate">@menuItem.Medication.Description</p>
+                                    <div class="d-flex justify-content-between">
+                                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#productModal_@menuItem.Medication.MedicationId">
+                                            <i class="fas fa-eye"></i> More
+                                        </button>
+                                        <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#addToCartModal_@menuItem.Medication.MedicationId">
+                                            <i class="fas fa-cart-plus"></i> Cart
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="modal fade" id="productModal_@menuItem.Medication.MedicationId" tabindex="-1" aria-labelledby="productModalLabel_@menuItem.Medication.MedicationId" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered modal-md">
+                                    <div class="modal-content rounded-4 shadow-lg">
+                                        <div class="modal-header bg-primary text-white rounded-top-4">
+                                            <h5 class="modal-title fw-bold" id="productModalLabel_@menuItem.MedicationId">@menuItem.Medication.MedicationName - @menuItem.Quantity EA's</h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body d-flex flex-column align-items-center">
+                                            <img src="~/@menuItem.Medication.MedicationImage" alt="@menuItem.Medication.MedicationName" class="img-fluid img-thumbnail mb-3 rounded-3" style="max-height: 250px;" />
+                                            <div class="w-100">
+                                                <h6 class="fw-semibold text-secondary">Description</h6>
+                                                <p class="text-muted">@menuItem.Medication.Description</p>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer justify-content-center">
+                                            <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="modal fade" id="addToCartModal_@menuItem.Medication.MedicationId" tabindex="-1" aria-labelledby="addToCartModalLabel_@menuItem.Medication.MedicationId" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content rounded-4 shadow-lg">
+                                        <div class="modal-header bg-success text-white rounded-top-4">
+                                            <h5 class="modal-title fw-bold" id="addToCartModalLabel_@menuItem.Medication.MedicationId">
+                                                @menuItem.Medication.MedicationName - @menuItem.Quantity EA's
+                                            </h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            @Html.Partial("~/Views/MedicationCartItems/_CreateMedicationCartItemForm.cshtml", new HospitalManagement.ViewModels.MedicationCartItemViewModel
+                           {
+                               StockId = menuItem.StockId,
+                               MedicationName = menuItem.Medication.MedicationName,
+                               Quantity = menuItem.Quantity
+                           })
+                                        </div>
+                                        <div class="modal-footer justify-content-center">
+                                            <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+                                            <button type="button" class="btn btn-success px-4 add-to-cart-item">
+                                                <i class="fas fa-cart-plus me-1"></i> Add to Cart
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    }
+                </div>
+            }
+
+        }
+
+        <p id="noItemsMessage" class="text-center mt-5" style="display:none; color:#888;">
+            No menu items match your search.
+        </p>
+    </div>
+
+<div class="cart-icon" id="cartIcon">
+    <i class="fas fa-shopping-cart"></i>
+    <span id="cartItemCount">@Model.MedicationCartItems.Count()</span>
+</div>
+
+
+    <div class="cart-items">
+        <div class="container">
+            <br />
+            <h4 class="text-center"><i class="fas fa-pills fa-lg"></i> Medication order Basket</h4>
+            <br />
+
+            <div class="Cart">
+                <div id="cartItemsBody">
+                </div>
+            </div>
+            <br />
+
+            <div class="text-center">
+                <button type="button" class="btn btn-secondary" id="continueShoppingBtn">Order medication</button>
+            </div>
+            <br />
+        </div>
+    </div>
+
+
+</div>
+
+
+
+@section Scripts {
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+
+        $('#cartIcon').click(function () {
+            $('.cart-items').toggleClass('show');
+        });
+
+        $('#continueShoppingBtn').click(function () {
+            $('.cart-items').removeClass('show');
+        });
+
+        $(document).ready(function () {
+            $('.modal').modal();
+
+            $.ajaxSetup({
+                headers: {
+                    RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                }
+            });
+
+           $(document).on('input', '.quantity-input', function () {
+            var $input = $(this);
+            var $row = $input.closest('tr');
+            var cartItemId = $row.data('cartitemid');
+
+            var quantityStr = $input.val().trim();
+
+            if (quantityStr === '') {
+                $row.find('.subtotal').text('R 0.00');
+                return;
+            }
+
+            var quantity = parseInt(quantityStr);
+            if (isNaN(quantity) || quantity < 1) {
+                quantity = 1;
+                $input.val(quantity);
+            }
+
+            var price = parseFloat($row.find('.subtotal').data('price'));
+            if (isNaN(price)) price = 0;
+
+            var subtotal = quantity * price;
+            $row.find('.subtotal').text('R ' + subtotal.toFixed(2));
+
+            $.post('/CartItems/UpdateQuantity', {
+                id: cartItemId,
+                quantity: quantity,
+                price: price
+            }).done(function () {
+                updateTotalPrice();
+            }).fail(function (xhr, status, error) {
+                console.error('Error updating quantity:', error);
+            });
+        });
+
+
+            $(document).on('click', '.delete-cart-item', function () {
+                var $row = $(this).closest('tr');
+                var cartItemId = $(this).data('cartitemid');
+
+                $.post('/CartItems/Delete', { id: cartItemId })
+                    .done(function () {
+                        $row.remove();
+                        var currentCount = parseInt($('#cartItemCount').text());
+                        $('#cartItemCount').text(currentCount - 1);
+                        updateTotalPrice();
+                        fetchCartItems();
+                    }).fail(function (xhr, status, error) {
+                        console.error('Error deleting cart item:', error);
+                    });
+            });
+
+
+        $(document).on('input', '.quantity-input', function () {
+            var $input = $(this);
+            var $modal = $input.closest('.modal-content');
+
+            var quantityStr = $input.val().trim();
+
+            if (quantityStr === '') {
+                $modal.find('#subtotal').text('R 0.00');
+                return;
+            }
+
+            var quantity = parseFloat(quantityStr);
+            if (isNaN(quantity) || quantity < 1) {
+                quantity = 1;
+                $input.val(quantity);
+            }
+
+            var price = parseFloat($input.data('price'));
+            if (isNaN(price)) price = 0;
+
+            var subtotal = quantity * price;
+
+            $modal.find('#subtotal').text('R ' + subtotal.toFixed(2));
+        });
+
+
+
+
+            function toggleAddToCartButton(input, button) {
+                var quantity = parseInt(input.val());
+                button.prop('disabled', isNaN(quantity) || quantity <= 0);
+            }
+
+            $(document).on('click', '.read-more', function () {
+                var itemId = $(this).data('itemid');
+                $('#productModal_' + itemId).modal('show');
+            });
+
+
+
+       $(document).on('click', '.add-to-cart-item', function (e) {
+    e.preventDefault();
+
+    var $modal = $(this).closest('.modal');
+    var $form = $modal.find('form');
+
+    if ($form.length === 0) {
+        alert("Form not found inside modal.");
+        return;
+    }
+
+    var formData = $form.serialize();
+
+    var formObject = {};
+    formData.split("&").forEach(function (pair) {
+        var parts = pair.split("=");
+        formObject[decodeURIComponent(parts[0])] = decodeURIComponent(parts[1] || "");
+    });
+
+    var token = $form.find('input[name="__RequestVerificationToken"]').val();
+
+    $.ajax({
+        url: '@Url.Action("AddCartItem", "MedicationCartItems")',
+        type: 'POST',
+        data: formData,
+        headers: {
+        'RequestVerificationToken': token
+                 },
+        success: function () {
+            $.get('@Url.Action("GetCartItemCount", "MedicationCartItems")', function (data) {
+                $('#cartItemCount').text(data);
+            });
+
+            $modal.modal('hide');
+            fetchCartItems();
+        },
+        error: function (xhr) {
+            console.error(xhr.responseText);
+            alert("Failed to add item to cart.");
+        }
+    });
+});
+
+
+            function updateCartItemCount(count) {
+                $('#cartItemCount').text(count);
+            }
+
+            function updateTotalPrice() {
+                var totalPrice = 0;
+                $('.subtotal').each(function () {
+                    totalPrice += parseFloat($(this).text().replace('R ', ''));
+                });
+                $('#totalPrice').text('R ' + totalPrice.toFixed(2));
+            }
+
+            function fetchCartItems() {
+                $.get('@Url.Action("GetCartItems", "MedicationCartItems")')
+                    .done(function (data) {
+                        $('#cartItemsBody').html(data);
+                    }).fail(function (xhr, status, error) {
+                        console.error(xhr.responseText);
+                        alert("Failed to fetch cart items. Error: " + error);
+                    });
+            }
+
+        $(document).ready(function () {
+
+            function filterCards() {
+                var search = $('#searchInput').val().toLowerCase().trim();
+                var category = $('#categoryDropdown').val();
+
+                var anyVisible = false;
+                $('#productsContainer > div.w-100.mt-4.mb-3').each(function () {
+                    var $groupHeader = $(this);
+                    var $cardsRow = $groupHeader.next('.row');
+
+                    var visibleCards = 0;
+                    $cardsRow.find('.custom-card').each(function () {
+                        var $card = $(this);
+                        var name = $card.find('.card-title').text().toLowerCase();
+                        var priceText = $card.find('.card-price').text().toLowerCase();
+                        var cardCategory = $card.data('category').toString();
+
+                        var matchesSearch = !search || name.includes(search) || priceText.includes(search);
+                        var matchesCategory = !category || cardCategory === category;
+
+                        var showCard = matchesSearch && matchesCategory;
+                        $card.toggle(showCard);
+
+                        if (showCard) visibleCards++;
+                    });
+
+                    var showGroup = visibleCards > 0;
+                    $groupHeader.toggle(showGroup);
+                    $cardsRow.toggle(showGroup);
+
+                    if (showGroup) anyVisible = true;
+                });
+
+                $('#noItemsMessage').toggle(!anyVisible);
+            }
+
+            $('#searchInput, #categoryDropdown').on('input change', filterCards);
+
+            filterCards();
+
+        });
+
+            function toggleNoItemsMessage() {
+                var hasVisible = $('#productsContainer').children('.custom-card:visible').length > 0;
+                $('#noItemsMessage').toggle(!hasVisible);
+            }
+
+            updateTotalPrice();
+            fetchCartItems();
+
+            $('#searchInput, #categoryDropdown').on('input change', filterCards);
+        });
+    </script>
+}

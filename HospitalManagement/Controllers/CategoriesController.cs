@@ -52,7 +52,7 @@ namespace HospitalManagement.Controllers
 
             return View(categories);
         }
-        
+
         [HttpGet]
         public async Task<IActionResult> NewMedicationCategory()
         {
@@ -82,7 +82,7 @@ namespace HospitalManagement.Controllers
 
                 return RedirectToAction(nameof(MedicationCategories));
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 return Json(new
                 {

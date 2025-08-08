@@ -1,12 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using HospitalManagement.Data;
 using HospitalManagement.Models;
-using System;
-using System.Net.Http;
-using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
-using System.Net;
-using System.Linq;
-using HospitalManagement.Data;
 using UAParser;
 
 namespace HospitalManagement.Services
@@ -17,8 +11,8 @@ namespace HospitalManagement.Services
         private readonly HttpClient _httpClient;
         private readonly HospitalManagementDbContext _context;
 
-        public DeviceInfoService(IHttpContextAccessor httpContextAccessor, 
-            HttpClient httpClient, 
+        public DeviceInfoService(IHttpContextAccessor httpContextAccessor,
+            HttpClient httpClient,
             HospitalManagementDbContext context)
         {
             _httpContextAccessor = httpContextAccessor;

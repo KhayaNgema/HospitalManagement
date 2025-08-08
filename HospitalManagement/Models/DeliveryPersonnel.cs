@@ -1,6 +1,6 @@
 ﻿namespace HospitalManagement.Models
 {
-    public class DeliveryPersonnel: UserBaseModel
+    public class DeliveryPersonnel : UserBaseModel
     {
         public string DriverLicenseNumber { get; set; }
         public DateTime LicenseExpiryDate { get; set; }

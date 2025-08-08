@@ -2,11 +2,11 @@
 using HospitalManagement.Interfaces;
 using HospitalManagement.Models;
 using HospitalManagement.Services;
+using HospitalManagement.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using HospitalManagement.ViewModels;
 
 namespace HospitalManagement.Controllers
 {

@@ -52,7 +52,7 @@ namespace HospitalManagement.Controllers
 
             var medicalRecord = await _context.PatientMedicalHistories
                 .Where(mr => mr.PatientMedicalHistoryId == decryptedMedicalHistoryId)
-                .Include(x => x.Patient) 
+                .Include(x => x.Patient)
                 .FirstOrDefaultAsync();
 
             if (medicalRecord != null)
@@ -91,7 +91,7 @@ namespace HospitalManagement.Controllers
                 HeightCm = medicalHistory.HeightCm,
                 Immunizations = medicalHistory.Immunizations,
                 LabResults = medicalHistory.LabResults,
-                LastName  = medicalHistory.Patient?.LastName,
+                LastName = medicalHistory.Patient?.LastName,
                 PrescribedMedication = medicalHistory.PrescribedMedication,
                 PrescriptionType = medicalHistory.PrescriptionType,
                 ProfilePicture = medicalHistory.Patient.ProfilePicture,
@@ -134,7 +134,7 @@ namespace HospitalManagement.Controllers
                 DateOfBirth = patient.DateOfBirth,
                 ProfilePicture = patient.ProfilePicture,
                 PatientId = medicalHistory.PatientId,
-                PatientMedicalHistoryId= decryptedMedicalHistoryId
+                PatientMedicalHistoryId = decryptedMedicalHistoryId
             };
 
             var medication = await _context.Medications
@@ -217,7 +217,7 @@ namespace HospitalManagement.Controllers
                             var medicationEntity = await _context.Medications
                                 .FirstOrDefaultAsync(m => m.MedicationId == med.MedicationId);
 
-                            if(medicationEntity != null && booking != null)
+                            if (medicationEntity != null && booking != null)
                             {
                                 var newBillService = new PatientBillServices
                                 {
@@ -243,7 +243,7 @@ namespace HospitalManagement.Controllers
                     }
                 }
 
-                if(booking != null)
+                if (booking != null)
                 {
                     var medicationPescription = new MedicationPescription
                     {
@@ -264,24 +264,6 @@ namespace HospitalManagement.Controllers
                         AccessCode = booking.BookingReference,
 
                     };
-
-                    if (viewModel.PrescribedMedication != null && viewModel.PrescribedMedication.Any())
-                    {
-                        foreach (var med in viewModel.PrescribedMedication)
-                        {
-                            var medicationEntity = await _context.Medications
-                                .FirstOrDefaultAsync(m => m.MedicationId == med.MedicationId);
-
-                            if (medicationEntity != null)
-                            {
-                                medicationPescription.PrescribedMedication.Add(medicationEntity);
-                            }
-                            else
-                            {
-
-                            }
-                        }
-                    }
 
                     _context.Add(medicationPescription);
                     await _context.SaveChangesAsync();

@@ -1,7 +1,7 @@
 ﻿using HospitalManagement.Interfaces;
 using Newtonsoft.Json;
-using System.Text;
 using System.Net.Http.Headers;
+using System.Text;
 
 public class AzureFaceService : IFaceService
 {

@@ -88,7 +88,7 @@
             </div>
         </div>
 
-        <div class="col-sm-12 col-md-12 col-lg-6">
+        <div class="col-sm-12 col-md-6 col-lg-6">
             <div class="card sport-coordinators-card">
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title"><i class="fas fa-sign-in-alt"></i> Admissions</h5>
@@ -132,7 +132,7 @@
             </div>
         </div>
 
-        <div class="col-sm-12 col-md-6 col-lg-4">
+        <div class="col-sm-12 col-md-12 col-lg-4">
             <div class="card club-managers-card">
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title"><i class="fas fa-user-injured"></i> Patients</h5>
@@ -161,20 +161,21 @@
                 </div>
             </div>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-4">
-            <div class="card news-administrators-card">
-                <div class="card-body d-flex flex-column">
-                    <h5 class="card-title"><i class="fas fa-truck"></i> Delivery Personnels</h5>
-                    <p class="card-text">Our delivery personnels are listed here</p>
-                    <h1 class="card-text text-center center-number">@ViewBag.NewsAdminsCount</h1>
-                    <a asp-controller="Users" asp-action="DeliveryPersonnels" class="btn btn-primary mt-auto align-self-end styled-button">
-                        <span>Delivery Personnels</span>
-                        <span class="arrow">&#10148;</span>
-                    </a>
-                </div>
-            </div>
+<div class="col-sm-12 col-md-6 col-lg-4">
+    <div class="card delivery-person-card">
+        <div class="card-body d-flex flex-column">
+            <h5 class="card-title"><i class="fas fa-motorcycle"></i> Delivery Personnel</h5>
+            <p class="card-text">Our medication delivery personnel are listed here</p>
+            <h1 class="card-text text-center center-number">@ViewBag.DeliveryPersonnelCount</h1>
+            <a asp-controller="Users" asp-action="DeliveryPersonnels" class="btn btn-primary mt-auto align-self-end styled-button">
+                <span>Delivery Personnel</span>
+                <span class="arrow">&#10148;</span>
+            </a>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-4">
+    </div>
+</div>
+
+        <div class="col-sm-12 col-md-12 col-lg-4">
             <div class="card news-administrators-card">
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title"><i class="fas fa-utensils"></i> Kitchen Staff</h5>
@@ -190,7 +191,7 @@
     </div>
 
     <div class="row">
-        <div class="col-sm-12 col-md-6 col-lg-6">
+        <div class="col-sm-12 col-md-6 col-lg-4">
             <div class="card division-players-card">
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title"><i class="fas fa-user-md"></i> Receptionists</h5>
@@ -203,8 +204,21 @@
                 </div>
             </div>
         </div>
+<div class="col-sm-12 col-md-6 col-lg-4">
+    <div class="card news-updaters-card">
+        <div class="card-body d-flex flex-column">
+            <h5 class="card-title"><i class="fas fa-truck-loading"></i> Suppliers</h5>
+            <p class="card-text">Our medication suppliers are listed here</p>
+            <h1 class="card-text text-center center-number">@ViewBag.SuppliersCount</h1>
+            <a asp-controller="Suppliers" asp-action="Suppliers" class="btn btn-primary mt-auto align-self-end styled-button">
+                <span>Suppliers</span>
+                <span class="arrow">&#10148;</span>
+            </a>
+        </div>
+    </div>
+</div>
 
-        <div class="col-sm-12 col-md-6 col-lg-6">
+        <div class="col-sm-12 col-md-12 col-lg-4">
             <div class="card news-updaters-card">
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title"><i class="fas fa-user-shield"></i> Admins</h5>

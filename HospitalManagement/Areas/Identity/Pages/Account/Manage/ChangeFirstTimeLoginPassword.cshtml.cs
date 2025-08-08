@@ -2,21 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
 
-using System;
-using System.ComponentModel.DataAnnotations;
-using System.Threading.Tasks;
+using HospitalManagement.Data;
 using HospitalManagement.Interfaces;
 using HospitalManagement.Models;
 using HospitalManagement.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using HospitalManagement.Data;
-using HospitalManagement.Interfaces;
-using HospitalManagement.Models;
-using HospitalManagement.Services;
+using System.ComponentModel.DataAnnotations;
 
 namespace HospitalManagement.Areas.Identity.Pages.Account.Manage
 {

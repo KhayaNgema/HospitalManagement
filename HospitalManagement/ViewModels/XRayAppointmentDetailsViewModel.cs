@@ -1,6 +1,4 @@
 ﻿using HospitalManagement.Models;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using System.ComponentModel.DataAnnotations;
 
 namespace HospitalManagement.ViewModels
 {
@@ -13,11 +11,11 @@ namespace HospitalManagement.ViewModels
         public string BookingReference { get; set; }
 
         public string PatientId { get; set; }
-        public string PatientFullNames{ get; set; }
+        public string PatientFullNames { get; set; }
 
         public string IdNumber { get; set; }
 
-        public string PatientProfilePicture {  get; set; }
+        public string PatientProfilePicture { get; set; }
 
         public string PatientEmail { get; set; }
 
@@ -32,7 +30,7 @@ namespace HospitalManagement.ViewModels
 
         public DateTime BookForDate { get; set; }
 
-        public string BookForTimeSlot { get; set; }  
+        public string BookForTimeSlot { get; set; }
 
         public DateTime CreatedAt { get; set; }
 
@@ -42,7 +40,7 @@ namespace HospitalManagement.ViewModels
 
         public CommonMedicalCondition MedicalCondition { get; set; }
 
-        public string  AdditionalNotes {  get; set; }
+        public string AdditionalNotes { get; set; }
         public ICollection<string>? Instructions { get; set; } = new List<string>();
 
         public ICollection<Specialization> Specialization { get; set; }

@@ -1,6 +1,4 @@
-﻿using Hangfire;
-using Hangfire.Dashboard;
-using HospitalManagement.Data;
+﻿using HospitalManagement.Data;
 using HospitalManagement.Helpers;
 using HospitalManagement.Interfaces;
 using HospitalManagement.Models;
@@ -11,7 +9,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
 using System.Web;
 
 namespace HospitalManagement.Controllers
@@ -106,12 +103,12 @@ namespace HospitalManagement.Controllers
 
             var appointments = await _context.X_RayAppointments
                  .Where(a => a.Status == BookingStatus.Assigned ||
-                  a.Status == BookingStatus.Completed && 
+                  a.Status == BookingStatus.Completed &&
                   a.DoctorId == user.Id)
                 .Include(a => a.AssignedTo)
                 .Include(a => a.CreatedBy)
                 .Include(a => a.Doctor)
-                
+
                 .Include(a => a.ModifiedBy)
                 .Include(a => a.Booking)
                 .ToListAsync();
@@ -165,8 +162,8 @@ namespace HospitalManagement.Controllers
                 .Include(ma => ma.AssignedTo)
                 .Where(ma => ma.CreatedById == user.Id)
                 .OrderByDescending(ma => ma.CreatedAt)
-                .ToListAsync(); 
-                
+                .ToListAsync();
+
             return View(myAppointments);
         }
 
@@ -260,7 +257,7 @@ namespace HospitalManagement.Controllers
                 XRayImage = appointment.ScannerImage,
                 IdNumber = appointment.CreatedBy.IdNumber,
                 AssignedToFullNames = $"{appointment.AssignedTo.FirstName} {appointment.AssignedTo.LastName}"
-               
+
             };
 
             var doctor = await _context.Doctors
@@ -301,8 +298,8 @@ namespace HospitalManagement.Controllers
                 var user = await _userManager.GetUserAsync(User);
 
                 var activeBookings = await _context.Bookings
-                    .Where(ab => ab.CreatedById == user.Id &&            
-                                 ab.Status == BookingStatus.Assigned && 
+                    .Where(ab => ab.CreatedById == user.Id &&
+                                 ab.Status == BookingStatus.Assigned &&
                                  ab.MedicalCondition == viewModel.MedicalCondition)
                     .ToListAsync();
 
@@ -362,7 +359,7 @@ namespace HospitalManagement.Controllers
                     LastUpdatedAt = DateTime.Now,
                     BookingReference = bookingReference,
                     BookForTimeSlot = viewModel.BookForTimeSlot,
-                    AssignedUserId = availableDoctor.Id  
+                    AssignedUserId = availableDoctor.Id
                 };
 
                 _context.Add(newAppointment);
@@ -461,7 +458,7 @@ namespace HospitalManagement.Controllers
 
             if (!ConditionToSpecializationsMap.Map.TryGetValue(condition, out var requiredSpecializations))
             {
-                return Json(new List<object>()); 
+                return Json(new List<object>());
             }
 
             foreach (var slot in allSlots)
@@ -507,7 +504,7 @@ namespace HospitalManagement.Controllers
         }
 
 
-      
+
 
         [Authorize]
         public async Task<IActionResult> PayFastReturn(int paymentId, string appointmentId, decimal amount)

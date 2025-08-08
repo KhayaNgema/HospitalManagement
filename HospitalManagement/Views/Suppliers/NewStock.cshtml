@@ -1,0 +1,62 @@
+﻿@using HospitalManagement.ViewModels
+@model NewStockViewModel
+
+@{
+    ViewData["Title"] = "New Stock";
+    Layout = "~/Views/Shared/_PagesLayout.cshtml";
+}
+
+<div class="container-fluid my-3">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6">
+            <div class="login-card shadow p-4">
+                <h3 class="login-header text-center mb-4">New Medication Stock</h3>
+
+                <form asp-action="NewStock" method="post">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <input type="hidden" asp-for="SupplierId" />
+
+                    <div class="mb-4">
+                        <label for="medicationDropdown">Medication</label>
+                        <select asp-for="MedicationId" class="form-select" id="medicationDropdown">
+                            <option value="">-- Select Medication --</option>
+                            @foreach (var med in ViewBag.Medications)
+                            {
+                                <option value="@med.MedicationId">@med.MedicationName</option>
+                            }
+                        </select>
+                        <span asp-validation-for="MedicationId" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="stockCategoryDropdown">Stock Category</label>
+                        <select asp-for="StockCategoryId" class="form-select" id="stockCategoryDropdown">
+                            <option value="">-- Select Category --</option>
+                            @foreach (var cat in ViewBag.StockCategories)
+                            {
+                                <option value="@cat.StockCategoryId">@cat.CategoryName</option>
+                            }
+                        </select>
+                        <span asp-validation-for="StockCategoryId" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Quantity"></label>
+                        <input asp-for="Quantity" class="form-control" type="number" min="0" />
+                        <span asp-validation-for="Quantity" class="text-danger small"></span>
+                    </div>
+
+                    <div class="d-grid mb-3">
+                        <button type="submit" class="btn btn-login">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

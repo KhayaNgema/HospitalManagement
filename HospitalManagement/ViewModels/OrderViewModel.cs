@@ -1,6 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using HospitalManagement.Models;
 using System.ComponentModel.DataAnnotations;
-using HospitalManagement.Models;
 
 namespace HospitalManagement.ViewModels
 {

@@ -10,6 +10,12 @@ namespace HospitalManagement.Models
         [Display(Name = "Ready for collection")]
         Ready_For_Delivery,
 
+        [Display(Name = "Packaged")]
+        Packaged,
+
+        [Display(Name = "On the way")]
+        OnTheWay,
+
         [Display(Name = "Delivered")]
         Collected,
 

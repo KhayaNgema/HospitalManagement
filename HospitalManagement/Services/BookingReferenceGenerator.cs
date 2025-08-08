@@ -1,6 +1,5 @@
 ﻿
 using QRCoder;
-using System;
 
 namespace HospitalManagement.Services
 {

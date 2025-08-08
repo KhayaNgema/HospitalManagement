@@ -18,13 +18,13 @@ namespace HospitalManagement.Models
         public DateTime ExpiryDate { get; set; }
 
         public ReminderStatus Status { get; set; }
-    } 
+    }
 
     public enum ReminderStatus
-    { 
-       Sent,
-       Read,
-       Deleted
+    {
+        Sent,
+        Read,
+        Deleted
     }
 
 }

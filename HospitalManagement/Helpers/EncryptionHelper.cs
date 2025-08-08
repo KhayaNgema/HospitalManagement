@@ -1,8 +1,5 @@
-﻿using System;
-using System.IO;
+﻿using HospitalManagement.Helpers;
 using System.Security.Cryptography;
-using System.Text;
-using HospitalManagement.Helpers;
 
 public class EncryptionHelper
 {

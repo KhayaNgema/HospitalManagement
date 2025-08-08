@@ -1,5 +1,4 @@
 ﻿using HospitalManagement.Models;
-using HospitalManagement.ViewModels;
 
 namespace HospitalManagement.ViewModels
 {

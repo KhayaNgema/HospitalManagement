@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Web;
-using HospitalManagement.Models;
 
 namespace HospitalManagement.Models
 {
@@ -23,12 +18,12 @@ namespace HospitalManagement.Models
         public DateTime PaymentDate { get; set; }
 
         [ForeignKey("PaymentMadeById")]
-        public string? PaymentMadeById { get; set; }  
+        public string? PaymentMadeById { get; set; }
 
         public virtual UserBaseModel PaymentMadeBy { get; set; }
         public PaymentPaymentStatus Status { get; set; }
 
-        public int DeviceInfoId { get; set; }   
+        public int DeviceInfoId { get; set; }
 
         public virtual DeviceInfo DeviceInfo { get; set; }
 
@@ -47,7 +42,7 @@ namespace HospitalManagement.Models
     public enum PaymentPaymentStatus
     {
         [Display(Name = "UNSUCCESSFUL")]
-         Unsuccessful,
+        Unsuccessful,
 
         [Display(Name = "SUCCESSFUL")]
         Successful,

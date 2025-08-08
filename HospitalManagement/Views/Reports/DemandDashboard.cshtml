@@ -1,0 +1,139 @@
+﻿@model HospitalManagement.ViewModels.MedicationDemandForecastViewModel
+
+@{
+    ViewData["Title"] = "Medication Demand Dashboard";
+    var monthlyUsageJson = ViewBag.MonthlyUsageJson ?? "[]";
+    Layout = "~/Views/Shared/_PagesLayout.cshtml";
+}
+
+<style>
+    .dashboard-pane {
+        border: 2px solid #48AAAD;
+        border-radius: 10px;
+        background-color: #ffffff;
+        padding: 15px;
+        margin-bottom: 20px;
+        height: auto;
+    }
+
+    .dashboard-title {
+        font-weight: bold;
+        margin-bottom: 10px;
+        color: #022D36;
+    }
+
+    .chart-canvas {
+        width: 100% !important;
+        height: 270px !important;
+    }
+
+    .dashboard-row {
+        margin-bottom: 20px;
+    }
+</style>
+
+<div class="container-fluid">
+<div class="d-flex align-items-center justify-content-between px-3 py-3 mb-4" style="background-color:#48AAAD;">
+    <div class="d-flex align-items-center">
+        <a asp-controller="Home" asp-action="Index" class="text-white text-decoration-none d-inline-flex align-items-center back-link me-3">
+            <i class="bi bi-chevron-left me-1"></i> Back
+        </a>
+        <h2 class="mb-0 text-white">Medication Stock Usage & Demand</h2>
+    </div>
+</div>
+    <div class="row dashboard-row">
+        <div class="col-md-6">
+            <div class="dashboard-pane">
+                <div class="dashboard-title">@Model.MedicationName - Key Metrics</div>
+                <table class="table table-bordered">
+                    <tr>
+                        <th>Current Inventory</th>
+                        <td>@Model.CurrentInventory</td>
+                    </tr>
+                    <tr>
+                        <th>Average Monthly Usage</th>
+                        <td>@Model.AvgMonthlyUsage.ToString("F2")</td>
+                    </tr>
+                    <tr>
+                        <th>Predicted Next Month Demand</th>
+                        <td>@Model.PredictedDemand.ToString("F2")</td>
+                    </tr>
+                    <tr>
+                        <th>Stock Coverage (Months)</th>
+                        <td>@Model.StockCoverageMonths.ToString("F2")</td>
+                    </tr>
+                    <tr>
+                        <th>Restock Recommendation</th>
+                        <td>
+                            @if (Model.NeedsRestock)
+                            {
+                                <span class="text-danger fw-bold">Restock recommended</span>
+                            }
+                            else
+                            {
+                                <span class="text-success">Stock sufficient</span>
+                            }
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="dashboard-pane">
+                <div class="dashboard-title">Monthly Usage History</div>
+                <canvas id="monthlyUsageChart" class="chart-canvas"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const monthlyUsageData = @Html.Raw(monthlyUsageJson);
+
+        const labels = monthlyUsageData.map(u => `${u.Year}-${u.Month.toString().padStart(2, '0')}`);
+        const data = monthlyUsageData.map(u => u.TotalDispensed);
+
+        const ctx = document.getElementById('monthlyUsageChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Quantity Dispensed',
+                    data: data,
+                    borderColor: '#48AAAD',
+                    backgroundColor: 'rgba(72, 170, 173, 0.2)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 5,
+                    pointHoverRadius: 7
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Quantity'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Year-Month'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: { display: true }
+                }
+            }
+        });
+    </script>
+}

@@ -1,0 +1,132 @@
+﻿@model IEnumerable<HospitalManagement.Models.MedicationStock>
+@inject HospitalManagement.Interfaces.IEncryptionService encryptionService
+
+@{
+    ViewData["Title"] = "Medication Stock";
+    Layout = "~/Views/Shared/_PagesLayout.cshtml";
+}
+
+<div class="d-flex align-items-center justify-content-between px-3 py-3 mb-4" style="background-color:#48AAAD;">
+    <div class="d-flex align-items-center">
+        <a asp-controller="Home" asp-action="Index" class="text-white text-decoration-none d-inline-flex align-items-center back-link me-3">
+            <i class="bi bi-chevron-left me-1"></i> Back
+        </a>
+        <h2 class="mb-0 text-white">Medication Stock</h2>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-4 px-3">
+    <div class="input-group w-50 me-2">
+        <input type="text" class="form-control" placeholder="Search by batch or barcode" id="qrSearchInput">
+    </div>
+
+    <div class="input-group w-25 me-2">
+        <select id="categoryDropdown" class="form-select custom-select">
+            <option value="">All Categories</option>
+            @foreach (var category in ViewBag.StockCategories)
+            {
+                <option value="@category.StockCategoryId">@category.CategoryName</option>
+            }
+        </select>
+    </div>
+
+    <a asp-controller="Suppliers" asp-action="NewStock" class="btn btn-primary" id="addButton">
+        <i class="bi bi-plus-circle me-1"></i> New Stock
+    </a>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info text-center">
+        No medication stock found.
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped table-borderless" id="appointmentsTable">
+            <thead class="custom-thead">
+                <tr>
+                    <th class="text-nowrap">Category</th>
+                    <th class="text-nowrap">Medication</th>
+                    <th class="text-nowrap">Quantity</th>
+                    <th class="text-nowrap">Unit</th>
+                    <th class="text-nowrap">Strength</th>
+                    <th class="text-nowrap">Dosage Form</th>
+                    <th class="text-nowrap">Batch Number</th>
+                    <th class="text-nowrap">Bar Code</th>
+                    <th class="text-nowrap">QR Code</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr data-category="@item.StockCategoryId" class="ellipsis">
+                        <td>@item.StockCategory?.CategoryName</td>
+                         <td>@item.Medication.MedicationName</td>
+                        <td>@item.Quantity</td>
+                        <td>@item.Medication.UnitOfMeasure</td>
+                        <td>@item.Medication.Strength</td>
+                        <td>@item.Medication.DosageForm</td>
+                        <td>@item.BatchNumber</td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(item.Medication.BarcodeImage))
+                              {
+                               <img src="@item.Medication.BarcodeImage" alt="barcode" class="img-thumbnail img-fluid" style="max-width: 120px; max-height: 120px;" />
+                              }
+                             else
+                              {
+                                <span>No barcode</span>
+                              }
+                        </td>
+                        <td>
+                                    @if (item.QrCodeImage != null)
+                                    {
+                                        var base64 = Convert.ToBase64String(item.QrCodeImage);
+                                        var imgSrc = $"data:image/png;base64,{base64}";
+                                        <img src="@imgSrc" alt="QR Code" style="width:100px; height:100px;" />
+                                    }
+                         </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div id="noItemsMessage" class="alert alert-info text-center" style="display:none;">
+        No medication stock found for your search.
+    </div>
+}
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            function filterItems() {
+                var categoryId = $('#categoryDropdown').val();
+                var searchText = $('#qrSearchInput').val().toLowerCase();
+                var hasVisible = false;
+
+                $('#appointmentsTable tbody tr').each(function () {
+                    var matchesCategory = categoryId === '' || $(this).data('category') == categoryId;
+                    var matchesSearch = $(this).text().toLowerCase().includes(searchText);
+
+                    if (matchesCategory && matchesSearch) {
+                        $(this).show();
+                        hasVisible = true;
+                    } else {
+                        $(this).hide();
+                    }
+                });
+
+                if (hasVisible) {
+                    $('#noItemsMessage').hide();
+                } else {
+                    $('#noItemsMessage').show();
+                }
+            }
+
+            $('#categoryDropdown').on('change', filterItems);
+            $('#qrSearchInput').on('input', filterItems);
+        });
+    </script>
+}

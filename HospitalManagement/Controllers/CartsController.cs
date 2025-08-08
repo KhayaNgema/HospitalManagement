@@ -1,13 +1,10 @@
 ﻿
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http;
-using System.Linq;
-using System.Text;
-using System.Security.Claims;
-using System.Collections.Generic;
 using HospitalManagement.Data;
 using HospitalManagement.Helpers;
 using HospitalManagement.Models;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+using System.Text;
 
 namespace HospitalManagementSystem.Controllers
 {

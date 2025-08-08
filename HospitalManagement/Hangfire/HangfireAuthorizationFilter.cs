@@ -1,6 +1,4 @@
 ﻿using Hangfire.Dashboard;
-using Microsoft.AspNetCore.Http;
-using System.Security.Claims;
 
 public class HangfireAuthorizationFilter : IDashboardAuthorizationFilter
 {

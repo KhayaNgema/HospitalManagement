@@ -1,0 +1,27 @@
+﻿@model HospitalManagement.ViewModels.MedicationCartItemViewModel
+
+@{
+    ViewData["Title"] = "Add to Cart";
+}
+
+<form asp-action="AddCartItem" asp-controller="MedicationCartItems" method="post" id="createMedicationCartItemForm">
+    @Html.AntiForgeryToken()
+
+    <input type="hidden" asp-for="StockId" />
+    <input type="hidden" asp-for="MedicationName"/>
+
+    <div class="card shadow rounded-4 p-4">
+        <h5 class="mb-4 text-center fw-bold" style="color: #022D36;">Add @Model.MedicationName to Cart</h5>
+
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Quantity</label>
+            <input asp-for="Quantity"
+                   class="form-control rounded-3 quantity-input w-100"
+                   id="quantityInput_@Model.StockId"
+                   value="1"
+                   min="1"
+                   type="number"
+                   style="appearance: textfield;" />
+        </div>
+    </div>
+</form>

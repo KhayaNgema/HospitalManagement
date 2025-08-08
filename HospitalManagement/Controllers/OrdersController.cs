@@ -1,25 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using Cafeteria.Services;
+using HospitalManagement.Data;
 using HospitalManagement.Interfaces;
 using HospitalManagement.Models;
 using HospitalManagement.Services;
 using HospitalManagement.ViewModels;
-using HospitalManagement.Interfaces;
-using HospitalManagement.Models;
-using HospitalManagement.Services;
-using Microsoft.AspNetCore.Cors.Infrastructure;
-using HospitalManagement.Data;
-using Cafeteria.Services;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Hangfire;
-using System.Diagnostics;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 
 namespace Cafeteria.Controllers
 {
@@ -33,6 +22,7 @@ namespace Cafeteria.Controllers
         private readonly OrderCalculationService _orderCalculationService;
         private readonly IPaymentService _paymentService;
         private readonly DeviceInfoService _deviceInfoService;
+        private readonly IEncryptionService _encryptionService;
 
         public OrdersController(
             OrderNumberGenerator orderNumberGenerator,
@@ -42,7 +32,8 @@ namespace Cafeteria.Controllers
             DeviceInfoService deviceInfoService,
             UserManager<UserBaseModel> userManager,
             SignInManager<UserBaseModel> signInManager,
-            CartService cartService)
+            CartService cartService,
+            EncryptionService encryptionService)
         {
             _cartService = cartService;
             _orderNumberGenerator = orderNumberGenerator;
@@ -52,6 +43,53 @@ namespace Cafeteria.Controllers
             _deviceInfoService = deviceInfoService;
             _userManager = userManager;
             _signInManager = signInManager;
+            _encryptionService = encryptionService;
+        }
+
+
+        [Authorize(Roles = "Supplier Administrator")]
+        [HttpGet]
+        public async Task<IActionResult> PackageMedication(string orderId)
+        {
+            var decryptedOrderId = _encryptionService.DecryptToInt(orderId);
+
+            var order = await _context.MedicationOrders
+                .Where(o => o.OrderId == decryptedOrderId)
+                .Include(o => o.OrderItems)
+                .ThenInclude(o => o.MedicationStock)
+                .ThenInclude(o => o.Medication)
+                .ToListAsync();
+
+            return View(order);
+        }
+
+        [Authorize(Roles = "Pharmacist, Supplier Administrator")]
+        [HttpGet]
+        public async Task<IActionResult> MedicationOrderDetails(string OrderId)
+        {
+            var decryptedOrderId = _encryptionService.DecryptToInt(orderId);
+
+            var order = await _context.MedicationOrders
+                .Where(o => o.OrderId == decryptedOrderId)
+                .Include(o => o.OrderItems)
+                .ThenInclude(o => o.MedicationStock)
+                .ThenInclude(o => o.Medication)
+                .ToListAsync();
+
+            return View(order);
+        }
+
+
+        [Authorize(Roles = "Pharmacist, Supplier Administrator")]
+        [HttpGet]
+        public async Task<IActionResult> MedicationOrders()
+        {
+            var orders = await _context.MedicationOrders
+                .Include(o => o.OrderItems)
+                .Include(o => o.Pharmacist)
+                .ToListAsync();
+
+            return View(orders);
         }
 
         public async Task<IActionResult> Orders()
@@ -99,7 +137,7 @@ namespace Cafeteria.Controllers
                 .Where(o => o.Status == OrderStatus.Pending)
                 .Include(o => o.User)
                 .Include(o => o.OrderItems)
-                .ThenInclude (o => o.MenuItem)  
+                .ThenInclude(o => o.MenuItem)
                 .ToListAsync();
 
             return View(orders);
@@ -115,7 +153,7 @@ namespace Cafeteria.Controllers
                 .ToListAsync();
 
 
-            foreach(var order in orders)
+            foreach (var order in orders)
             {
                 var patient = await _context.Patients
                     .Where(p => p.Id == order.PatientId)
@@ -172,6 +210,99 @@ namespace Cafeteria.Controllers
                 return Json(new { success = false, error = "Error fetching orders." });
             }
         }
+
+        [HttpGet]
+        public async Task<IActionResult> NewMedicationOrder()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var cartItems = await _context.MedicationCartItems
+                .Where(ci => ci.MedicationCart.UserId == user.Id && !ci.Deleted)
+                .Include(ci => ci.MedicationStock)
+                    .ThenInclude(ms => ms.Medication)
+                 .Include(ci => ci.MedicationStock)
+                    .ThenInclude(ms => ms.Supplier)
+                .ToListAsync();
+
+            cartItems = cartItems.Where(ci => ci.MedicationStock != null).ToList();
+
+            var viewModel = new MedicationOrderViewModel
+            {
+                MedicationCartItems = cartItems
+            };
+
+            return View(viewModel);
+        }
+
+
+
+        [HttpPost]
+        public async Task<IActionResult> NewMedicationOrder(MedicationOrderViewModel viewModel)
+        {
+            try
+            {
+                if (viewModel == null)
+                    return Json(new { success = false, message = "Invalid order data." });
+
+                if (viewModel.MedicationCartItems == null || !viewModel.MedicationCartItems.Any())
+                    return Json(new { success = false, message = "Cart is empty." });
+
+                var cartItems = await GetMedicationCartItemsForCurrentUserAsync();
+
+                var user = await _userManager.GetUserAsync(User);
+
+                if (string.IsNullOrEmpty(user.Id))
+                    return Json(new { success = false, message = "User not authenticated." });
+
+                var deviceInfo = await _deviceInfoService.GetDeviceInfo();
+                if (deviceInfo == null)
+                    return Json(new { success = false, message = "Device information not available." });
+
+                var order = new MedicationOrder
+                {
+                    OrderNumber = _orderNumberGenerator.GenerateMedicationOrderNumber(),
+                    OrderDate = DateTime.Now,
+                    PharmacistId = user.Id,
+                    LastUpdated = DateTime.Now,
+                    OrderItems = cartItems.Select(ci => new MedicationOrderItem
+                    {
+                        StockId = ci.StockId,
+                        Quantity = ci.Quantity,
+                    }).ToList(),
+                    Status = OrderStatus.Pending
+                };
+
+                _context.Add(order);
+                _context.RemoveRange(cartItems);
+
+                await _context.SaveChangesAsync();
+
+                return RedirectToAction("OrderSuccess", new
+                {
+                    orderNumber = order.OrderNumber,
+                    orderStatus = order.Status.ToString(),
+                    orderId = order.OrderId,
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Failed to redirect to payfast: " + ex.Message,
+                    errorDetails = new
+                    {
+                        InnerException = ex.InnerException?.Message,
+                        StackTrace = ex.StackTrace
+                    }
+                });
+            }
+        }
+
 
         public async Task<IActionResult> NewOrder()
         {
@@ -288,6 +419,8 @@ namespace Cafeteria.Controllers
             return View();
         }
 
+        
+
         public async Task<List<CartItem>> GetCartItemsForCurrentUserAsync()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -295,6 +428,21 @@ namespace Cafeteria.Controllers
             var cartItems = _context.CartItems
                 .Where(item => item.PatientId == user.Id)
                 .Include(item => item.MenuItem)
+                .ToList();
+
+            return cartItems;
+        }
+
+        public async Task<List<MedicationCartItem>> GetMedicationCartItemsForCurrentUserAsync()
+        {
+            var user = await _userManager.GetUserAsync(User);
+
+            var cartItems = _context.MedicationCartItems
+                .Where(item => item.PharmacistId == user.Id)
+                .Include(item => item.MedicationStock)
+                .ThenInclude(item => item.Medication)
+                .Include(ci => ci.MedicationStock)
+                    .ThenInclude(ms => ms.Supplier)
                 .ToList();
 
             return cartItems;
@@ -415,7 +563,7 @@ namespace Cafeteria.Controllers
                 _context.Update(patientBill);
                 await _context.SaveChangesAsync();
 
-                return Json(new { success = true});
+                return Json(new { success = true });
             }
             catch (Exception ex)
             {

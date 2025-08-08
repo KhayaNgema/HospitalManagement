@@ -1,14 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
-using System;
-using System.IO;
-using System.Threading.Tasks;
-
-namespace HospitalManagement.Services
+﻿namespace HospitalManagement.Services
 {
     public class FileUploadService
     {
-        private readonly string _uploadsDirectory = @"C:\inetpub\UploadedFiles";
-
+        //private readonly string _uploadsDirectory = @"C:\inetpub\UploadedFiles";
+        private readonly string _uploadsDirectory = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "UploadedFiles");
         public FileUploadService()
         {
             Directory.CreateDirectory(_uploadsDirectory);

@@ -1,25 +1,17 @@
-﻿using Hangfire;
+﻿using Cafeteria.Services;
+using Hangfire;
 using Hangfire.SqlServer;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
 using HospitalManagement.Data;
 using HospitalManagement.Helpers;
 using HospitalManagement.Interfaces;
 using HospitalManagement.Models;
 using HospitalManagement.Services;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
-using System;
 using System.Globalization;
 using System.Security.Claims;
-using System.Threading;
-using Cafeteria.Services;
 public class Startup
 {
     public Startup(IConfiguration configuration)
@@ -42,7 +34,7 @@ public class Startup
 
         services.Configure<FormOptions>(options =>
         {
-            options.MultipartBodyLengthLimit = 268435456; 
+            options.MultipartBodyLengthLimit = 268435456;
         });
 
         services.AddSingleton(new EncryptionConfiguration { Key = keyBytes, Iv = ivBytes });
@@ -72,16 +64,16 @@ public class Startup
                 policy.RequireAssertion(context => context.User.Identity.IsAuthenticated &&
                                                    context.User.Claims.Any(c => c.Type == ClaimTypes.Role)));
 
-/*            options.AddPolicy("PremiumSubscription", policy =>
-                policy.RequireAssertion(context =>
-                {
-                    var subscriptionPlanClaim = context.User.FindFirst("SubscriptionPlan");
-                    if (subscriptionPlanClaim == null)
-                        return false;
+            /*            options.AddPolicy("PremiumSubscription", policy =>
+                            policy.RequireAssertion(context =>
+                            {
+                                var subscriptionPlanClaim = context.User.FindFirst("SubscriptionPlan");
+                                if (subscriptionPlanClaim == null)
+                                    return false;
 
-                    var plan = Enum.Parse<SubscriptionPlan>(subscriptionPlanClaim.Value);
-                    return plan == SubscriptionPlan.Premium || plan == SubscriptionPlan.Club_Premium;
-                }));*/
+                                var plan = Enum.Parse<SubscriptionPlan>(subscriptionPlanClaim.Value);
+                                return plan == SubscriptionPlan.Premium || plan == SubscriptionPlan.Club_Premium;
+                            }));*/
         });
 
         services.AddDbContext<HospitalManagementDbContext>(options =>
@@ -99,7 +91,7 @@ public class Startup
 
         services.Configure<DataProtectionTokenProviderOptions>(options =>
         {
-            options.TokenLifespan = TimeSpan.FromHours(72); 
+            options.TokenLifespan = TimeSpan.FromHours(72);
         });
 
         services.AddScoped<SignInManager<UserBaseModel>>();
@@ -122,6 +114,8 @@ public class Startup
         services.AddScoped<QrCodeService>();
         services.AddScoped<SmsService>();
         services.AddScoped<MedicationReminder>();
+        services.AddScoped<BarcodeService>();
+        services.AddScoped<MedicationDemandService>();
         services.AddScoped<CartService>();
         services.AddHttpClient<IFaceService, AzureFaceService>();
         services.AddScoped<OrderNumberGenerator>();
@@ -156,7 +150,6 @@ public class Startup
                 QueuePollInterval = TimeSpan.Zero,
                 UseRecommendedIsolationLevel = true,
                 DisableGlobalLocks = true,
-                UsePageLocksOnDequeue = true,
                 SchemaName = "hangfire"
             }));
 
@@ -233,12 +226,12 @@ public class Startup
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
 
-/*            endpoints.MapControllerRoute(
-                name: "tabRedirect",
-                pattern: "{tab?}",
-                defaults: new { controller = "Home", action = "Index" },
-                constraints: new { tab = @"sportnews|fixtures|standings|matchresults|clubs|players|managers|topScores|topAssists" });
-*/
+            /*            endpoints.MapControllerRoute(
+                            name: "tabRedirect",
+                            pattern: "{tab?}",
+                            defaults: new { controller = "Home", action = "Index" },
+                            constraints: new { tab = @"sportnews|fixtures|standings|matchresults|clubs|players|managers|topScores|topAssists" });
+            */
             endpoints.MapRazorPages();
 
             /*endpoints.MapHub<MatchHub>("/matchHub");*/

@@ -4228,3 +4228,12 @@ html {
     font-style: italic;
     color: #007bff;
 }
+
+
+tbody td {
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    border-bottom: 1px solid #A3D9A5; 
+}
+

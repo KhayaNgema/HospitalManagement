@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using HospitalManagement.Models;
+﻿using HospitalManagement.Models;
 
 namespace HospitalManagement.Services
 {

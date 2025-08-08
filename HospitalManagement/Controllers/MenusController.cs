@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Numerics;
 
 namespace HospitalManagement.Controllers
 {
@@ -69,10 +68,10 @@ namespace HospitalManagement.Controllers
             var menuItems = await _context.MenuItems
                 .ToListAsync();
 
-/*            decimal totalPrice = _orderCalculationService.CalculateTotalPrice(cartItems);*/
+            /*            decimal totalPrice = _orderCalculationService.CalculateTotalPrice(cartItems);*/
 
-/*            ViewBag.TotalPrice = totalPrice;
-*/
+            /*            ViewBag.TotalPrice = totalPrice;
+            */
             ViewBag.Categories = categories;
             var viewModel = new MenuViewModel
             {
@@ -142,9 +141,9 @@ namespace HospitalManagement.Controllers
 
                 TempData["Message"] = $"You have successfully added {viewModel.ItemName} as your new hospital menu items";
 
-                return RedirectToAction(nameof(MenuItems));   
+                return RedirectToAction(nameof(MenuItems));
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 return Json(new
                 {

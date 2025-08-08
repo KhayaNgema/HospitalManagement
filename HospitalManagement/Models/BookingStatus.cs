@@ -5,6 +5,6 @@
         Pending,
         Awaiting,
         Assigned,
-        Completed,  
+        Completed,
     }
 }

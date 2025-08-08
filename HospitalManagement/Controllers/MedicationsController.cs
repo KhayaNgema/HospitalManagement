@@ -9,7 +9,10 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+
+
 namespace HospitalManagement.Controllers
+
 {
     public class MedicationsController : Controller
     {
@@ -26,6 +29,7 @@ namespace HospitalManagement.Controllers
         private readonly IActivityLogger _activityLogger;
         private readonly OrderCalculationService _orderCalculationService;
         private readonly IEncryptionService _encryptionService;
+        private readonly BarcodeService _barcodeService;
 
         public MedicationsController(
             UserManager<UserBaseModel> userManager,
@@ -38,7 +42,8 @@ namespace HospitalManagement.Controllers
             EmailService emailService,
             IEncryptionService encryptionService,
             HospitalManagementDbContext db,
-            IActivityLogger activityLogger)
+            IActivityLogger activityLogger,
+            BarcodeService barcodeService)
         {
             _userManager = userManager;
             _userStore = userStore;
@@ -51,6 +56,19 @@ namespace HospitalManagement.Controllers
             _emailService = emailService;
             _context = db;
             _activityLogger = activityLogger;
+            _barcodeService = barcodeService;
+        }
+
+        [Authorize(Roles = "Pharmacist")]
+        [HttpGet]
+        public async Task<IActionResult> Inventory()
+        {
+            var inventory = await _context.MedicationInventory
+                .Include(i => i.Medication)
+                .OrderBy(i => i.Medication.MedicationName)
+                .ToListAsync();
+
+            return View(inventory);
         }
 
         [HttpGet]
@@ -190,7 +208,7 @@ namespace HospitalManagement.Controllers
             return View(medications);
         }
 
-        [Authorize(Roles = "Pharmacist")]
+        [Authorize(Roles = "Supplier Administrator, Pharmacist")]
         [HttpGet]
         public async Task<IActionResult> Medications()
         {
@@ -201,7 +219,7 @@ namespace HospitalManagement.Controllers
             return View(medications);
         }
 
-        [Authorize(Roles = "Pharmacist Doctor")]
+        [Authorize(Roles = "Pharmacist, Doctor")]
         [HttpGet]
         public async Task<IActionResult> PescriptionRequest(string medicationPescriptionId)
         {
@@ -222,7 +240,7 @@ namespace HospitalManagement.Controllers
 
             if (pescriptionRequest == null)
             {
-                return NotFound(); 
+                return NotFound();
             }
 
             var booking = pescriptionRequest.Booking;
@@ -261,13 +279,58 @@ namespace HospitalManagement.Controllers
                 CollectUntilDate = pescriptionRequest.ExpiresAt,
                 DoctorDepartment = doctor.Department,
                 Status = pescriptionRequest.Status,
-                
+
             };
 
             return View(viewModel);
         }
 
         [Authorize(Roles = "Pharmacist")]
+        [HttpGet]
+        public async Task<IActionResult> ReceiveStock()
+        {
+            return View();
+        }
+
+        [Authorize(Roles = "Pharmacist")]
+        [HttpPost]
+        public async Task<IActionResult> ReceiveStockByBarcode([FromBody] BarcodeRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request?.Barcode))
+            {
+                return Json(new { status = "error", message = "No barcode provided." });
+            }
+
+            var inventory = await _context.MedicationInventory
+                .Include(i => i.Medication)
+                .FirstOrDefaultAsync(i => i.Medication.BarcodeValue == request.Barcode);
+
+            if (inventory == null)
+            {
+                return Json(new { status = "error", message = "Medication not found for this barcode." });
+            }
+
+            inventory.Quantity++;
+            inventory.Availability = MedicationAvailability.Available;
+            _context.Update(inventory);
+            await _context.SaveChangesAsync();
+
+            return Json(new
+            {
+                status = "success",
+                medicationName = inventory.Medication.MedicationName,
+                barcode = request.Barcode
+            });
+        }
+
+
+        public class BarcodeRequest
+        {
+            public string Barcode { get; set; }
+        }
+
+
+        [Authorize(Roles = "Supplier Administrator")]
         [HttpGet]
         public async Task<IActionResult> NewMedication()
         {
@@ -280,7 +343,7 @@ namespace HospitalManagement.Controllers
             return View();
         }
 
-        [Authorize(Roles = "Pharmacist")]
+        [Authorize(Roles = "Supplier Administrator")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> NewMedication(MedicationViewModel viewModel, IFormFile MedicationImages)
@@ -288,6 +351,12 @@ namespace HospitalManagement.Controllers
             try
             {
                 var user = await _userManager.GetUserAsync(User);
+
+                var barcodeValue = new Random().Next(10000000, 99999999).ToString();
+
+
+                string barcodeFileName = $"MED-{barcodeValue}.png";
+                string barcodePath = await _barcodeService.GenerateAndSaveBarcodeAsync(barcodeValue, barcodeFileName);
 
                 var menuItem = new Medication
                 {
@@ -306,18 +375,31 @@ namespace HospitalManagement.Controllers
                     UpdatedById = user.Id,
                     IsPrescriptionRequired = true,
                     CategoryId = viewModel.CategoryId,
+                    BarcodeValue = barcodeValue,
+                    BarcodeImage = barcodePath
                 };
 
                 if (viewModel.MedicationImages != null && viewModel.MedicationImages.Length > 0)
                 {
-                    var playerProfilePicturePath = await _fileUploadService.UploadFileAsync(viewModel.MedicationImages);
-                    menuItem.MedicationImage= playerProfilePicturePath;
+                    var uploadedImagePath = await _fileUploadService.UploadFileAsync(viewModel.MedicationImages);
+                    menuItem.MedicationImage = uploadedImagePath;
                 }
 
                 _context.Add(menuItem);
                 await _context.SaveChangesAsync();
 
-                TempData["Message"] = $"You have successfully added {viewModel.MedicationName} as your new hospital medication";
+                var newInventory = new MedicationInventory
+                {
+                    MedicationId = menuItem.MedicationId,
+                    Quantity = 0,
+                    StockLevel = StockLevel.Critical,
+                    Availability = MedicationAvailability.OutOfStock
+                };
+
+                _context.Add(newInventory);
+                await _context.SaveChangesAsync();
+
+                TempData["Message"] = $"You have successfully added {viewModel.MedicationName} with barcode {barcodeValue}";
 
                 return RedirectToAction(nameof(Medications));
             }
@@ -326,7 +408,7 @@ namespace HospitalManagement.Controllers
                 return Json(new
                 {
                     success = false,
-                    message = "Failed to add new menu item: " + ex.Message,
+                    message = "Failed to add new medication: " + ex.Message,
                     errorDetails = new
                     {
                         InnerException = ex.InnerException?.Message,
@@ -334,12 +416,6 @@ namespace HospitalManagement.Controllers
                     }
                 });
             }
-            var categories = await _context.MedicationCategories
-                .ToListAsync();
-
-            ViewBag.Categories = categories;
-
-            return View(viewModel);
         }
 
 
@@ -350,25 +426,71 @@ namespace HospitalManagement.Controllers
         {
             var user = await _userManager.GetUserAsync(User);
 
-            var medicationprescriptionRequest = await _context.MedicationPescription
-                .Where(mpr => mpr.MedicationPescriptionId == prescriptionRequestId)
-                .FirstOrDefaultAsync();
+            var medicationPrescription = await _context.MedicationPescription
+                .Include(p => p.PrescribedMedication)
+                .FirstOrDefaultAsync(p => p.MedicationPescriptionId == prescriptionRequestId);
 
-
-            if (medicationprescriptionRequest != null)
+            if (medicationPrescription == null)
             {
-                medicationprescriptionRequest.Status = status;
-                medicationprescriptionRequest.LastUpdatedAt = DateTime.Now;
-                medicationprescriptionRequest.UpdatedById = user.Id;
-
-                _context.Update(medicationprescriptionRequest);
-                await _context.SaveChangesAsync();
+                TempData["Error"] = "Prescription request not found.";
+                return RedirectToAction(nameof(NewMedication));
             }
 
-            TempData["Message"] = $"You have successfully updated the medication prescription request status to {medicationprescriptionRequest.Status}.";
+            medicationPrescription.Status = status;
+            medicationPrescription.LastUpdatedAt = DateTime.Now;
+            medicationPrescription.UpdatedById = user.Id;
 
-            var encryptedId = _encryptionService.Encrypt(medicationprescriptionRequest.MedicationPescriptionId);
+            if (status == MedicationPescriptionStatus.Collected)
+            {
+                foreach (var prescribed in medicationPrescription.PrescribedMedication)
+                {
+                    var inventory = await _context.MedicationInventory
+                        .Include(i => i.Medication)
+                        .FirstOrDefaultAsync(i => i.Medication.MedicationId == prescribed.MedicationId);
 
+                    if (inventory == null) continue;
+
+                    if (inventory.Quantity > 0)
+                        inventory.Quantity--;
+
+                    if (inventory.Quantity <= 0)
+                    {
+                        inventory.StockLevel = StockLevel.Critical;
+                        inventory.Availability = MedicationAvailability.OutOfStock;
+                    }
+                    else if (inventory.Quantity <= 5)
+                        inventory.StockLevel = StockLevel.Critical;
+                    else if (inventory.Quantity <= 10)
+                        inventory.StockLevel = StockLevel.Low;
+                    else if (inventory.Quantity <= 25)
+                        inventory.StockLevel = StockLevel.Moderate;
+                    else
+                        inventory.StockLevel = StockLevel.High;
+
+                    if (inventory.Quantity > 0)
+                        inventory.Availability = MedicationAvailability.Available;
+
+                    _context.Update(inventory);
+
+                    var usageLog = new MedicationUsageLog
+                    {
+                        MedicationId = prescribed.MedicationId,
+                        MedicationPescriptionId = medicationPrescription.MedicationPescriptionId,
+                        QuantityDispensed = 1,
+                        DispensedById = user.Id,
+                        DispensedOn = DateTime.Now,
+                        Notes = "Medication dispensed from prescription request."
+                    };
+                    _context.MedicationUsageLogs.Add(usageLog);
+                }
+            }
+
+            _context.Update(medicationPrescription);
+            await _context.SaveChangesAsync();
+
+            TempData["Message"] = $"You have successfully updated the medication prescription request status to {medicationPrescription.Status}.";
+
+            var encryptedId = _encryptionService.Encrypt(medicationPrescription.MedicationPescriptionId);
             return RedirectToAction(nameof(PescriptionRequest), new { medicationPescriptionId = encryptedId });
         }
     }

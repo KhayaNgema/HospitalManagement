@@ -46,6 +46,30 @@ namespace HospitalManagement.Data
                            j.ToTable("MedicationPescription_Medication");
                        });
 
+            modelBuilder.Entity<MedicationCartItem>()
+                 .HasOne(mci => mci.MedicationCart)
+                 .WithMany(mc => mc.Items)
+                 .HasForeignKey(mci => mci.CartId)
+                 .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<MedicationCartItem>()
+                .HasOne(mci => mci.MedicationStock)
+                .WithMany()
+                .HasForeignKey(mci => mci.StockId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<MedicationOrderItem>()
+                .HasOne(moi => moi.MedicationOrder)
+                .WithMany(mo => mo.OrderItems)
+                .HasForeignKey(moi => moi.OrderId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<MedicationOrderItem>()
+                .HasOne(moi => moi.MedicationStock)
+                .WithMany()
+                .HasForeignKey(moi => moi.StockId)
+                .OnDelete(DeleteBehavior.NoAction);
+
         }
 
 
@@ -83,11 +107,21 @@ namespace HospitalManagement.Data
 
         public DbSet<HospitalManagement.Models.CartItem> CartItems { get; set; }
 
+        public DbSet<HospitalManagement.Models.MedicationCart> MedicationCarts { get; set; }
+
+        public DbSet<HospitalManagement.Models.MedicationCartItem> MedicationCartItems { get; set; }
+
         public DbSet<HospitalManagement.Models.Category> Categories { get; set; }
 
         public DbSet<HospitalManagement.Models.Order> Orders { get; set; }
 
+        public DbSet<HospitalManagement.Models.MedicationUsageLog> MedicationUsageLogs { get; set; }
+
         public DbSet<HospitalManagement.Models.OrderItem> OrderItems { get; set; }
+
+        public DbSet<HospitalManagement.Models.MedicationOrder> MedicationOrders { get; set; }
+
+        public DbSet<HospitalManagement.Models.MedicationOrderItem> MedicationOrderItems { get; set; }
 
         public DbSet<HospitalManagement.Models.PatientMedicalHistory> PatientMedicalHistories { get; set; }
 
@@ -116,6 +150,16 @@ namespace HospitalManagement.Data
         public DbSet<HospitalManagement.Models.Package> Packages { get; set; }
 
         public DbSet<HospitalManagement.Models.Delivery> Deliveries { get; set; }
+
+        public DbSet<HospitalManagement.Models.Supplier> Suppliers { get; set; }
+
+        public DbSet<HospitalManagement.Models.MedicationStock> MedicationStocks { get; set; }
+
+        public DbSet<HospitalManagement.Models.StockCategory> StockCategories { get; set; }
+
+        public DbSet<HospitalManagement.Models.SupplierAdministrator> SupplierAdministrators { get; set; }
+
+        public DbSet<HospitalManagement.Models.SupplierDriver> SupplierDrivers { get; set; }
 
         public DbSet<HospitalManagement.Models.MedicationReminder> MedicationReminders { get; set; }
     }

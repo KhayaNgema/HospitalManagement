@@ -20,12 +20,12 @@ namespace HospitalManagement.Models
 
         public string? MedicationImage { get; set; }
 
-   
-        public DosageForm DosageForm { get; set; } 
+
+        public DosageForm DosageForm { get; set; }
 
         public Strength Strength { get; set; }
 
-        public UnitOfMeasure UnitOfMeasure { get; set; } 
+        public UnitOfMeasure UnitOfMeasure { get; set; }
 
         [StringLength(100)]
         public string Manufacturer { get; set; }
@@ -39,6 +39,9 @@ namespace HospitalManagement.Models
         public bool IsExpired { get; set; }
 
         public bool IsPrescriptionRequired { get; set; }
+
+        public string BarcodeValue { get; set; }
+        public string BarcodeImage { get; set; }
 
         public string CreatedById { get; set; }
         [ForeignKey("CreatedById")]

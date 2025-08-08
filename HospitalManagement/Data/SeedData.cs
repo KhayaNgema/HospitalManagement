@@ -1,12 +1,6 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Threading.Tasks;
+﻿using HospitalManagement.Data;
 using HospitalManagement.Models;
-using HospitalManagement.Data;
-using Microsoft.EntityFrameworkCore;
-using HospitalManagement.Data;
+using Microsoft.AspNetCore.Identity;
 
 public static class SeedData
 {
@@ -19,12 +13,14 @@ public static class SeedData
             var _context = scope.ServiceProvider.GetRequiredService<HospitalManagementDbContext>();
 
             string[] roleNames = { "System Administrator",
-                "Doctor", 
+                "Doctor",
                 "Paramedic",
                 "Pharmacist",
                 "Kitchen Staff",
                 "Delivery Personnel",
-                "Receptionist"
+                "Receptionist",
+                "Supplier Administrator",
+                "Supplier Driver"
             };
 
 

@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HospitalManagement.Models
@@ -20,6 +19,6 @@ namespace HospitalManagement.Models
 
         public int DeviceInfoId { get; set; }
 
-        public virtual DeviceInfo DeviceInfo { get; set; }  
+        public virtual DeviceInfo DeviceInfo { get; set; }
     }
 }

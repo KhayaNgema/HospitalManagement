@@ -25,7 +25,7 @@ namespace HospitalManagement.Models
         [Display(Name = "Instructions/Notes")]
         public ICollection<string>? Instructions { get; set; } = new List<string>();
 
-        [NotMapped] 
+        [NotMapped]
         public string InstructionsInput { get; set; }
     }
 }

@@ -54,6 +54,7 @@ else
                     <th class="text-nowrap">Strength</th>
                     <th class="text-nowrap">Unit of measure</th>
                     <th class="text-nowrap">Expires</th>
+                     <th class="text-nowrap">Barcode</th>
                 </tr>
             </thead>
             <tbody>
@@ -70,6 +71,16 @@ else
                         <td>@Html.DisplayFor(modelItem => item.Strength)</td>
                         <td>@Html.DisplayFor(modelItem => item.UnitOfMeasure)</td>
                         <td>@item.ExpiryDate?.ToString("dd/MM/yyyy")</td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(item.BarcodeImage))
+                              {
+                               <img src="@item.BarcodeImage" alt="Barcode for @item.MedicationName" class="img-thumbnail img-fluid" style="max-width: 120px; max-height: 120px;" />
+                              }
+                             else
+                              {
+                                <span>No barcode</span>
+                              }
+                        </td>
                     </tr>
                 }
             </tbody>

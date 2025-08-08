@@ -1,27 +1,18 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Security.Claims;
-using System.Text;
-using System.Text.Encodings.Web;
-using System.Threading;
-using System.Threading.Tasks;
 using Hangfire;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using HospitalManagement.Data;
 using HospitalManagement.Interfaces;
 using HospitalManagement.Models;
 using HospitalManagement.Services;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
+using System.Text;
+using System.Text.Encodings.Web;
 
 namespace HospitalManagement.Areas.Identity.Pages.Account
 {
@@ -259,8 +250,8 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
 
                     BackgroundJob.Enqueue(() => _emailService.SendEmailAsync(doctor.Email, "Confirm Your Email Address", emailConfirmationEmailBody, "Diski 360"));
 
-/*                    await _activityLogger.Log($"Added {Input.FirstName} {Input.LastName} as MediCare {doctor.Specialization}", userId);
-*/
+                    /*                    await _activityLogger.Log($"Added {Input.FirstName} {Input.LastName} as MediCare {doctor.Specialization}", userId);
+                    */
                     TempData["Message"] = $"{doctor.FirstName} {doctor.LastName}  has been successfully added as your new {doctor.Specialization}";
                     return RedirectToAction("Doctors", "Users");
                 }

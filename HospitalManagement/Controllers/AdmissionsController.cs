@@ -1,13 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
-using HospitalManagement.ViewModels;
-using HospitalManagement.Data;
+﻿using HospitalManagement.Data;
 using HospitalManagement.Interfaces;
 using HospitalManagement.Models;
 using HospitalManagement.Services;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+using HospitalManagement.ViewModels;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace HospitalManagement.Controllers
 {
@@ -33,7 +32,7 @@ namespace HospitalManagement.Controllers
         }
 
 
-        [Authorize(Roles ="Doctor")]
+        [Authorize(Roles = "Doctor")]
         public async Task<IActionResult> MyPatientAdmissions()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -54,18 +53,18 @@ namespace HospitalManagement.Controllers
         {
             var user = await _userManager.GetUserAsync(User);
 
-                var admissions = await _context.Admissions
-                    .Include(pa => pa.Patient)
-                    .Include(pa => pa.CreatedBy)
-                    .Where(pa => pa.PatientId == user.Id)
-                    .OrderByDescending(pa => pa.CreatedAt)
-                    .ToListAsync();
+            var admissions = await _context.Admissions
+                .Include(pa => pa.Patient)
+                .Include(pa => pa.CreatedBy)
+                .Where(pa => pa.PatientId == user.Id)
+                .OrderByDescending(pa => pa.CreatedAt)
+                .ToListAsync();
 
             return View(admissions);
         }
 
 
-        [Authorize(Roles ="Doctor, System Administrator")]
+        [Authorize(Roles = "Doctor, System Administrator")]
         public async Task<IActionResult> Admissions()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -131,7 +130,7 @@ namespace HospitalManagement.Controllers
                 Gender = admission.Patient.Gender,
                 IdNumber = admission.Patient.IdNumber,
                 LastName = admission.Patient.LastName,
-                LastVisitDate  = admission.LastVisitDate,
+                LastVisitDate = admission.LastVisitDate,
                 PatientMedicalHistoryId = admission.PatientMedicalHistoryId,
                 PatientStatus = admission.PatientStatus,
                 PhoneNumber = admission.Patient.PhoneNumber,
@@ -186,7 +185,7 @@ namespace HospitalManagement.Controllers
                 IdNumber = appointment.CreatedBy.IdNumber,
                 PhoneNumber = appointment.CreatedBy.PhoneNumber,
                 ProfilePicture = appointment.CreatedBy.ProfilePicture,
-                
+
             };
 
             ViewBag.Rooms = rooms;
@@ -210,7 +209,7 @@ namespace HospitalManagement.Controllers
                     ae.PatientStatus == PatientStatus.Admitted)
                     .FirstOrDefaultAsync();
 
-                if(existingAdmission != null)
+                if (existingAdmission != null)
                 {
                     TempData["Message"] = $"You cannot admit {viewModel.FirstName} {viewModel.LastName} " +
                         $"since they are currently admitted by {existingAdmission.Department}" +
@@ -235,15 +234,15 @@ namespace HospitalManagement.Controllers
                     DischargeDate = viewModel.DischargeDate,
                     CreatedById = user.Id,
                     LastVisitDate = DateTime.Now,
-                    PatientMedicalHistoryId= viewModel.PatientMedicalHistoryId,
-                    PatientId= viewModel.PatientId,
+                    PatientMedicalHistoryId = viewModel.PatientMedicalHistoryId,
+                    PatientId = viewModel.PatientId,
                     PatientStatus = PatientStatus.Admitted,
                     RoomNumber = viewModel.RoomNumber,
                     UpdatedById = user.Id,
                     BookingId = viewModel.BookingId,
                 };
 
-                _context.Add(admission);    
+                _context.Add(admission);
                 await _context.SaveChangesAsync();
 
                 var appointment = await _context.Bookings

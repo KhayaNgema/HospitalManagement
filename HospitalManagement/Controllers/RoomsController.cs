@@ -6,7 +6,6 @@ using HospitalManagement.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Runtime.CompilerServices;
 
 namespace HospitalManagement.Controllers
 {
@@ -83,7 +82,7 @@ namespace HospitalManagement.Controllers
                     er.Department == model.Department)
                     .FirstOrDefaultAsync();
 
-                if(existingRoom != null)
+                if (existingRoom != null)
                 {
                     TempData["Message"] = $"You cannot add/create a room with the same name in the {model.Department} department.";
 
@@ -110,7 +109,7 @@ namespace HospitalManagement.Controllers
 
                 return RedirectToAction(nameof(Rooms));
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 return Json(new
                 {
@@ -145,7 +144,7 @@ namespace HospitalManagement.Controllers
                 RoomNumber = room.RoomNumber,
             };
 
-            return View(viewModel);  
+            return View(viewModel);
         }
 
         [HttpPost]
@@ -155,7 +154,7 @@ namespace HospitalManagement.Controllers
             {
                 var user = await _userManager.GetUserAsync(User);
 
-                var room  = await _context.Rooms
+                var room = await _context.Rooms
                     .Where(r => r.RoomId == viewModel.RoomId)
                     .FirstOrDefaultAsync();
 

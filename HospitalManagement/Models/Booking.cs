@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HospitalManagement.Models
@@ -22,7 +21,7 @@ namespace HospitalManagement.Models
 
         [Required(ErrorMessage = "Please select a time slot for the appointment.")]
         [Display(Name = "Appointment Time Slot")]
-        public string BookForTimeSlot { get; set; }  
+        public string BookForTimeSlot { get; set; }
 
         [Required(ErrorMessage = "Please select the medical condition.")]
         public CommonMedicalCondition MedicalCondition { get; set; }

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace HospitalManagement.Services
+﻿namespace HospitalManagement.Services
 {
     public class RandomPasswordGeneratorService
     {

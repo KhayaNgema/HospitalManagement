@@ -1,0 +1,164 @@
+﻿@model IEnumerable<HospitalManagement.Models.MedicationOrder>
+@inject HospitalManagement.Interfaces.IEncryptionService encryptionService
+
+@{
+    ViewData["Title"] = "Medication Orders";
+    Layout = "~/Views/Shared/_PagesLayout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="d-flex align-items-center justify-content-between px-3 py-3 mb-4" style="background-color:#48AAAD;">
+        <div class="d-flex align-items-center">
+            <a asp-controller="Home" asp-action="Index" class="text-white text-decoration-none d-inline-flex align-items-center back-link me-3">
+                <i class="bi bi-chevron-left me-1"></i> Back
+            </a>
+            <h2 class="mb-0 text-white">Medication Orders</h2>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-4 px-3">
+        <div class="input-group w-50">
+            <input type="text" class="form-control" placeholder="Search by order number, pharmacist..." id="qrSearchInput" />
+        </div>
+        @if (User.IsInRole("Pharmacist"))
+        {
+            <div>
+                <a asp-controller="Suppliers" asp-action="StockMenu" class="btn btn-primary" id="addButton">
+                    <i class="bi bi-plus-circle me-1"></i> New Order
+                </a>
+            </div>
+        }
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info text-center">
+            No medication orders found.
+        </div>
+    }
+    else
+    {
+        @if (TempData["Message"] != null)
+        {
+            <div id="tempDataMessage" class="alert @(TempData["Message"].ToString().Contains("successfully") ? "alert-success" : "alert-danger")" role="alert">
+                @TempData["Message"]
+                <span class="close" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </span>
+            </div>
+        }
+
+        <div class="table-responsive">
+            <table class="table table-striped table-borderless" id="appointmentsTable">
+                <thead class="custom-thead">
+                    <tr style="color:white; background-color: #324260; white-space: nowrap;">
+                        <th>Order No.</th>
+                        <th>No. of Boxes</th>
+                        <th>Ordered By</th>
+                        <th>Order Date</th>
+                        <th>Last Updated</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        var encryptedId = encryptionService.Encrypt(item.OrderId);
+
+                        <tr>
+                            <td>@item.OrderNumber</td>
+                            <td>@(item.OrderItems?.Sum(orderItem => orderItem.Quantity) ?? 0)</td>
+                            <td>@($"{item.Pharmacist?.FirstName} {item.Pharmacist?.LastName}")</td>
+                            <td>@item.OrderDate.ToString("dd/MM/yyyy")</td>
+                            <td>@item.LastUpdated.ToString("dd/MM/yyyy")</td>
+                             <td>@item.Status</td>
+                                <td class="text-end">
+                                    <button class="btn btn-primary btn-sm action-button" type="button"
+                                            data-order-id="@encryptedId"
+                                            data-details-url="@Url.Action("MedicationOrder", "Orders", new { orderId = encryptedId })"
+                                            data-package-url="@Url.Action("PackageMedication", "Orders", new { orderId = encryptedId })">
+                                        Actions
+                                    </button>
+                                </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<div id="floatingActionTab" class="card shadow" style="
+    display: none;
+    position: absolute;
+    z-index: 9999;
+    min-width: 180px;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    overflow: hidden;
+">
+    @if(User.IsInRole("Pharmacist"))
+    {
+    <div class="list-group list-group-flush">
+        <a href="#" id="detailsLink" class="list-group-item list-group-item-action">
+            <i class="fas fa-info-circle text-secondary"></i> Details
+        </a>
+    </div>
+    }
+    else
+    {
+     <div class="list-group list-group-flush">
+        <a href="#" id="packageLink" class="list-group-item list-group-item-action">
+           <i class="fas fa-boxes" style="color:green"></i> Package
+        </a>
+
+    </div>
+    }
+
+
+
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            setTimeout(function () {
+                $("#tempDataMessage").fadeOut();
+            }, 7000);
+
+            $(document).on("click", ".action-button", function (e) {
+                e.stopPropagation();
+
+                const button = $(this);
+                const offset = button.offset();
+                const tab = $("#floatingActionTab");
+
+                $("#detailsLink").attr("href", button.data("details-url"));
+                $("#packageLink").attr("href", button.data("package-url"));
+
+                const left = Math.min($(window).width() - tab.outerWidth() - 10, offset.left + button.outerWidth() + 10);
+                const top = offset.top - $(window).scrollTop() + button.outerHeight() + 5;
+
+                tab.css({
+                    top: top + "px",
+                    left: left + "px"
+                }).fadeIn();
+            });
+
+            $(document).on("click", function (e) {
+                if (!$(e.target).closest("#floatingActionTab").length && !$(e.target).hasClass("action-button")) {
+                    $("#floatingActionTab").fadeOut();
+                }
+            });
+
+            $('#qrSearchInput').on('input', function () {
+                var value = $(this).val().toLowerCase();
+                $('#appointmentsTable tbody tr').filter(function () {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+        });
+    </script>
+}

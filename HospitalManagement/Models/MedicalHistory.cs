@@ -52,7 +52,7 @@ namespace HospitalManagement.Models
         public List<string>? FollowUpInstructions { get; set; }
 
         [Display(Name = "Vital Signs")]
-        public string? Vitals { get; set; } 
+        public string? Vitals { get; set; }
 
         [Display(Name = "Lab Results Summary")]
         public string? LabResults { get; set; }

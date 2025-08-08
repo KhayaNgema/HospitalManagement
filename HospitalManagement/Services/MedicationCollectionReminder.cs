@@ -3,9 +3,6 @@ using HospitalManagement.Interfaces;
 using HospitalManagement.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace HospitalManagement.Services
 {
@@ -36,7 +33,7 @@ namespace HospitalManagement.Services
         public async Task SendRemindersAsync()
         {
             var today = DateTime.Today;
-            var targetDate = today.AddDays(3);
+            var targetDate = today.AddDays(2);
 
             var prescriptions = await _context.MedicationPescription
                 .Include(p => p.Admission)

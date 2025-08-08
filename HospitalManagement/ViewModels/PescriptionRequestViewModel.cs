@@ -6,7 +6,7 @@ namespace HospitalManagement.ViewModels
     {
         public int PescriptionRequestId { get; set; }
 
-        public string PatientFirstName {  get; set; }
+        public string PatientFirstName { get; set; }
 
         public string PatientLastName { get; set; }
 
@@ -26,7 +26,7 @@ namespace HospitalManagement.ViewModels
 
         public string DoctorPhoneNumber { get; set; }
 
-        public Specialization DoctorSpecialization{ get; set; }
+        public Specialization DoctorSpecialization { get; set; }
 
         public Department DoctorDepartment { get; set; }
 

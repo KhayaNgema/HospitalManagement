@@ -5,12 +5,10 @@ using HospitalManagement.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Net;
-using System.Web;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using HospitalManagement.Helpers;
+using Microsoft.EntityFrameworkCore;
+using System.Web;
 
 namespace HospitalManagement.Controllers
 {

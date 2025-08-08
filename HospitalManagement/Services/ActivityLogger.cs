@@ -1,11 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Logging;
-using HospitalManagement.Data;
+﻿using HospitalManagement.Data;
 using HospitalManagement.Interfaces;
 using HospitalManagement.Models;
-using System;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
 
 namespace HospitalManagement.Services
 {
@@ -46,7 +42,7 @@ namespace HospitalManagement.Services
                 Activity = activity,
                 Timestamp = DateTime.Now,
                 DeviceInfoId = deviceInfo.DeviceInfoId,
-                UserBaseModel= user
+                UserBaseModel = user
             };
 
             _context.ActivityLogs.Add(log);

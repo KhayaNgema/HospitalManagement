@@ -1,9 +1,9 @@
-using System.Diagnostics;
 using HospitalManagement.Data;
 using HospitalManagement.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 
 namespace HospitalManagement.Controllers
 {
@@ -96,6 +96,34 @@ namespace HospitalManagement.Controllers
             {
                 return View("PharmacistDashboard");
             }
+
+            else if (roles.Contains("Supplier Driver"))
+            {
+                var supplierId = (user as SupplierDriver).SupplierId;
+
+                var supplier = await _context.Suppliers
+                    .Where(s => s.SupplierId == supplierId)
+                    .FirstOrDefaultAsync();
+
+                ViewBag.SupplierName = supplier.SupplierName;
+                ViewBag.SupplierBage = supplier.SupplierBadge;
+
+                return View("SupplierDriverDashboard");
+            }
+
+            else if (roles.Contains("Supplier Administrator"))
+            {
+                var supplierId = (user as SupplierAdministrator).SupplierId;
+
+                var supplier = await _context.Suppliers
+                    .Where(s => s.SupplierId == supplierId)
+                    .FirstOrDefaultAsync();
+
+                ViewBag.SupplierName = supplier.SupplierName;
+                ViewBag.SupplierBage = supplier.SupplierBadge;
+
+                return View("SupplierAdministratorDashboard");
+            }
             else if (roles.Contains("Receptionist"))
             {
                 return View("ReceptionistDashboard");
@@ -133,7 +161,7 @@ namespace HospitalManagement.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
-            return View(new  { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            return View(new { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
     }
 }
