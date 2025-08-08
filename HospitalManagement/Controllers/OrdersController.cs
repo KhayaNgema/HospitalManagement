@@ -65,7 +65,7 @@ namespace Cafeteria.Controllers
 
         [Authorize(Roles = "Pharmacist, Supplier Administrator")]
         [HttpGet]
-        public async Task<IActionResult> MedicationOrderDetails(string OrderId)
+        public async Task<IActionResult> MedicationOrderDetails(string orderId)
         {
             var decryptedOrderId = _encryptionService.DecryptToInt(orderId);
 
