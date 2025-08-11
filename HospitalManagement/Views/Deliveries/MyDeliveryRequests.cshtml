@@ -1,5 +1,90 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model IEnumerable<HospitalManagement.Models.DeliveryRequest>
+@inject HospitalManagement.Interfaces.IEncryptionService encryptionService
+
 @{
+    ViewData["Title"] = "Delivery Requests";
+    Layout = "~/Views/Shared/_PagesLayout.cshtml";
 }
+
+<div class="container-fluid">
+    <div class="d-flex align-items-center justify-content-between px-3 py-3 mb-4" style="background-color:#48AAAD;">
+        <div class="d-flex align-items-center">
+            <a asp-controller="Home" asp-action="Index" class="text-white text-decoration-none d-inline-flex align-items-center back-link me-3">
+                <i class="bi bi-chevron-left me-1"></i> Back
+            </a>
+            <h2 class="mb-0 text-white">My Deliveries Requests</h2>
+        </div>
+    </div>
+    <div class="d-flex justify-content-end align-items-center mb-4 px-3">
+        <a href="@Url.Action("ScanPackage", "Deliveries")" class="btn btn-primary" id="addButton">
+            <i class="bi bi-plus-circle me-1"></i> Receive Medication Package
+        </a>
+    </div>
+
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info text-center">
+            No medication deliveries found.
+        </div>
+    }
+    else
+    {
+        @if (TempData["Message"] != null)
+        {
+            <div id="tempDataMessage" class="alert @(TempData["Message"].ToString().Contains("successfully") ? "alert-success" : "alert-danger")" role="alert">
+                @TempData["Message"]
+                <span class="close" aria-label="Close" style="cursor:pointer;">
+                    <span aria-hidden="true">&times;</span>
+                </span>
+            </div>
+        }
+
+        <div class="table-responsive">
+            <table class="table table-striped table-borderless" id="appointmentsTable">
+                <thead class="custom-thead">
+                    <tr style="color:white; background-color: #324260; white-space: nowrap;">
+                        <th>Delivery Date</th>
+                        <th>Status</th>
+                        <th>Receive</th>
+                    </tr>
+                </thead>
+<tbody>
+    @foreach (var item in Model)
+    {
+        var encryptedId = encryptionService.Encrypt(item.DeliveryRequestId);
+        <tr>
+            <td>
+                @(item.MedicationPescription?.NextCollectionDate?.ToString("ddd, dd MMM yyyy") ?? "N/A")
+            </td>
+            <td>
+                @if(item.Status == DeliveryRequestStatus.Pending || item.Status == DeliveryRequestStatus.Packaged)
+                {
+                    <a asp-controller="Deliveries" asp-action="PackageMedication" asp-route-requestId="@encryptedId" class="btn btn-sm btn-primary">
+                        View / Package
+                    </a>
+                }
+                else if(item.Status == DeliveryRequestStatus.OnTheWay)
+                {
+                    <span class="text-warning">Out for Delivery</span>
+                }
+                else if(item.Status == DeliveryRequestStatus.Collected)
+                {
+                    <span class="text-success">Collected</span>
+                }
+                else
+                {
+                    <span>-</span>
+                }
+            </td>
+            <td>
+            <td>
+        </tr>
+    }
+</tbody>
+
+            </table>
+        </div>
+    }
+</div>
+

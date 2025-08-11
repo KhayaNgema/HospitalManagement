@@ -4237,3 +4237,87 @@ tbody td {
     border-bottom: 1px solid #A3D9A5; 
 }
 
+.order-card {
+    width: 100%;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+}
+
+@media (max-width: 767.98px) {
+    .order-card {
+        width: 100% !important;
+        padding: 0.75rem 1rem;
+    }
+
+    .order-qty-label,
+    .stock-qty-label {
+        display: none;
+    }
+}
+
+.order-card .card-title,
+.order-card .card-text {
+    white-space: nowrap;
+}
+
+.stock-box {
+    background-color: #A0522D;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+    .stock-box i {
+        color: white;
+    }
+
+@media (max-width: 767.98px) {
+    .order-card {
+        width: 100% !important;
+        padding: 0.75rem 1rem;
+    }
+}
+
+.order-card-col {
+    margin-bottom: 1rem;
+}
+
+@media (min-width: 992px) {
+    .order-card-col {
+        flex: 0 0 auto;
+        max-width: 400px;
+        margin-right: 1rem;
+    }
+}
+
+@keyframes moveTruck {
+    0% {
+        left: 10px;
+    }
+
+    50% {
+        left: calc(100% - 40px);
+    }
+
+    100% {
+        left: 10px;
+    }
+}
+
+
+.medication-order-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 10px;
+    background-color: white;
+}
+
+@media (min-width: 992px) {
+    .d-flex.flex-column.flex-lg-row.flex-lg-wrap.overflow-auto.pb-3 {
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        overflow-x: visible !important;
+    }
+}

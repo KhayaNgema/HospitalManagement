@@ -113,6 +113,8 @@ public class Startup
         services.AddScoped<FileUploadService>();
         services.AddScoped<QrCodeService>();
         services.AddScoped<SmsService>();
+        services.AddScoped<ReceivePescribedMedication>();
+        services.AddScoped<ReceiveMedicationOrder>();
         services.AddScoped<MedicationReminder>();
         services.AddScoped<BarcodeService>();
         services.AddScoped<MedicationDemandService>();
@@ -140,20 +142,21 @@ public class Startup
             options.EnableDetailedErrors = false;
         });
         services.AddHangfire(config => config
-            .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
-            .UseSimpleAssemblyNameTypeSerializer()
-            .UseRecommendedSerializerSettings()
-            .UseSqlServerStorage(connectionString, new SqlServerStorageOptions
-            {
-                CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
-                SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
-                QueuePollInterval = TimeSpan.Zero,
-                UseRecommendedIsolationLevel = true,
-                DisableGlobalLocks = true,
-                SchemaName = "hangfire"
-            }));
+     .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+     .UseSimpleAssemblyNameTypeSerializer()
+     .UseRecommendedSerializerSettings()
+     .UseSqlServerStorage(connectionString, new SqlServerStorageOptions
+     {
+         CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+         SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+         QueuePollInterval = TimeSpan.Zero,
+         UseRecommendedIsolationLevel = true,
+         DisableGlobalLocks = true,
+         SchemaName = "hangfire"
+     }));
 
         services.AddHangfireServer();
+
 
         services.AddLogging(loggingBuilder =>
         {

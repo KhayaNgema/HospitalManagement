@@ -371,15 +371,8 @@
                                 </div>
                                 <ul class="collapse list-unstyled collapsible-menu" id="inventorySubmenu" style="margin-left: 35px;">
                                     <li style="margin-top: 10px;"><a asp-controller="Medications" asp-action="Inventory" class="nav-link text-light">Manage Inventory</a></li>
-                                                                        <li style="margin-top: 10px;"><a asp-controller="Medications" asp-action="Medications" class="nav-link text-light">Medication</a></li>
+                                    <li style="margin-top: 10px;"><a asp-controller="Medications" asp-action="Medications" class="nav-link text-light">Medication</a></li>
                                 </ul>
-                            </li>
-
-                            <hr style="background-color: white; opacity: 0.2; margin: 15px 20px; ">
-
-                            <li style="margin: 20px 0 0 30px; display: flex; align-items: center;">
-                                <i class="fa fa-truck fa-lg" style="color: white; margin-right: 10px;"></i>
-                                <a asp-controller="Suppliers" asp-action="StockMenu" class="nav-link text-light" style="font-weight: bold;">Order Medication</a>
                             </li>
 
                             <hr style="background-color: white; opacity: 0.2; margin: 15px 20px; cursor:pointer;">
@@ -771,6 +764,13 @@
                             <li style="margin: 20px 0 0 30px; display: flex; align-items: center;">
                                 <i class="fa fa-pills fa-lg" style="color: white; margin-right: 10px;"></i>
                                 <a asp-controller="Medications" asp-action="CollectMedication" class="nav-link text-light" style="font-weight: bold;">Medications</a>
+                            </li>
+
+                            <hr style="background-color: white; opacity: 0.2; margin: 15px 20px;">
+
+                            <li style="margin: 20px 0 0 30px; display: flex; align-items: center;">
+                                <i class="fa fa-pills fa-lg" style="color: white; margin-right: 10px;"></i>
+                                <a asp-controller="Deliveries" asp-action="MyDeliveryRequests" class="nav-link text-light" style="font-weight: bold;">Medication Deliveries</a>
                             </li>
 
                             <hr style="background-color: white; opacity: 0.2; margin: 15px 20px;">

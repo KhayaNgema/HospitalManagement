@@ -28,5 +28,7 @@ namespace HospitalManagement.Models
         public DateTime LastUpdatedAt { get; set; }
 
         public DeliveryRequestStatus Status { get; set; }
+
+        public virtual ICollection<DeliveryPackageItem> DeliveryPackageItems { get; set; } = new List<DeliveryPackageItem>();
     }
 }

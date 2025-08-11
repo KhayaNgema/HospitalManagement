@@ -59,6 +59,7 @@ namespace HospitalManagement.Controllers
             _barcodeService = barcodeService;
         }
 
+
         [Authorize(Roles = "Pharmacist")]
         [HttpGet]
         public async Task<IActionResult> Inventory()
@@ -418,7 +419,6 @@ namespace HospitalManagement.Controllers
             }
         }
 
-
         [Authorize(Roles = "Pharmacist, System Administrator")]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -471,6 +471,7 @@ namespace HospitalManagement.Controllers
                         inventory.Availability = MedicationAvailability.Available;
 
                     _context.Update(inventory);
+                    await _context.SaveChangesAsync();
 
                     var usageLog = new MedicationUsageLog
                     {
@@ -482,6 +483,7 @@ namespace HospitalManagement.Controllers
                         Notes = "Medication dispensed from prescription request."
                     };
                     _context.MedicationUsageLogs.Add(usageLog);
+                    await _context.SaveChangesAsync();
                 }
             }
 

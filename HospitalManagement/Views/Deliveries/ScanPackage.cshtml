@@ -1,0 +1,99 @@
+﻿@model HospitalManagement.ViewModels.ScanPackageViewModel
+
+@{
+    ViewData["Title"] = "Scan Package QR Code";
+    Layout = "~/Views/Shared/_PagesLayout.cshtml";
+}
+
+@Html.AntiForgeryToken()  <!-- This adds the hidden input for the token -->
+
+<style>
+    #scanner {
+        width: 100%;
+        max-width: 300px;
+        height: 220px;
+        border: 2px solid #48AAAD;
+        border-radius: 12px;
+        margin: 2rem auto;
+    }
+    .alert {
+        max-width: 400px;
+        margin: 1rem auto;
+    }
+</style>
+
+<br/>
+
+<div class="container text-center">
+    <h2 class="mb-4" style="color:#48AAAD;">Scan Package QR Code</h2>
+    <h5 class="mb-4" style="color:#48AAAD;">
+        Align the medication package Qr Code handed by the driver to scan and verify that it belongs to you.
+    </h5>
+
+    <input type="hidden" id="packageId" value="@Model.packageId" />
+
+    <div id="scanMessage" class="alert d-none" role="alert"></div>
+
+    <div id="scanner"></div>
+</div>
+
+@section Scripts {
+<script src="https://unpkg.com/html5-qrcode"></script>
+<script>
+    $(function() {
+        var scanner = new Html5Qrcode("scanner");
+        var scanningPaused = false;
+        var messageDiv = $("#scanMessage");
+
+        function showMessage(text, isError) {
+            messageDiv.text(text)
+                      .removeClass('alert-success alert-danger d-none')
+                      .addClass(isError ? 'alert-danger' : 'alert-success');
+        }
+
+        function clearMessage() {
+            messageDiv.text('').addClass('d-none').removeClass('alert-success alert-danger');
+        }
+
+        function verifyPackage(scannedText) {
+    $.ajax({
+        url: '@Url.Action("VerifyScannedPackage", "Deliveries")',
+        type: 'POST',
+        data: { qrCodeNumber: scannedText },  
+        headers: {
+            'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+        },
+        success: function(response) {
+            if (response.success) {
+                showMessage("Package verified! Redirecting...", false);
+                setTimeout(function() {
+                    window.location.href = response.redirectUrl;
+                }, 1500);
+            } else {
+                showMessage(response.message || "Invalid package.", true);
+            }
+        },
+        error: function() {
+            showMessage("An error occurred while verifying package.", true);
+        }
+    });
+}
+
+
+        scanner.start(
+            { facingMode: "environment" },
+            { fps: 10, qrbox: 250 },
+            (decodedText) => {
+                if (scanningPaused) return;
+                scanningPaused = true;
+                verifyPackage(decodedText.trim());
+                setTimeout(() => scanningPaused = false, 3000);
+            },
+            (errorMessage) => {
+            }
+        ).catch(err => {
+            showMessage("Unable to start camera. Please check permissions and reload the page.", true);
+        });
+    });
+</script>
+}

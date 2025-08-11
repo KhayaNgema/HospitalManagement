@@ -20,6 +20,7 @@ namespace HospitalManagement.Models
 
         public DeliveryStatus Status { get; set; }
 
-        public ICollection<Package> Packages { get; set; }
+        public int PackageId  { get; set; }
+        public Package Package { get; set; }
     }
 }

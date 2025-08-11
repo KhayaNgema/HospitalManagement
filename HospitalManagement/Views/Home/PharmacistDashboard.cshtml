@@ -109,25 +109,24 @@
         <div class="card officials-card">
             <div class="card-body d-flex flex-column">
                 <h5 class="card-title">
-                    <i class="fas fa-prescription-bottle-alt text-primary me-2"></i> New Requests
+                    <i class="fas fa-prescription-bottle-alt text-primary me-2"></i> Medication Delivery Requests
                 </h5>
                 <p class="card-text">View all new medication prescription requests pending packaging and processing.</p>
-                <a asp-controller="Medications" asp-action="MedicationPescriptionRequests" class="btn btn-primary mt-auto align-self-end styled-button">
+                <a asp-controller="Deliveries" asp-action="MedicationDeliveryRequests" class="btn btn-primary mt-auto align-self-end styled-button">
                     <span>View Requests</span>
                     <span class="arrow">&#10148;</span>
                 </a>
             </div>
         </div>
     </div>
-
-    <div class="col-sm-12 col-md-6 col-lg-6">
+     <div class="col-sm-12 col-md-6 col-lg-6">
         <div class="card officials-card">
             <div class="card-body d-flex flex-column">
                 <h5 class="card-title">
-                    <i class="fas fa-bicycle text-success me-2"></i> Completed Deliveries
+                    <i class="fas fa-box text-success me-2"></i> Packaged Deliveries
                 </h5>
-                <p class="card-text">Track and review all completed medication deliveries and past prescription requests.</p>
-                <a asp-controller="Medications" asp-action="PreviousMedicationRequests" class="btn btn-primary mt-auto align-self-end styled-button">
+                <p class="card-text">Track and review all packaged deliveries.</p>
+                <a asp-controller="Deliveries" asp-action="Packages" class="btn btn-primary mt-auto align-self-end styled-button">
                     <span>View Deliveries</span>
                     <span class="arrow">&#10148;</span>
                 </a>

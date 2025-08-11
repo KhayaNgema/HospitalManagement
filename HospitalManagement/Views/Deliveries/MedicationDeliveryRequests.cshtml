@@ -1,8 +1,8 @@
-﻿@model IEnumerable<HospitalManagement.Models.MedicationOrder>
+﻿@model IEnumerable<HospitalManagement.Models.DeliveryRequest>
 @inject HospitalManagement.Interfaces.IEncryptionService encryptionService
 
 @{
-    ViewData["Title"] = "Medication Orders";
+    ViewData["Title"] = "Medication Delivery Requests";
     Layout = "~/Views/Shared/_PagesLayout.cshtml";
 }
 
@@ -12,28 +12,20 @@
             <a asp-controller="Home" asp-action="Index" class="text-white text-decoration-none d-inline-flex align-items-center back-link me-3">
                 <i class="bi bi-chevron-left me-1"></i> Back
             </a>
-            <h2 class="mb-0 text-white">Medication Orders</h2>
+            <h2 class="mb-0 text-white">Medication Delivery Requests</h2>
         </div>
     </div>
 
     <div class="d-flex justify-content-between align-items-center mb-4 px-3">
         <div class="input-group w-50">
-            <input type="text" class="form-control" placeholder="Search by order number, pharmacist..." id="qrSearchInput" />
+            <input type="text" class="form-control" placeholder="Search by patient, address, status..." id="qrSearchInput" />
         </div>
-        @if (User.IsInRole("Pharmacist"))
-        {
-            <div>
-                <a asp-controller="Suppliers" asp-action="StockMenu" class="btn btn-primary" id="addButton">
-                    <i class="bi bi-plus-circle me-1"></i> New Order
-                </a>
-            </div>
-        }
     </div>
 
     @if (!Model.Any())
     {
         <div class="alert alert-info text-center">
-            No medication orders found.
+            No delivery requests found.
         </div>
     }
     else
@@ -49,43 +41,33 @@
         }
 
         <div class="table-responsive">
-            <table class="table table-striped table-borderless" id="appointmentsTable">
+            <table class="table table-striped table-borderless" id="requestsTable">
                 <thead class="custom-thead">
                     <tr style="color:white; background-color: #324260; white-space: nowrap;">
-                        <th>Order No.</th>
-                        <th>No. of Boxes</th>
-                        @if(User.IsInRole("Supplier Administrator"))
-                        {
-                            <th>Ordered By</th>
-                        }
-                        <th>Order Date</th>
+                        <th>Patient</th>
+                        <th>Address</th>
+                        <th>Created At</th>
                         <th>Last Updated</th>
-                        <th>Received By</th>
+                        <th>Modified By</th>
                         <th>Status</th>
-                        <th>Action</th>
+                        <th class="text-end">Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var item in Model)
                     {
-                        var encryptedId = encryptionService.Encrypt(item.OrderId);
+                        var encryptedId = encryptionService.Encrypt(item.DeliveryRequestId);
                         <tr>
-                            <td>@item.OrderNumber</td>
-                            <td>@(item.OrderItems?.Sum(orderItem => orderItem.Quantity) ?? 0)</td>
-                            @if(User.IsInRole("Supplier Administrator"))
-                            {
-                               <td>@($"{item.Pharmacist?.FirstName} {item.Pharmacist?.LastName}")</td>
-                            }
-                            <td>@item.OrderDate.ToString("dd/MM/yyyy")</td>
-                            <td>@item.LastUpdated.ToString("dd/MM/yyyy")</td>
-                            <td>@($"{item.ReceivedBy?.FirstName} {item.ReceivedBy?.LastName}")</td>
-                            <td>@item.Status</td>
+                            <td>@(item.Patient != null ? $"{item.Patient.FirstName} {item.Patient.LastName}" : "N/A")</td>
+                            <td>@item.Address</td>
+                            <td>@item.CreatedAt.ToString("dd/MM/yyyy")</td>
+                            <td>@item.LastUpdatedAt.ToString("dd/MM/yyyy")</td>
+                            <td>@(item.ModifiedBy != null ? $"{item.ModifiedBy.FirstName} {item.ModifiedBy.LastName}" : "N/A")</td>
+                            <td>@item.Status.ToString()</td>
                             <td class="text-end">
                                 <button class="btn btn-primary btn-sm action-button" type="button"
-                                        data-order-id="@encryptedId"
-                                        data-details-url="@Url.Action("MedicationOrder", "Orders", new { orderId = encryptedId })"
-                                        data-package-url="@Url.Action("PackageMedication", "Orders", new { orderId = encryptedId })"
-                                        data-receive-url="@Url.Action("ReceiveOrder", "Orders", new { orderId = encryptedId })">
+                                        data-request-id="@encryptedId"
+                                        data-package-url="@Url.Action("PackageMedication", "Deliveries", new { requestId = encryptedId })">
                                     Actions
                                 </button>
                             </td>
@@ -108,25 +90,11 @@
     overflow: hidden;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 ">
-    @if(User.IsInRole("Pharmacist"))
-    {
     <div class="list-group list-group-flush">
-        <a href="#" id="detailsLink" class="list-group-item list-group-item-action">
-            <i class="fas fa-info-circle text-secondary"></i> Details
-        </a>
-        <a href="#" id="receiveLink" class="list-group-item list-group-item-action">
-            <i class="fas fa-truck-loading text-secondary"></i> Receive
+        <a href="#" id="packageMedicationLink" class="list-group-item list-group-item-action">
+            <i class="fas fa-truck-loading text-primary me-2"></i> Package Medication
         </a>
     </div>
-    }
-    else
-    {
-    <div class="list-group list-group-flush">
-        <a href="#" id="packageLink" class="list-group-item list-group-item-action">
-           <i class="fas fa-boxes" style="color:green"></i> Package
-        </a>
-    </div>
-    }
 </div>
 
 @section Scripts {
@@ -146,9 +114,7 @@
             const button = $(this)[0];
             const tab = $("#floatingActionTab");
 
-            $("#receiveLink").attr("href", $(this).data("receive-url"));
-            $("#detailsLink").attr("href", $(this).data("details-url"));
-            $("#packageLink").attr("href", $(this).data("package-url"));
+            $("#packageMedicationLink").attr("href", $(this).data("package-url"));
 
             const rect = button.getBoundingClientRect();
             const tabWidth = tab.outerWidth();
@@ -183,11 +149,10 @@
 
         $('#qrSearchInput').on('input', function () {
             var value = $(this).val().toLowerCase();
-            $('#appointmentsTable tbody tr').filter(function () {
+            $('#requestsTable tbody tr').filter(function () {
                 $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
             });
         });
     });
 </script>
 }
-

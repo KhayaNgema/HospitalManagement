@@ -91,6 +91,8 @@ namespace HospitalManagement.Data
 
         public DbSet<HospitalManagement.Models.Doctor> Doctors { get; set; }
 
+        public DbSet<HospitalManagement.Models.DeliveryPackageItem> DeliveryPackageItems { get; set; }
+
         public DbSet<HospitalManagement.Models.Admission> Admissions { get; set; }
 
         public DbSet<HospitalManagement.Models.MedicalHistory> MedicalHistorys { get; set; }

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HospitalManagement.Migrations
 {
     [DbContext(typeof(HospitalManagementDbContext))]
-    [Migration("20250808152450_AddMedCartOrderTables")]
-    partial class AddMedCartOrderTables
+    [Migration("20250815155436_UpdateDeliveryItems")]
+    partial class UpdateDeliveryItems
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -340,6 +340,41 @@ namespace HospitalManagement.Migrations
                     b.ToTable("Deliveries");
                 });
 
+            modelBuilder.Entity("HospitalManagement.Models.DeliveryPackageItem", b =>
+                {
+                    b.Property<int>("DeliveryPackageItemId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DeliveryPackageItemId"));
+
+                    b.Property<DateTime?>("CollectionAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DeliveryRequestId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsCollected")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPackaged")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("MedicationId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("PackagedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("DeliveryPackageItemId");
+
+                    b.HasIndex("DeliveryRequestId");
+
+                    b.HasIndex("MedicationId");
+
+                    b.ToTable("DeliveryPackageItems");
+                });
+
             modelBuilder.Entity("HospitalManagement.Models.DeliveryRequest", b =>
                 {
                     b.Property<int>("DeliveryRequestId")
@@ -663,12 +698,6 @@ namespace HospitalManagement.Migrations
                     b.Property<bool>("Deleted")
                         .HasColumnType("bit");
 
-                    b.Property<int>("MedicationCartCartId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("MedicationStockStockId")
-                        .HasColumnType("int");
-
                     b.Property<string>("PharmacistId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -681,11 +710,11 @@ namespace HospitalManagement.Migrations
 
                     b.HasKey("CartItemId");
 
-                    b.HasIndex("MedicationCartCartId");
-
-                    b.HasIndex("MedicationStockStockId");
+                    b.HasIndex("CartId");
 
                     b.HasIndex("PharmacistId");
+
+                    b.HasIndex("StockId");
 
                     b.ToTable("MedicationCartItems");
                 });
@@ -774,12 +803,17 @@ namespace HospitalManagement.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("ReceivedById")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
                     b.HasKey("OrderId");
 
                     b.HasIndex("PharmacistId");
+
+                    b.HasIndex("ReceivedById");
 
                     b.ToTable("MedicationOrders");
                 });
@@ -792,11 +826,8 @@ namespace HospitalManagement.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("OrderItemId"));
 
-                    b.Property<int>("MedicationOrderOrderId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("MedicationStockStockId")
-                        .HasColumnType("int");
+                    b.Property<bool>("IsPackaged")
+                        .HasColumnType("bit");
 
                     b.Property<int>("OrderId")
                         .HasColumnType("int");
@@ -809,9 +840,9 @@ namespace HospitalManagement.Migrations
 
                     b.HasKey("OrderItemId");
 
-                    b.HasIndex("MedicationOrderOrderId");
+                    b.HasIndex("OrderId");
 
-                    b.HasIndex("MedicationStockStockId");
+                    b.HasIndex("StockId");
 
                     b.ToTable("MedicationOrderItems");
                 });
@@ -2150,6 +2181,25 @@ namespace HospitalManagement.Migrations
                     b.Navigation("ModifiedBy");
                 });
 
+            modelBuilder.Entity("HospitalManagement.Models.DeliveryPackageItem", b =>
+                {
+                    b.HasOne("HospitalManagement.Models.DeliveryRequest", "DeliveryRequest")
+                        .WithMany("DeliveryPackageItems")
+                        .HasForeignKey("DeliveryRequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("HospitalManagement.Models.Medication", "Medication")
+                        .WithMany()
+                        .HasForeignKey("MedicationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("DeliveryRequest");
+
+                    b.Navigation("Medication");
+                });
+
             modelBuilder.Entity("HospitalManagement.Models.DeliveryRequest", b =>
                 {
                     b.HasOne("HospitalManagement.Models.MedicationPescription", "MedicationPescription")
@@ -2255,20 +2305,20 @@ namespace HospitalManagement.Migrations
                 {
                     b.HasOne("HospitalManagement.Models.MedicationCart", "MedicationCart")
                         .WithMany("Items")
-                        .HasForeignKey("MedicationCartCartId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("HospitalManagement.Models.MedicationStock", "MedicationStock")
-                        .WithMany()
-                        .HasForeignKey("MedicationStockStockId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasForeignKey("CartId")
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("HospitalManagement.Models.Pharmacist", "Pharmacist")
                         .WithMany()
                         .HasForeignKey("PharmacistId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("HospitalManagement.Models.MedicationStock", "MedicationStock")
+                        .WithMany()
+                        .HasForeignKey("StockId")
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("MedicationCart");
@@ -2316,21 +2366,27 @@ namespace HospitalManagement.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("HospitalManagement.Models.Pharmacist", "ReceivedBy")
+                        .WithMany()
+                        .HasForeignKey("ReceivedById");
+
                     b.Navigation("Pharmacist");
+
+                    b.Navigation("ReceivedBy");
                 });
 
             modelBuilder.Entity("HospitalManagement.Models.MedicationOrderItem", b =>
                 {
                     b.HasOne("HospitalManagement.Models.MedicationOrder", "MedicationOrder")
                         .WithMany("OrderItems")
-                        .HasForeignKey("MedicationOrderOrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("HospitalManagement.Models.MedicationStock", "MedicationStock")
                         .WithMany()
-                        .HasForeignKey("MedicationStockStockId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasForeignKey("StockId")
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("MedicationOrder");
@@ -2790,6 +2846,11 @@ namespace HospitalManagement.Migrations
             modelBuilder.Entity("HospitalManagement.Models.Delivery", b =>
                 {
                     b.Navigation("Packages");
+                });
+
+            modelBuilder.Entity("HospitalManagement.Models.DeliveryRequest", b =>
+                {
+                    b.Navigation("DeliveryPackageItems");
                 });
 
             modelBuilder.Entity("HospitalManagement.Models.MedicalHistory", b =>

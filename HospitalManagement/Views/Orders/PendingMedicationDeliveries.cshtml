@@ -1,25 +1,24 @@
-﻿@model IEnumerable<HospitalManagement.Models.DeliveryRequest>
+﻿@model IEnumerable<HospitalManagement.Models.MedicationOrder>
 
 @{
     ViewData["Title"] = "Pending Medication Deliveries";
     Layout = "~/Views/Shared/_PagesLayout.cshtml";
 
-    string getStatusClass(HospitalManagement.Models.DeliveryRequestStatus status) =>
+    string getStatusClass(HospitalManagement.Models.OrderStatus status) =>
         status switch
         {
-            HospitalManagement.Models.DeliveryRequestStatus.OnTheWay => "status-warning",
-            HospitalManagement.Models.DeliveryRequestStatus.Packaged => "status-default",
-            HospitalManagement.Models.DeliveryRequestStatus.Collected => "status-success",
+            HospitalManagement.Models.OrderStatus.OnTheWay => "status-warning",
+            HospitalManagement.Models.OrderStatus.Collected => "status-success",
+            HospitalManagement.Models.OrderStatus.Packaged => "status-default",
             _ => "status-default"
         };
 }
 
 <style>
-    .order-card-col {
+        .order-card-col {
         flex: 0 0 auto;
         max-width: 400px;
         margin-right: 1rem;
-        margin-bottom: 1rem;
     }
 
     .card-receipt {
@@ -32,9 +31,6 @@
         height: 100%;
         padding: 1rem;
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        word-wrap: break-word;      
-        overflow-wrap: break-word;  
-        white-space: normal !important; 
     }
 
     .card-header {
@@ -44,28 +40,18 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-        white-space: normal !important;
     }
 
     .order-number {
         font-weight: 700;
         font-size: 1.25rem;
         color: #2c3e50;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-        white-space: normal !important;
-        hyphens: auto;
     }
 
     .order-status {
         font-weight: 600;
         font-size: 0.9rem;
         text-transform: uppercase;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-        white-space: normal !important;
     }
 
     .status-default {
@@ -80,40 +66,38 @@
         color: #198754;
     }
 
-    .patient-name,
-    .address {
+    .pharmacist-name,
+    .box-count {
         font-size: 0.9rem;
         color: #34495e;
         margin-bottom: 0.4rem;
         display: flex;
         align-items: center;
         gap: 0.4rem;
-        flex-wrap: wrap;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-        white-space: normal !important;
     }
 
-    .patient-name i,
-    .address i {
-        flex-shrink: 0;
-        margin-right: 0.4rem;
-        min-width: 20px;
+    .icon-pharmacist {
+        color: #3498db;
     }
 
-    .delivery-items-list {
+    .icon-box {
+        color: #A0522D;
+    }
+
+    .icon-pills {
+        color: #27ae60;
+    }
+
+    .order-items-list {
         flex-grow: 1;
         margin-top: 0.5rem;
         padding-top: 0.5rem;
         border-top: 1px solid #eee;
         overflow-y: auto;
         max-height: 180px;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-        white-space: normal !important;
     }
 
-    .delivery-item {
+    .order-item {
         font-size: 0.9rem;
         padding: 0.25rem 0;
         border-bottom: 1px solid #f5f5f5;
@@ -121,29 +105,30 @@
         justify-content: space-between;
         color: #555;
         align-items: center;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-        white-space: normal !important;
     }
 
-    .delivery-item span:first-child {
+    .order-item:last-child {
+        border-bottom: none;
+    }
+
+    .order-item span:first-child {
         display: flex;
         align-items: center;
         gap: 0.5rem;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-        white-space: normal !important;
+    }
+
+    .card-footer {
+        padding-top: 1rem;
+        border-top: 1px solid #eee;
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.4rem;
     }
 
     .btn-small {
         padding: 0.3rem 0.6rem;
         font-size: 0.85rem;
         border-radius: 6px;
-    }
-
-    .d-flex.flex-column.flex-lg-row.flex-lg-wrap.overflow-auto.pb-3 {
-        display: flex !important;
-        flex-direction: column;
     }
 </style>
 
@@ -171,61 +156,44 @@
     }
     else
     {
-        <div class="d-flex flex-column flex-lg-row flex-lg-wrap overflow-auto pb-3">
-            @foreach (var request in Model)
+        <div class="d-flex flex-column flex-lg-row flex-lg-nowrap overflow-auto pb-3">
+            @foreach (var order in Model)
             {
-                var packagedCount = request.DeliveryPackageItems.Count(item => item.IsPackaged);
-                var totalCount = request.DeliveryPackageItems.Count;
-
-                <div class="order-card-col col-12 col-md-12 col-lg-4" data-delivery-request-id="@request.DeliveryRequestId">
+                var boxCount = order.OrderItems?.Sum(oi => oi.Quantity) ?? 0;
+                 <div class="order-card-col col-12 col-md-12 col-lg-4" data-order-id="@order.OrderId">
                     <div class="card card-receipt">
                         <div class="card-header">
-                            <div class="order-number">Delivery Request</div>
-                            <div class="order-status @getStatusClass(request.Status)" id="delivery-status-@request.DeliveryRequestId">
-                                @request.Status.ToString()
-                            </div>
+                            <div class="order-number">@order.OrderNumber</div>
+                            <div class="order-status @getStatusClass(order.Status)" id="order-status-@order.OrderId">@order.Status.ToString()</div>
                         </div>
-
-                        <div class="patient-name">
-                            <i class="fas fa-user icon-patient"></i>
-                            Patient: @(request.Patient?.FirstName ?? "N/A") @(request.Patient?.LastName ?? "")
+                        <div class="pharmacist-name">
+                            <i class="fas fa-user-md icon-pharmacist"></i>
+                            Pharmacist: @(order.Pharmacist?.FirstName ?? order.PharmacistId)
                         </div>
-
-                        <td>
-                         <div style="display: flex; align-items: center;">
-                           <i class="fas fa-map-marker-alt" style="color: red; margin-right: 5px;"></i>
-                           <span>@request.Address</span>
-                         </div>
-                        </td>
-
-
-
-                        <div class="delivery-items-list mt-2">
-                            @if (request.DeliveryPackageItems?.Any() ?? false)
+                        <div class="box-count">
+                            <i class="fas fa-box icon-box"></i>
+                            Box Count: @boxCount
+                        </div>
+                        <div class="order-items-list mt-2">
+                            @if (order.OrderItems != null && order.OrderItems.Any())
                             {
-                                foreach (var item in request.DeliveryPackageItems)
+                                foreach (var item in order.OrderItems)
                                 {
-                                    var med = item.Medication;
-                                    <div class="delivery-item">
-                                        <span>
-                                            <i class="fas fa-pills"></i> @med.MedicationName
-                                        </span>
+                                    <div class="order-item">
+                                        <span><i class="fas fa-pills icon-pills"></i> @item.MedicationStock?.Medication?.MedicationName</span>
+                                        <span>@item.Quantity</span>
                                     </div>
                                 }
                             }
                             else
                             {
-                                <div class="text-muted">No package items found.</div>
+                                <div class="text-muted">No items found.</div>
                             }
                         </div>
-
-                        <div class="card-footer d-flex gap-2 justify-content-end">
-                            @if (request.Status == HospitalManagement.Models.DeliveryRequestStatus.Packaged)
-                            {
-                                <button class="btn btn-warning btn-small btn-deliver" data-delivery-request-id="@request.DeliveryRequestId" type="button">
-                                    <i class="fas fa-truck"></i> Deliver Medication
-                                </button>
-                            }
+                        <div class="card-footer">
+                            <button class="btn btn-primary btn-small btn-deliver" data-order-id="@order.OrderId" style="@(order.Status == HospitalManagement.Models.OrderStatus.Packaged ? "" : "display:none;")">
+                                Deliver Order
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -243,16 +211,15 @@
             $("#tempDataMessage").fadeOut();
         }, 7000);
 
-        function updateStatus(deliveryRequestId, newStatus) {
-            var statusDiv = $('#delivery-status-' + deliveryRequestId);
+        function updateStatus(orderId, newStatus) {
+            var statusDiv = $('#order-status-' + orderId);
             statusDiv.text(newStatus);
             statusDiv.removeClass('status-default status-warning status-success');
-
-            if (newStatus === 'OnTheWay') {
+            if(newStatus === 'OnTheWay') {
                 statusDiv.addClass('status-warning');
-            } else if (newStatus === 'Collected') {
+            } else if(newStatus === 'Collected') {
                 statusDiv.addClass('status-success');
-            } else if (newStatus === 'Packaged') {
+            } else if(newStatus === 'Packaged') {
                 statusDiv.addClass('status-default');
             } else {
                 statusDiv.addClass('status-default');
@@ -261,21 +228,40 @@
 
         $('.btn-deliver').on('click', function () {
             var btn = $(this);
-            var id = btn.data('delivery-request-id');
+            var orderId = btn.data('order-id');
             btn.prop('disabled', true);
-
             $.ajax({
-                url: '@Url.Action("DeliverMedication", "Deliveries")',
+                url: '@Url.Action("DeliverOrder", "Orders")',
                 type: 'POST',
-                data: { deliveryRequestId: id },
+                data: { orderId: orderId },
                 headers: { 'RequestVerificationToken': token },
                 success: function () {
-                    updateStatus(id, 'OnTheWay');
+                    updateStatus(orderId, 'OnTheWay');
                     btn.hide();
                     btn.closest('.card-footer').find('.btn-complete-delivery').show().prop('disabled', false);
                 },
                 error: function () {
                     alert('Failed to update status to OnTheWay. Please try again.');
+                    btn.prop('disabled', false);
+                }
+            });
+        });
+
+        $('.btn-complete-delivery').on('click', function () {
+            var btn = $(this);
+            var orderId = btn.data('order-id');
+            btn.prop('disabled', true);
+            $.ajax({
+                url: '@Url.Action("CompleteOrder", "Orders")',
+                type: 'POST',
+                data: { orderId: orderId },
+                headers: { 'RequestVerificationToken': token },
+                success: function () {
+                    updateStatus(orderId, 'Collected');
+                    btn.hide();
+                },
+                error: function () {
+                    alert('Failed to update status to Collected. Please try again.');
                     btn.prop('disabled', false);
                 }
             });

@@ -1,0 +1,201 @@
+﻿@model HospitalManagement.Models.MedicationOrder
+
+@{
+    ViewData["Title"] = "Unbox Medication";
+    Layout = "~/Views/Shared/_PagesLayout.cshtml";
+}
+
+<style>
+    .order-item-card {
+        background-color: #f8f9fa;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        border-left: 4px solid #48AAAD;
+        position: relative;
+    }
+    .order-item-card.completed {
+        background-color: #d4edda;
+        border: 1px solid #c3e6cb;
+        color: #155724;
+        font-weight: 600;
+    }
+    .order-item-card.completed .check-icon {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        font-size: 1.5rem;
+        color: #155724;
+    }
+    #scanner {
+        width: 100%;
+        max-width: 300px;
+        height: 226px;
+        border: 2px solid #48AAAD;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+</style>
+
+
+<div class="d-flex align-items-center justify-content-between px-3 py-3 mb-4" style="background-color:#48AAAD;">
+    <div class="d-flex align-items-center">
+        <a asp-controller="Orders" asp-action="MedicationOrders" class="text-white text-decoration-none d-inline-flex align-items-center back-link me-3">
+            <i class="bi bi-chevron-left me-1"></i> Back
+        </a>
+        <h2 class="mb-0 text-white">Receive Medication</h2>
+    </div>
+</div>
+
+<div class="container-fluid px-4" style="margin-top: 10px;">
+    <p class="mb-3 fw-semibold text-center" style="font-size: 1.2rem; color: #48AAAD;">
+        Scan the medication boxes using the camera and verify quantities.
+    </p>
+     <form asp-contoller = "Orders" asp-action="ReceiveOrder" method="post">
+    <div class="row" style="margin-bottom: 100px;">
+        <div class="col-12 col-lg-4 d-flex justify-content-center align-items-start mb-4 mb-lg-0">
+            <div id="scanner"></div>
+        </div>
+          <div class="col-12 col-lg-8">
+            <div class="row">
+                @foreach (var item in Model.OrderItems)
+                {
+                    <div class="col-12 col-md-6">
+                        <div class="order-item-card"
+                             id="order-item-@item.OrderItemId"
+                             data-batch-number="@item.MedicationStock.BatchNumber"
+                             data-required-qty="@item.Quantity"
+                             data-scanned-count="0">
+                            <div>
+                               <i class="fas fa-box icon-box" style="color:#C4A484"></i> <strong>@item.MedicationStock.Medication.MedicationName</strong><br />
+                                Qty to scan: @item.Quantity
+                            </div>
+                            <div>
+                                Boxes scanned: <span class="scanned-count">0</span>
+                            </div>
+                            <i class="fas fa-check-circle check-icon d-none"></i>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+                <div class="bill-summary-box bg-white shadow rounded p-3">
+                    <button type="submit" style="background-color:#48AAAD; color:white" class="btn  w-100" onclick="populateTotalPrice()">
+                        <i class="fas fa-truck-loading fa-lg"></i> Receive Order
+                    </button>
+                </div>
+        </form>
+        
+</div>
+
+@section Scripts {
+<script src="https://unpkg.com/html5-qrcode"></script>
+<script>
+
+ function populateTotalPrice() {
+            var totalPrice = parseFloat($("#totalPrice").text().trim().substring(2));
+            $("#totalPriceField").val(totalPrice);
+        }
+        function adjustBillSummaryPosition() {
+            const billBox = document.querySelector('.bill-summary-box');
+            const footer = document.querySelector('footer');
+            if (!billBox || !footer) return;
+
+            const footerRect = footer.getBoundingClientRect();
+            const windowHeight = window.innerHeight;
+
+            if (footerRect.top < windowHeight) {
+                const overlap = windowHeight - footerRect.top;
+                billBox.style.bottom = `${overlap + 20}px`;
+            } else {
+                billBox.style.bottom = '20px';
+            }
+        }
+
+        window.addEventListener('scroll', adjustBillSummaryPosition);
+        window.addEventListener('resize', adjustBillSummaryPosition);
+        window.addEventListener('load', adjustBillSummaryPosition);
+
+    function playBeep() {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(1000, audioCtx.currentTime);
+        gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + 0.15);
+    }
+
+    function loadScannedCounts() {
+        const savedData = JSON.parse(localStorage.getItem("scannedCounts") || "{}");
+        document.querySelectorAll('.order-item-card').forEach(card => {
+            const id = card.id;
+            if (savedData[id]) {
+                card.setAttribute('data-scanned-count', savedData[id]);
+                card.querySelector('.scanned-count').textContent = savedData[id];
+                if (savedData[id] >= parseInt(card.getAttribute('data-required-qty'))) {
+                    card.classList.add('completed');
+                    card.querySelector('.check-icon').classList.remove('d-none');
+                }
+            }
+        });
+    }
+
+    function saveScannedCounts() {
+        const data = {};
+        document.querySelectorAll('.order-item-card').forEach(card => {
+            data[card.id] = parseInt(card.getAttribute('data-scanned-count'));
+        });
+        localStorage.setItem("scannedCounts", JSON.stringify(data));
+    }
+
+    if (@(Model != null && Model.OrderItems != null && Model.OrderItems.Any() ? "true" : "false")) {
+        const html5QrCode = new Html5Qrcode("scanner");
+        let scanningPaused = false;
+
+        loadScannedCounts();
+
+        html5QrCode.start(
+            { facingMode: "environment" },
+            { fps: 10, qrbox: { width: 200, height: 200 } },
+            (decodedText) => {
+                if (scanningPaused) return;
+
+                const code = decodedText.trim();
+                const matchedCard = Array.from(document.querySelectorAll('.order-item-card'))
+                    .find(card => card.getAttribute('data-batch-number') === code);
+
+                if (!matchedCard) return;
+
+                let requiredQty = parseInt(matchedCard.getAttribute('data-required-qty'));
+                let scannedCount = parseInt(matchedCard.getAttribute('data-scanned-count')) || 0;
+
+                if (scannedCount < requiredQty) {
+                    scannedCount++;
+                    matchedCard.setAttribute('data-scanned-count', scannedCount);
+                    matchedCard.querySelector('.scanned-count').textContent = scannedCount;
+
+                    if (scannedCount >= requiredQty) {
+                        matchedCard.classList.add('completed');
+                        matchedCard.querySelector('.check-icon').classList.remove('d-none');
+                    }
+
+                    saveScannedCounts();
+                    playBeep();
+                }
+
+                scanningPaused = true;
+                setTimeout(() => { scanningPaused = false; }, 1000);
+            },
+            () => {}
+        );
+    }
+</script>
+}
+

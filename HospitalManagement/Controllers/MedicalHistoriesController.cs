@@ -217,7 +217,7 @@ namespace HospitalManagement.Controllers
                             var medicationEntity = await _context.Medications
                                 .FirstOrDefaultAsync(m => m.MedicationId == med.MedicationId);
 
-                            if (medicationEntity != null && booking != null)
+                            if(medicationEntity != null && booking != null)
                             {
                                 var newBillService = new PatientBillServices
                                 {
@@ -243,19 +243,19 @@ namespace HospitalManagement.Controllers
                     }
                 }
 
-                if (booking != null)
+                if(booking != null)
                 {
                     var medicationPescription = new MedicationPescription
                     {
                         AdditionalNotes = viewModel.Notes,
                         AdmissionId = null,
-                        CollectAfterCount = null,
+                        CollectAfterCount = viewModel.CollectAfterCount,
                         CreatedAt = DateTime.Now,
                         LastUpdatedAt = DateTime.Now,
-                        CollectionInterval = null,
+                        CollectionInterval = viewModel.CollectionInterval,
                         CreatedById = user.Id,
                         HasDoneCollecting = false,
-                        ExpiresAt = null,
+                        ExpiresAt = viewModel.UntilDate,
                         NextCollectionDate = null,
                         PrescriptionType = null,
                         UpdatedById = user.Id,
@@ -264,6 +264,24 @@ namespace HospitalManagement.Controllers
                         AccessCode = booking.BookingReference,
 
                     };
+
+                    if (viewModel.PrescribedMedication != null && viewModel.PrescribedMedication.Any())
+                    {
+                        foreach (var med in viewModel.PrescribedMedication)
+                        {
+                            var medicationEntity = await _context.Medications
+                                .FirstOrDefaultAsync(m => m.MedicationId == med.MedicationId);
+
+                            if (medicationEntity != null)
+                            {
+                                medicationPescription.PrescribedMedication.Add(medicationEntity);
+                            }
+                            else
+                            {
+
+                            }
+                        }
+                    }
 
                     _context.Add(medicationPescription);
                     await _context.SaveChangesAsync();

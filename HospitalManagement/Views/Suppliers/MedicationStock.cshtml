@@ -72,7 +72,7 @@ else
                         <td>
                             @if (!string.IsNullOrEmpty(item.Medication.BarcodeImage))
                               {
-                               <img src="@item.Medication.BarcodeImage" alt="barcode" class="img-thumbnail img-fluid" style="max-width: 120px; max-height: 120px;" />
+                               <img src="~/@item.Medication.BarcodeImage" alt="barcode" class="img-thumbnail img-fluid" style="max-width: 120px; max-height: 120px;" />
                               }
                              else
                               {

@@ -1,10 +1,17 @@
 ﻿@{
     ViewData["Title"] = "Scan Medication";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    Layout = "~/Views/Shared/_PagesLayout.cshtml";
 }
 
-<h2 class="text-center mt-4 mb-3">📦 Scan Medication</h2>
-
+<div class="container-fluid">
+    <div class="d-flex align-items-center justify-content-between px-3 py-3 mb-4" style="background-color:#48AAAD;">
+        <div class="d-flex align-items-center">
+            <a asp-controller="Medications" asp-action="Inventory" class="text-white d-inline-flex align-items-center back-link me-3" style="text-decoration:none;">
+                <i class="bi bi-chevron-left me-1"></i> Back
+            </a>
+            <h2 class="mb-0 text-white"><strong>Unbox Medication</strong></h2>
+        </div>
+    </div>
 <form id="antiforgeryForm">
     @Html.AntiForgeryToken()
 </form>
@@ -21,6 +28,10 @@
         <div><strong>Logs:</strong></div>
     </div>
 </div>
+
+</div>
+
+
 
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
@@ -40,6 +51,22 @@ function logMessage(msg) {
     logContainer.appendChild(newLog);
     logContainer.scrollTop = logContainer.scrollHeight; 
 }
+
+function playBeep() {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(1000, audioCtx.currentTime);
+    gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+
+    oscillator.start();
+    oscillator.stop(audioCtx.currentTime + 0.15);
+}
+
 
 
         function startScanner() {
@@ -88,6 +115,7 @@ function logMessage(msg) {
                 })
                 .then(result => {
                     if (result.status === 'success') {
+                        playBeep();
                         logMessage(`✅ Stock updated for: ${result.medicationName} (Barcode: ${result.barcode})`);
                     } else {
                         logMessage(`❌ ${result.message || "Unable to update stock."}`);

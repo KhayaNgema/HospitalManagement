@@ -1,0 +1,156 @@
+﻿@model HospitalManagement.Models.Package
+
+@{
+    ViewData["Title"] = "Receive Medication";
+    Layout = "~/Views/Shared/_PagesLayout.cshtml";
+}
+
+<style>
+    .order-item-card {
+        background-color: #f8f9fa;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        border-left: 4px solid #48AAAD;
+        position: relative;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .order-item-card.found {
+        background-color: #d4edda;
+        border: 1px solid #c3e6cb;
+        color: #155724;
+        font-weight: 600;
+    }
+    .order-item-info {
+        flex-grow: 1;
+    }
+    .found-btn {
+        min-width: 120px;
+    }
+    .hidden-radio {
+        display: none;
+    }
+</style>
+
+<div class="d-flex align-items-center justify-content-between px-3 py-3 mb-4" style="background-color:#48AAAD;">
+    <div class="d-flex align-items-center">
+        <a asp-controller="Orders" asp-action="MedicationOrders" class="text-white text-decoration-none d-inline-flex align-items-center back-link me-3">
+            <i class="bi bi-chevron-left me-1"></i> Back
+        </a>
+        <h2 class="mb-0 text-white">Receive Medication</h2>
+    </div>
+</div>
+
+<div class="container-fluid px-4" style="margin-top: 10px;">
+    <h4 class="mb-2 text-center" style="color:#48AAAD;" >Package: @Model.PackageNumber</h4>
+    <p class="mb-3 fw-semibold text-center" style="font-size: 1.2rem; color: #48AAAD;">
+        Mark the medications that you have found inside the package.
+    </p>
+    <p class="mb-3 fw-semibold text-center" style="font-size: 1.0rem; color: black;">
+        Driver: @Model.DeliveryPersonnel.FirstName @Model.DeliveryPersonnel.LastName
+    </p>
+
+   <form asp-controller="Deliveries" asp-action="CollectPackage" method="post">
+    <input type="hidden" name="packageId" value="@Model.PackageId" />
+
+    <div class="row" style="margin-bottom: 100px;">
+        <div class="col-12 col-lg-12">
+            <div class="row">
+                @foreach (var item in Model.DeliveryRequest.DeliveryPackageItems)
+                {
+                    var med = item.Medication;
+                    var itemId = item.DeliveryPackageItemId;
+                    bool isCollected = item.IsCollected;
+
+                    <div class="col-12 col-md-6">
+                        <div class="order-item-card @(isCollected ? "found" : "")" id="order-item-@itemId">
+                            <div class="order-item-info">
+                                <i class="fas fa-pills fa-lg" style="color:#48AAAD"></i>
+                                <strong>@med.MedicationName</strong><br />
+                                <img src="~/@med.BarcodeImage" alt="Barcode for @med.MedicationName" class="img-thumbnail img-fluid" style="max-width: 120px; max-height: 120px;" />
+                            </div>
+                            <input type="radio" name="FoundItems" value="@itemId" class="hidden-radio" id="found-@itemId" @(isCollected ? "checked" : "") />
+                            <button type="button" class="btn btn-outline-success found-btn" data-item-id="@itemId" @(isCollected ? "disabled" : "")>
+                                @(isCollected ? "Found" : "Mark as Found")
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="bill-summary-box bg-white shadow rounded p-3">
+        <button type="submit" style="background-color:#48AAAD; color:white" class="btn w-100">
+            <i class="fas fa-check-circle fa-lg"></i> Complete Collection
+        </button>
+    </div>
+</form>
+
+</div>
+
+@section Scripts {
+<script>
+
+
+$(document).ready(function () {
+    $('.found-btn').on('click', function () {
+        var button = $(this);
+        var itemId = button.data('item-id');
+        var radioInput = $('#found-' + itemId);
+
+        if (!radioInput.prop('checked')) {
+            $.ajax({
+                url: '@Url.Action("MarkItemAsCollected", "Deliveries")', 
+                type: 'POST',
+                data: { itemId: itemId },
+                headers: {
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function (response) {
+                    if (response.success) {
+                        radioInput.prop('checked', true);
+                        $('#order-item-' + itemId).addClass('found');
+                        button.text('Found').prop('disabled', true);
+                    } else {
+                        alert(response.message || 'Failed to update item.');
+                    }
+                },
+                error: function () {
+                    alert('An error occurred while updating the item.');
+                }
+            });
+        }
+    });
+});
+
+
+
+     function populateTotalPrice() {
+            var totalPrice = parseFloat($("#totalPrice").text().trim().substring(2));
+            $("#totalPriceField").val(totalPrice);
+        }
+        function adjustBillSummaryPosition() {
+            const billBox = document.querySelector('.bill-summary-box');
+            const footer = document.querySelector('footer');
+            if (!billBox || !footer) return;
+
+            const footerRect = footer.getBoundingClientRect();
+            const windowHeight = window.innerHeight;
+
+            if (footerRect.top < windowHeight) {
+                const overlap = windowHeight - footerRect.top;
+                billBox.style.bottom = `${overlap + 20}px`;
+            } else {
+                billBox.style.bottom = '20px';
+            }
+        }
+
+        window.addEventListener('scroll', adjustBillSummaryPosition);
+        window.addEventListener('resize', adjustBillSummaryPosition);
+        window.addEventListener('load', adjustBillSummaryPosition);
+</script>
+}

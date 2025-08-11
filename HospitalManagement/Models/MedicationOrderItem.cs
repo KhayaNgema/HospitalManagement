@@ -19,5 +19,7 @@ namespace HospitalManagement.Models
         [Required]
         [Display(Name = "Quantity")]
         public int Quantity { get; set; }
+
+        public bool IsPackaged { get; set; }
     }
 }

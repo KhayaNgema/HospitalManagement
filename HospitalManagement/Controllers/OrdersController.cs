@@ -1,4 +1,5 @@
 ﻿using Cafeteria.Services;
+using Hangfire;
 using HospitalManagement.Data;
 using HospitalManagement.Interfaces;
 using HospitalManagement.Models;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
+using System.Net;
 
 namespace Cafeteria.Controllers
 {
@@ -23,6 +25,7 @@ namespace Cafeteria.Controllers
         private readonly IPaymentService _paymentService;
         private readonly DeviceInfoService _deviceInfoService;
         private readonly IEncryptionService _encryptionService;
+        private readonly ReceiveMedicationOrder _receiveMedicationOrder;
 
         public OrdersController(
             OrderNumberGenerator orderNumberGenerator,
@@ -33,7 +36,8 @@ namespace Cafeteria.Controllers
             UserManager<UserBaseModel> userManager,
             SignInManager<UserBaseModel> signInManager,
             CartService cartService,
-            EncryptionService encryptionService)
+            IEncryptionService encryptionService,
+            ReceiveMedicationOrder receiveMedicationOrder)
         {
             _cartService = cartService;
             _orderNumberGenerator = orderNumberGenerator;
@@ -44,24 +48,47 @@ namespace Cafeteria.Controllers
             _userManager = userManager;
             _signInManager = signInManager;
             _encryptionService = encryptionService;
+            _receiveMedicationOrder = receiveMedicationOrder;
         }
 
+        [Authorize(Roles = "Supplier Driver")]
+        [HttpGet]
+        public async Task<IActionResult> PendingMedicationDeliveries()
+        {
+            var deliveries = await _context.MedicationOrders
+                .Where(d => d.Status == OrderStatus.Packaged ||
+                d.Status == OrderStatus.OnTheWay)
+                .Include(d=> d.Pharmacist)
+                .Include(d => d.OrderItems)
+                   .ThenInclude(d => d.MedicationStock)
+                     .ThenInclude(d => d.Medication )
+                .ToListAsync();
+
+            return View(deliveries);
+        }
 
         [Authorize(Roles = "Supplier Administrator")]
         [HttpGet]
         public async Task<IActionResult> PackageMedication(string orderId)
         {
+            if (string.IsNullOrWhiteSpace(orderId))
+                return NotFound();
+
             var decryptedOrderId = _encryptionService.DecryptToInt(orderId);
 
             var order = await _context.MedicationOrders
                 .Where(o => o.OrderId == decryptedOrderId)
                 .Include(o => o.OrderItems)
-                .ThenInclude(o => o.MedicationStock)
-                .ThenInclude(o => o.Medication)
-                .ToListAsync();
+                    .ThenInclude(oi => oi.MedicationStock)
+                        .ThenInclude(ms => ms.Medication)
+                .FirstOrDefaultAsync();
+
+            if (order == null)
+                return NotFound();
 
             return View(order);
         }
+
 
         [Authorize(Roles = "Pharmacist, Supplier Administrator")]
         [HttpGet]
@@ -85,6 +112,9 @@ namespace Cafeteria.Controllers
         public async Task<IActionResult> MedicationOrders()
         {
             var orders = await _context.MedicationOrders
+                .Where(o => o.Status == OrderStatus.Pending ||
+                 o.Status == OrderStatus.Packaged ||
+                 o.Status == OrderStatus.OnTheWay)
                 .Include(o => o.OrderItems)
                 .Include(o => o.Pharmacist)
                 .ToListAsync();
@@ -211,6 +241,177 @@ namespace Cafeteria.Controllers
             }
         }
 
+
+        [HttpGet]
+        public IActionResult GetPackagedOrderItems(int orderId)
+        {
+            var packagedItemIds = _context.MedicationOrderItems
+                .Where(oi => oi.OrderId == orderId && oi.IsPackaged)
+                .Select(oi => oi.OrderItemId)
+                .ToList();
+
+            return Json(packagedItemIds);
+        }
+
+
+        [Authorize(Roles = "Pharmacist")]
+        [HttpGet]
+        public async Task<IActionResult> ReceiveOrder(string orderId)
+        {
+            if (string.IsNullOrEmpty(orderId))
+            {
+                return BadRequest("Missing orderId parameter");
+            }
+
+            string decodedOrderId = WebUtility.UrlDecode(orderId);
+
+            int decryptedOrderId;
+
+            try
+            {
+                decryptedOrderId = _encryptionService.DecryptToInt(decodedOrderId);
+            }
+            catch
+            {
+                return BadRequest("Invalid orderId");
+            }
+
+            var order = await _context.MedicationOrders
+                .Where(o => o.OrderId == decryptedOrderId)
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.MedicationStock)
+                        .ThenInclude(ms => ms.Medication)
+                .FirstOrDefaultAsync();
+
+            if (order == null)
+            {
+                return NotFound();
+            }
+
+            return View(order);
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> ReceiveOrder(int orderId)
+        {
+            try
+            {
+                var user = await _userManager.GetUserAsync(User);
+
+                var order = await _context.MedicationOrders
+                    .Where(o => o.OrderId == orderId)
+                    .FirstOrDefaultAsync();
+
+                order.Status = OrderStatus.Collected;
+                order.LastUpdated = DateTime.Now;
+                order.ReceivedById = user.Id;
+
+                _context.Update(order);
+                await _context.SaveChangesAsync();
+
+                TempData["Message"] = $"You have successfully received your order. Thanks for verifying qantities.";
+
+                return RedirectToAction(nameof(MedicationOrders));
+            }
+            catch
+            {
+
+            }
+
+            return View();
+            
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeliverOrder(int orderId)
+        {
+            var order = await _context.MedicationOrders.FindAsync(orderId);
+
+            if (order == null)
+                return NotFound();
+
+            order.Status = OrderStatus.OnTheWay;
+            await _context.SaveChangesAsync();
+
+            var encryptedOrderId = _encryptionService.Encrypt(order.OrderId);
+
+            BackgroundJob.Enqueue(() => _receiveMedicationOrder.NotifyPharmacistOrderOnTheWayAsync(encryptedOrderId));
+            return Ok();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CompleteOrder(int orderId)
+        {
+            var order = await _context.MedicationOrders.FindAsync(orderId);
+            if (order == null) return NotFound();
+
+            order.Status = OrderStatus.Collected;
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult PackageOrderItem(int orderItemId)
+        {
+            var item = _context.MedicationOrderItems.Find(orderItemId);
+            if (item == null)
+                return NotFound();
+
+            if (!item.IsPackaged)
+            {
+                item.IsPackaged = true;
+                _context.SaveChanges();
+            }
+
+            return Ok();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CompletePackaging(int orderId)
+        {
+
+            try
+            {
+                var encryptedOrderId = _encryptionService.Encrypt(orderId);
+
+                var order = await _context.MedicationOrders
+                    .Where(o => o.OrderId == orderId)
+                    .FirstOrDefaultAsync();
+
+                if(order.Status == OrderStatus.Packaged)
+                {
+                    TempData["Message"] = $"This order has been already packaged and waiting for delivery.";
+
+                    return RedirectToAction(nameof(PackageMedication), new {orderId = encryptedOrderId});
+                }
+
+                order.Status = OrderStatus.Packaged;
+
+                _context.Update(order);
+
+                await _context.SaveChangesAsync();
+
+                TempData["Message"] = $"You have successfully packaged an order with order number: {order.OrderNumber}. The order has been transferred to the available driver and ready to be delivered.";
+
+                return RedirectToAction(nameof(MedicationOrders));
+            }
+            catch
+            {
+                var encryptedOrderId = _encryptionService.Encrypt(orderId);
+
+                return View("PackageMedication", new { orderId = encryptedOrderId });
+
+            }
+        }
+
+
         [HttpGet]
         public async Task<IActionResult> NewMedicationOrder()
         {
@@ -272,8 +473,9 @@ namespace Cafeteria.Controllers
                     {
                         StockId = ci.StockId,
                         Quantity = ci.Quantity,
-                    }).ToList(),
-                    Status = OrderStatus.Pending
+                        IsPackaged = false                }).ToList(),
+                    Status = OrderStatus.Pending,
+                   
                 };
 
                 _context.Add(order);

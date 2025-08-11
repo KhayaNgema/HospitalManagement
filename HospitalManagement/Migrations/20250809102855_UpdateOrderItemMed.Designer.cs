@@ -4,6 +4,7 @@ using HospitalManagement.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HospitalManagement.Migrations
 {
     [DbContext(typeof(HospitalManagementDbContext))]
-    partial class HospitalManagementDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250809102855_UpdateOrderItemMed")]
+    partial class UpdateOrderItemMed
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -323,9 +326,6 @@ namespace HospitalManagement.Migrations
                     b.Property<decimal>("DriverLongitude")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("PackageId")
-                        .HasColumnType("int");
-
                     b.Property<decimal>("PatientLatitude")
                         .HasColumnType("decimal(18,2)");
 
@@ -338,41 +338,6 @@ namespace HospitalManagement.Migrations
                     b.HasKey("DeliveryId");
 
                     b.ToTable("Deliveries");
-                });
-
-            modelBuilder.Entity("HospitalManagement.Models.DeliveryPackageItem", b =>
-                {
-                    b.Property<int>("DeliveryPackageItemId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DeliveryPackageItemId"));
-
-                    b.Property<DateTime?>("CollectionAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("DeliveryRequestId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsCollected")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsPackaged")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("MedicationId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("PackagedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("DeliveryPackageItemId");
-
-                    b.HasIndex("DeliveryRequestId");
-
-                    b.HasIndex("MedicationId");
-
-                    b.ToTable("DeliveryPackageItems");
                 });
 
             modelBuilder.Entity("HospitalManagement.Models.DeliveryRequest", b =>
@@ -803,17 +768,12 @@ namespace HospitalManagement.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("ReceivedById")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
                     b.HasKey("OrderId");
 
                     b.HasIndex("PharmacistId");
-
-                    b.HasIndex("ReceivedById");
 
                     b.ToTable("MedicationOrders");
                 });
@@ -1186,7 +1146,7 @@ namespace HospitalManagement.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PackageId"));
 
-                    b.Property<DateTime?>("CollectionDate")
+                    b.Property<DateTime>("CollectionDate")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("CreatedAt")
@@ -1209,13 +1169,6 @@ namespace HospitalManagement.Migrations
                     b.Property<DateTime>("LastUpdatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("PackageNumber")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<byte[]>("QrCodeImage")
-                        .HasColumnType("varbinary(max)");
-
                     b.Property<string>("UpdatedById")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -1224,9 +1177,7 @@ namespace HospitalManagement.Migrations
 
                     b.HasIndex("CreatedById");
 
-                    b.HasIndex("DeliveryId")
-                        .IsUnique()
-                        .HasFilter("[DeliveryId] IS NOT NULL");
+                    b.HasIndex("DeliveryId");
 
                     b.HasIndex("DeliveryPersonnelId");
 
@@ -2190,25 +2141,6 @@ namespace HospitalManagement.Migrations
                     b.Navigation("ModifiedBy");
                 });
 
-            modelBuilder.Entity("HospitalManagement.Models.DeliveryPackageItem", b =>
-                {
-                    b.HasOne("HospitalManagement.Models.DeliveryRequest", "DeliveryRequest")
-                        .WithMany("DeliveryPackageItems")
-                        .HasForeignKey("DeliveryRequestId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("HospitalManagement.Models.Medication", "Medication")
-                        .WithMany()
-                        .HasForeignKey("MedicationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("DeliveryRequest");
-
-                    b.Navigation("Medication");
-                });
-
             modelBuilder.Entity("HospitalManagement.Models.DeliveryRequest", b =>
                 {
                     b.HasOne("HospitalManagement.Models.MedicationPescription", "MedicationPescription")
@@ -2375,13 +2307,7 @@ namespace HospitalManagement.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("HospitalManagement.Models.Pharmacist", "ReceivedBy")
-                        .WithMany()
-                        .HasForeignKey("ReceivedById");
-
                     b.Navigation("Pharmacist");
-
-                    b.Navigation("ReceivedBy");
                 });
 
             modelBuilder.Entity("HospitalManagement.Models.MedicationOrderItem", b =>
@@ -2563,8 +2489,8 @@ namespace HospitalManagement.Migrations
                         .IsRequired();
 
                     b.HasOne("HospitalManagement.Models.Delivery", "Delivery")
-                        .WithOne("Package")
-                        .HasForeignKey("HospitalManagement.Models.Package", "DeliveryId");
+                        .WithMany("Packages")
+                        .HasForeignKey("DeliveryId");
 
                     b.HasOne("HospitalManagement.Models.DeliveryPersonnel", "DeliveryPersonnel")
                         .WithMany()
@@ -2854,13 +2780,7 @@ namespace HospitalManagement.Migrations
 
             modelBuilder.Entity("HospitalManagement.Models.Delivery", b =>
                 {
-                    b.Navigation("Package")
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("HospitalManagement.Models.DeliveryRequest", b =>
-                {
-                    b.Navigation("DeliveryPackageItems");
+                    b.Navigation("Packages");
                 });
 
             modelBuilder.Entity("HospitalManagement.Models.MedicalHistory", b =>

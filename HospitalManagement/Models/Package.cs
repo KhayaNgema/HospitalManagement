@@ -20,7 +20,11 @@ namespace HospitalManagement.Models
         [ForeignKey("DeliveryId")]
         public virtual Delivery Delivery { get; set; }
 
-        public DateTime CollectionDate { get; set; }
+        public DateTime? CollectionDate { get; set; }
+
+        public string PackageNumber { get; set; }
+
+        public byte[]? QrCodeImage { get; set; }
 
         public string CreatedById { get; set; }
 

@@ -405,18 +405,10 @@
                 $input.val(quantity);
             }
 
-            var price = parseFloat($row.find('.subtotal').data('price'));
-            if (isNaN(price)) price = 0;
-
-            var subtotal = quantity * price;
-            $row.find('.subtotal').text('R ' + subtotal.toFixed(2));
-
-            $.post('/CartItems/UpdateQuantity', {
+            $.post('/MedicationCartItems/UpdateQuantity', {
                 id: cartItemId,
-                quantity: quantity,
-                price: price
+                quantity: quantity
             }).done(function () {
-                updateTotalPrice();
             }).fail(function (xhr, status, error) {
                 console.error('Error updating quantity:', error);
             });
@@ -427,12 +419,11 @@
                 var $row = $(this).closest('tr');
                 var cartItemId = $(this).data('cartitemid');
 
-                $.post('/CartItems/Delete', { id: cartItemId })
+                $.post('/MedicationCartItems/Delete', { id: cartItemId })
                     .done(function () {
                         $row.remove();
                         var currentCount = parseInt($('#cartItemCount').text());
                         $('#cartItemCount').text(currentCount - 1);
-                        updateTotalPrice();
                         fetchCartItems();
                     }).fail(function (xhr, status, error) {
                         console.error('Error deleting cart item:', error);
@@ -446,23 +437,11 @@
 
             var quantityStr = $input.val().trim();
 
-            if (quantityStr === '') {
-                $modal.find('#subtotal').text('R 0.00');
-                return;
-            }
-
             var quantity = parseFloat(quantityStr);
             if (isNaN(quantity) || quantity < 1) {
                 quantity = 1;
                 $input.val(quantity);
             }
-
-            var price = parseFloat($input.data('price'));
-            if (isNaN(price)) price = 0;
-
-            var subtotal = quantity * price;
-
-            $modal.find('#subtotal').text('R ' + subtotal.toFixed(2));
         });
 
 

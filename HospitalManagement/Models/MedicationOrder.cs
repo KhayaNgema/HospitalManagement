@@ -34,6 +34,11 @@ namespace HospitalManagement.Models
         [ForeignKey("PharmacistId")]
         public virtual Pharmacist Pharmacist { get; set; }
 
+        [Display(Name = "Received By")]
+        public string? ReceivedById { get; set; }
+        [ForeignKey("ReceivedById")]
+        public virtual Pharmacist ReceivedBy { get; set; }
+
         public virtual ICollection<MedicationOrderItem> OrderItems { get; set; }
 
         public MedicationOrder()
