@@ -236,7 +236,7 @@ namespace HospitalManagement.Controllers
 
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> VerifyScannedPackage(string qrCodeNumber)
+        public async Task<IActionResult> VerifyScannedPackage(string qrCodeNumber, int packageId)
         {
             if (string.IsNullOrEmpty(qrCodeNumber))
                 return Json(new { success = false, message = "Invalid QR code." });
@@ -252,17 +252,21 @@ namespace HospitalManagement.Controllers
             if (package == null)
                 return Json(new { success = false, message = "Package not found." });
 
+            if (package.PackageId != packageId)
+                return Json(new { success = false, message = "The QR code you scanned is not supposed to be scanned using this scanner. Please check and use the corresponding scanner." });
+
             if (package.DeliveryRequest.PatientId != user.Id)
                 return Json(new { success = false, message = "You do not have permission to receive this package." });
 
             if (package.DeliveryRequest.PatientId == user.Id && package.DeliveryRequest.Status == DeliveryRequestStatus.Collected)
-                return Json(new { success = false, message = "This package was already collected. Please contact your pharmacist" });
+                return Json(new { success = false, message = "This package was already collected. Please contact your pharmacist." });
 
             var encryptedPackageId = _encryptionService.Encrypt(package.PackageId);
             var redirectUrl = Url.Action("ReceiveMedication", "Deliveries", new { packageId = encryptedPackageId });
 
             return Json(new { success = true, redirectUrl });
         }
+
 
 
         [HttpPost]

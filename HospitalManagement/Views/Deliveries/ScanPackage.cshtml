@@ -55,11 +55,12 @@
             messageDiv.text('').addClass('d-none').removeClass('alert-success alert-danger');
         }
 
-        function verifyPackage(scannedText) {
+function verifyPackage(scannedText) {
+    var packageId = $("#packageId").val();
     $.ajax({
         url: '@Url.Action("VerifyScannedPackage", "Deliveries")',
         type: 'POST',
-        data: { qrCodeNumber: scannedText },  
+        data: { qrCodeNumber: scannedText, packageId: packageId },
         headers: {
             'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
         },
@@ -78,6 +79,7 @@
         }
     });
 }
+
 
 
         scanner.start(
