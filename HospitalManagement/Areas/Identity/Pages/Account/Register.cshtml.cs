@@ -1,8 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-#nullable disable
-
-using HospitalManagement.Data;
+﻿using HospitalManagement.Data;
 using HospitalManagement.Interfaces;
 using HospitalManagement.Models;
 using HospitalManagement.Services;
@@ -28,7 +24,6 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
         private readonly IEmailSender _emailSender;
         private readonly FileUploadService _fileUploadService;
         private readonly HospitalManagementDbContext _context;
-        private readonly IFaceService _faceService;
 
         public RegisterModel(
             UserManager<UserBaseModel> userManager,
@@ -37,8 +32,7 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
             ILogger<RegisterModel> logger,
             IEmailSender emailSender,
             FileUploadService fileUploadService,
-            HospitalManagementDbContext context,
-            IFaceService faceService)
+            HospitalManagementDbContext context)
         {
             _userManager = userManager;
             _userStore = userStore;
@@ -48,38 +42,17 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
             _emailSender = emailSender;
             _fileUploadService = fileUploadService;
             _context = context;
-            _faceService = faceService;
         }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         [BindProperty]
         public InputModel Input { get; set; }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         public string ReturnUrl { get; set; }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         public IList<AuthenticationScheme> ExternalLogins { get; set; }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         public class InputModel
         {
-            /// <summary>
-            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-            ///     directly from your code. This API may change or be removed in future releases.
-            /// </summary>
             [Required]
             [EmailAddress]
             [Display(Name = "Email address")]
@@ -97,8 +70,6 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
             [DataType(DataType.Date)]
             [Display(Name = "Date of birth")]
             public DateTime DateOfBirth { get; set; }
-
-            public string FaceId { get; set; }
 
             [Required]
             [Display(Name = "Profile picture")]
@@ -127,7 +98,6 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
             [StringLength(100, ErrorMessage = "City name cannot exceed 100 characters.")]
             public string? City { get; set; }
 
-
             [Required(ErrorMessage = "Province is required.")]
             [Display(Name = "Province")]
             public Province Province { get; set; }
@@ -141,26 +111,17 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
             [StringLength(100, ErrorMessage = "Country name cannot exceed 100 characters.")]
             public string? Country { get; set; }
 
-            /// <summary>
-            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-            ///     directly from your code. This API may change or be removed in future releases.
-            /// </summary>
             [Required]
             [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
             [DataType(DataType.Password)]
             [Display(Name = "Password")]
             public string Password { get; set; }
 
-            /// <summary>
-            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-            ///     directly from your code. This API may change or be removed in future releases.
-            /// </summary>
             [DataType(DataType.Password)]
             [Display(Name = "Confirm password")]
             [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
             public string ConfirmPassword { get; set; }
         }
-
 
         public async Task OnGetAsync(string returnUrl = null)
         {
@@ -172,6 +133,7 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
         {
             returnUrl ??= Url.Content("~/");
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+
             if (ModelState.IsValid)
             {
                 var cart = new Cart
@@ -181,19 +143,7 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
                 };
 
                 _context.Add(cart);
-
                 await _context.SaveChangesAsync();
-
-                await _faceService.CreatePersonGroupIfNotExistsAsync();
-
-                string? faceId = null;
-                if (Input.ProfilePicture != null && Input.ProfilePicture.Length > 0)
-                {
-                    using var imageStream = Input.ProfilePicture.OpenReadStream();
-
-                    faceId = await _faceService.RegisterFaceAsync(Input.Email, imageStream);
-                }
-
 
                 var newPatient = new Patient
                 {
@@ -215,7 +165,6 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
                     IsFirstTimeLogin = false,
                     IsDeleted = false,
                     Id = cart.UserId,
-                    FaceId = faceId,
                     EmailConfirmed = true
                 };
 
