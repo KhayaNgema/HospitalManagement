@@ -51,6 +51,11 @@ namespace Cafeteria.Controllers
             _receiveMedicationOrder = receiveMedicationOrder;
         }
 
+        public IActionResult SuccessfullyOrdered()
+        {
+            return View();
+        }
+
         [Authorize(Roles = "Supplier Driver")]
         [HttpGet]
         public async Task<IActionResult> PendingMedicationDeliveries()
@@ -112,11 +117,9 @@ namespace Cafeteria.Controllers
         public async Task<IActionResult> MedicationOrders()
         {
             var orders = await _context.MedicationOrders
-                .Where(o => o.Status == OrderStatus.Pending ||
-                 o.Status == OrderStatus.Packaged ||
-                 o.Status == OrderStatus.OnTheWay)
                 .Include(o => o.OrderItems)
                 .Include(o => o.Pharmacist)
+                .OrderByDescending(o => o.OrderDate)
                 .ToListAsync();
 
             return View(orders);
@@ -483,12 +486,7 @@ namespace Cafeteria.Controllers
 
                 await _context.SaveChangesAsync();
 
-                return RedirectToAction("OrderSuccess", new
-                {
-                    orderNumber = order.OrderNumber,
-                    orderStatus = order.Status.ToString(),
-                    orderId = order.OrderId,
-                });
+                return RedirectToAction(nameof(SuccessfullyOrdered));
             }
             catch (Exception ex)
             {

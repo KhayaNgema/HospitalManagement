@@ -192,6 +192,7 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
                     IsActive = true,
                     IsSuspended = false,
                     IsFirstTimeLogin = true,
+                    EmailConfirmed = true,
                     AccessFailedCount = 0,
                     AlternatePhoneNumber = Input.AlternatePhoneNumber,
                     Address = string.Join(", ", new[] {

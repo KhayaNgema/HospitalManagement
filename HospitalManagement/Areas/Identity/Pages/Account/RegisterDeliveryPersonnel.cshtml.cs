@@ -185,7 +185,8 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
                     IsDeleted = false,
                     IsAvailable = true,
                     DriverLicenseNumber = Input.DriverLicenseNumber,
-                    LicenseExpiryDate = Input.LicenseExpiryDate
+                    LicenseExpiryDate = Input.LicenseExpiryDate,
+                    EmailConfirmed = true
                 };
 
                 if (Input.ProfilePicture != null && Input.ProfilePicture.Length > 0)

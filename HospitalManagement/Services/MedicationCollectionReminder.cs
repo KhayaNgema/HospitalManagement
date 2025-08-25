@@ -59,7 +59,7 @@ namespace HospitalManagement.Services
                 if (reminderExists)
                     continue;
 
-                string link = "https://localhost:7175/Medications/CollectMedication";
+                string link = "https://20.164.17.133:2005/Medications/Reminders";
                 string message = $"Dear {patient.FirstName} {patient.LastName}, your medication will be ready for collection in 3 days on {prescription.NextCollectionDate:dd MMM yyyy}. " +
                                  $"Please ensure timely pickup.\nYou can indicate whether you'll collect it in person or prefer to have it delivered by visiting: {link}";
 

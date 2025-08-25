@@ -442,7 +442,7 @@ namespace HospitalManagement.Controllers
                 LastUpdatedAt = DateTime.UtcNow,
                 CreatedById = user.Id,
                 CreatedAt = DateTime.UtcNow,
-                DeliveryPersonnelId = "22305c20-9172-40a4-b042-eb344a1dcee0",
+                DeliveryPersonnelId = availableDriver.Id,
                 UpdatedById = user.Id
             };
 

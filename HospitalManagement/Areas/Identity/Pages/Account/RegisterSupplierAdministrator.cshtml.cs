@@ -186,6 +186,7 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
                                                        }.Where(x => !string.IsNullOrWhiteSpace(x))),
                     Gender = Input.Gender,
                     IdNumber = Input.IdNumber,
+                    EmailConfirmed = true,
                     IsDeleted = false,
                     SupplierId = decryptedSupplierId
                 };

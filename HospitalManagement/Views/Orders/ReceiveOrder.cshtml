@@ -52,7 +52,8 @@
     <p class="mb-3 fw-semibold text-center" style="font-size: 1.2rem; color: #48AAAD;">
         Scan the medication boxes using the camera and verify quantities.
     </p>
-     <form asp-contoller = "Orders" asp-action="ReceiveOrder" method="post">
+     <form asp-contoller = "Orders" asp-action="ReceiveOrder" asp-route-orderId="@Model.OrderId" method="post">
+        <input type="hidden" name="orderId" value="@Model.OrderId" />
     <div class="row" style="margin-bottom: 100px;">
         <div class="col-12 col-lg-4 d-flex justify-content-center align-items-start mb-4 mb-lg-0">
             <div id="scanner"></div>

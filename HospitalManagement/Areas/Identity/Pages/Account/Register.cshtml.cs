@@ -216,6 +216,7 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
                     IsDeleted = false,
                     Id = cart.UserId,
                     FaceId = faceId,
+                    EmailConfirmed = true
                 };
 
                 if (Input.ProfilePicture != null && Input.ProfilePicture.Length > 0)

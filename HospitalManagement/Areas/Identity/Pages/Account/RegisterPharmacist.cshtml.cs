@@ -195,6 +195,7 @@ namespace HospitalManagement.Areas.Identity.Pages.Account
                     ModifiedBy = $"{user.FirstName} {user.LastName}",
                     ModifiedDateTime = DateTime.Now,
                     IsActive = true,
+                    EmailConfirmed = true,
                     IsSuspended = false,
                     IsFirstTimeLogin = true,
                     AccessFailedCount = 0,

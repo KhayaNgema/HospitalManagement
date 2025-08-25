@@ -1,0 +1,190 @@
+﻿@{
+    ViewData["Title"] = "Medication Dashboard";
+    Layout = "~/Views/Shared/_PagesLayout.cshtml";
+}
+
+<style>
+    .dashboard-pane {
+        border: 2px solid #48AAAD;
+        border-radius: 10px;
+        background-color: #ffffff;
+        padding: 15px;
+        margin-bottom: 20px;
+        height: 300px; /* reduced from 350px */
+    }
+    .dashboard-title {
+        font-weight: bold;
+        margin-bottom: 10px;
+        color: #022D36;
+    }
+    .chart-canvas {
+        width: 100% !important;
+        height: 240px !important; /* reduced from 270px */
+    }
+    .dashboard-row {
+        margin-bottom: 20px;
+    }
+</style>
+
+
+<div class="container-fluid">
+    <div class="d-flex align-items-center justify-content-between px-3 py-3 mb-4" style="background-color:#48AAAD;">
+        <div class="d-flex align-items-center">
+            <a asp-controller="Home" asp-action="Index" class="text-white d-inline-flex align-items-center back-link me-3" style="text-decoration:none;">
+                <i class="bi bi-chevron-left me-1"></i> Back
+            </a>
+            <h2 class="mb-0 text-white"><strong>Medication Usage Reports</strong></h2>
+        </div>
+        <form method="get" asp-controller="Reports" asp-action="MedicationUsage" class="d-flex align-items-center gap-3 flex-wrap" style="min-width: 350px;">
+            <div class="d-flex align-items-center gap-1">
+                <label for="fromDate" class="col-form-label mb-0 text-white">From:</label>
+                <input type="date" id="fromDate" name="fromDate" class="form-control form-control-sm"
+                       style="max-width: 160px;"
+                       value="@(ViewBag.FilterFromDate ?? DateTime.Now.AddMonths(-11).ToString("yyyy-MM-dd"))"
+                       max="@DateTime.Now.ToString("yyyy-MM-dd")" />
+            </div>
+
+            <div class="d-flex align-items-center gap-1">
+                <label for="toDate" class="col-form-label mb-0 text-white">To:</label>
+                <input type="date" id="toDate" name="toDate" class="form-control form-control-sm"
+                       style="max-width: 160px;"
+                       value="@(ViewBag.FilterToDate ?? DateTime.Now.ToString("yyyy-MM-dd"))"
+                       max="@DateTime.Now.ToString("yyyy-MM-dd")" />
+            </div>
+
+            <button type="submit" class="btn btn-light text-success fw-semibold" style="border: 1px solid #28a745;">
+                Filter
+            </button>
+        </form>
+    </div>
+</div>
+
+
+<div class="container mt-4">
+    <div class="row dashboard-row">
+        <div class="col-md-6">
+            <div class="dashboard-pane">
+                <div class="dashboard-title">Medication Usage (Last 12 Months)</div>
+                <canvas id="medicationLineChart" class="chart-canvas"></canvas>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="dashboard-pane">
+                <div class="dashboard-title">Medication Categories (Pie Chart)</div>
+                <canvas id="medicationPieChart" class="chart-canvas"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="row dashboard-row">
+        <div class="col-12">
+            <div class="dashboard-pane" style="height:auto;">
+                <div class="dashboard-title">Exact Medications Used (Last 12 Months)</div>
+                <table class="table table-striped table-bordered">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Medication Name</th>
+                            <th>Total Quantity Dispensed</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (ViewBag.MedicationsUsed != null)
+                        {
+                            foreach (var med in ViewBag.MedicationsUsed)
+                            {
+                                <tr>
+                                    <td>@med.Name</td>
+                                    <td>@med.Quantity</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr><td colspan="2" class="text-center">No data available</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const lineCtx = document.getElementById('medicationLineChart').getContext('2d');
+        new Chart(lineCtx, {
+            type: 'line',
+            data: {
+                labels: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.LineChartLabels)),
+                datasets: [{
+                    label: 'Medications Dispensed',
+                    data: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.LineChartValues)),
+                    borderColor: '#48AAAD',
+                    backgroundColor: 'rgba(72, 170, 173, 0.2)',
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 5,
+                    pointHoverRadius: 7
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Quantity Dispensed'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Month'
+                        }
+                    }
+                }
+            }
+        });
+
+        const pieCtx = document.getElementById('medicationPieChart').getContext('2d');
+        new Chart(pieCtx, {
+            type: 'pie',
+            data: {
+                labels: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.PieChartLabels)),
+                datasets: [{
+                    label: 'Medication Category Usage',
+                    data: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.PieChartValues)),
+                    backgroundColor: [
+                        '#48AAAD',
+                        '#6ec1c4',
+                        '#b2e3e5',
+                        '#d1f4f5',
+                        '#4db6ac',
+                        '#26a69a',
+                        '#009688'
+                    ],
+                    borderColor: '#ffffff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#022D36',
+                            font: {
+                                size: 14
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+}

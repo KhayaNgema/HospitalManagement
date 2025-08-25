@@ -4291,6 +4291,33 @@ tbody td {
         margin-right: 1rem;
     }
 }
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(72, 170, 173, 0.7);
+    }
+
+    70% {
+        box-shadow: 0 0 0 20px rgba(72, 170, 173, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(72, 170, 173, 0);
+    }
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7);
+    }
+
+    70% {
+        box-shadow: 0 0 0 20px rgba(0, 123, 255, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
+    }
+}
 
 @keyframes moveTruck {
     0% {

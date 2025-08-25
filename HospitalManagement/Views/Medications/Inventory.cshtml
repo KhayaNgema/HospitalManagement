@@ -73,34 +73,53 @@ else
                           <td>@Html.DisplayFor(modelItem => item.Medication.Strength)</td>
                           <td>@Html.DisplayFor(modelItem => item.Medication.UnitOfMeasure)</td>
                         <td>@Html.DisplayFor(modelItem => item.Quantity)</td>
-                        <td>@Html.DisplayFor(modelItem => item.Availability)</td>
-<td>
-    @if (item.StockLevel == StockLevel.High)
-    {
-        <span class="badge text-bg-success">
-            <i class="fas fa-arrow-up me-1"></i> @item.StockLevel
-        </span>
-    }
-    else if (item.StockLevel == StockLevel.Moderate)
-    {
-        <span class="badge text-bg-primary">
-            <i class="fas fa-check-circle me-1"></i> @item.StockLevel
-        </span>
-    }
-    else if (item.StockLevel == StockLevel.Low)
-    {
-        <span class="badge text-bg-warning text-dark">
-            <i class="fas fa-exclamation-triangle me-1"></i> @item.StockLevel
-        </span>
-    }
-    else if (item.StockLevel == StockLevel.Critical)
-    {
-        <span class="badge text-bg-danger">
-            <i class="fas fa-times-circle me-1"></i> @item.StockLevel
-        </span>
-    }
-</td>
-  <td>
+                           <td>
+                                @(item.Quantity > 0 ? "Available" : "Out of Stock")
+                           </td>
+                            <td>
+                            @{
+                                string badgeClass;
+                                string icon;
+                                string label;
+
+                                if (item.Quantity <= 5)
+                                {
+                                    badgeClass = "text-bg-danger";
+                                    icon = "fas fa-times-circle";
+                                    label = "Critical";
+                                }
+                                else if (item.Quantity <= 10)
+                                {
+                                    badgeClass = "text-bg-warning text-dark";
+                                    icon = "fas fa-exclamation-triangle";
+                                    label = "Low";
+                                }
+                                else if (item.Quantity <= 15)
+                                {
+                                    badgeClass = "text-bg-primary";
+                                    icon = "fas fa-check-circle";
+                                    label = "Medium";
+                                }
+                                else if (item.Quantity <= 20)
+                                {
+                                    badgeClass = "text-bg-success";
+                                    icon = "fas fa-arrow-up";
+                                    label = "High";
+                                }
+                                else
+                                {
+                                    badgeClass = "text-bg-secondary";
+                                    icon = "fas fa-minus-circle";
+                                    label = "Very High";
+                                }
+                            }
+
+                            <span class="badge @badgeClass">
+                                <i class="@icon me-1"></i> @label
+                            </span>
+
+                    </td>
+                     <td>
                 <a asp-controller="Reports" asp-action="DemandDashboard" asp-route-medicationId="@item.Medication.MedicationId" 
                    class="btn btn-outline-primary btn-sm">
                     View Demand

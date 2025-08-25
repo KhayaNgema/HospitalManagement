@@ -51,7 +51,7 @@ namespace HospitalManagement.Services
 
             string encodedPackageId = WebUtility.UrlEncode(encryptedPackageId);
 
-            string receiveMedicationLink = $"{baseUrl}/Deliveries/ReceiveMedication?packageId={encodedPackageId}";
+            string receiveMedicationLink = $"{baseUrl}/Deliveries/ScanPackage?packageId={encodedPackageId}";
 
             string smsMessage = $"Dear {patient.FirstName}, your medication is now on the way. " +
                                 $"Please track or receive the medication here: {receiveMedicationLink}";
