@@ -45,6 +45,8 @@
                     var barcodePath = item.MedicationStock?.Medication?.BarcodeImage?.Replace("\\", "/") ?? "";
                     var barcodeUrl = !string.IsNullOrEmpty(barcodePath) ? Url.Content("~/" + barcodePath) : "";
 
+                    bool isPackaged = item.IsPackaged; // Ensure your model has this property
+
                     <div class="col-12">
                       <div class="card shadow-sm p-3 order-card">
                         <div class="d-flex align-items-center justify-content-between w-100" style="height:100%;">
@@ -66,18 +68,18 @@
                             <div>
                                 <button 
                                     type="button" 
-                                    class="btn btn-outline-primary btn-sm" 
+                                    class="btn @(isPackaged ? "btn-success" : "btn-outline-primary") btn-sm" 
                                     data-bs-toggle="modal" 
                                     data-bs-target="#packageModal-@item.OrderItemId"
                                     style="white-space: nowrap;"
+                                    @(isPackaged ? "disabled" : "")
                                 >
-                                    Package
+                                    @(isPackaged ? "Packaged ✔" : "Package")
                                 </button>
                             </div>
                         </div>
                       </div>
                     </div>
-
                     <!-- Modal for this item -->
                     <div class="modal fade" id="packageModal-@item.OrderItemId" tabindex="-1" aria-labelledby="packageModalLabel-@item.OrderItemId" aria-hidden="true">
                       <div class="modal-dialog modal-dialog-centered">
@@ -108,7 +110,7 @@
                             </div>
                           </div>
                           <div class="modal-footer justify-content-center">
-                            <button type="button" class="btn btn-success px-4 package-confirm-btn" data-order-item-id="@item.OrderItemId">Confirm Package</button>
+                            <button type="button" class="btn btn-success px-4 package-confirm-btn" data-order-item-id="@item.OrderItemId" @(isPackaged ? "disabled" : "")>Confirm Package</button>
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                           </div>
                         </div>
@@ -127,7 +129,6 @@
             </div>
     </div>
 </form>
-
 @section Scripts {
 <script>
    $(document).ready(function () {
@@ -149,7 +150,6 @@
                     .addClass('btn-success')
                     .prop('disabled', true);
                 button.closest('.modal').modal('hide');
-
                 $('button[data-bs-target="#packageModal-' + currentOrderItemId + '"]')
                     .removeClass('btn-outline-primary')
                     .addClass('btn-success')
