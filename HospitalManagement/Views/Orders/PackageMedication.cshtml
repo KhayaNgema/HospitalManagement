@@ -78,7 +78,7 @@
                 data-quantity="@item.Quantity"
                 data-batch-number="@item.MedicationStock?.BatchNumber"
                 data-qrcode="@(item.MedicationStock?.QrCodeImage != null ? $"data:image/png;base64,{Convert.ToBase64String(item.MedicationStock.QrCodeImage)}" : "")"
-                data-barcode="@item.MedicationStock?.Medication?.BarcodeImage"
+                data-barcode="~/@item.MedicationStock?.Medication?.BarcodeImage"
                 data-order-number="@Model.OrderNumber"
                 aria-pressed="false"
                 style="white-space: nowrap;"

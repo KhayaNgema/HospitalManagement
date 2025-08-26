@@ -4,6 +4,7 @@ using HospitalManagement.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
+using System.Text;
 
 namespace HospitalManagement.Services
 {
@@ -31,10 +32,17 @@ namespace HospitalManagement.Services
             _smsService = smsService;
         }
 
+        private string Base64UrlEncode(string input)
+        {
+            var bytes = Encoding.UTF8.GetBytes(input);
+            var base64 = Convert.ToBase64String(bytes);
+            // Convert to Base64 URL safe string
+            return base64.Replace("+", "-").Replace("/", "_").Replace("=", "");
+        }
+
         public async Task NotifyPharmacistOrderOnTheWayAsync(string encryptedOrderId)
         {
             int orderId = int.Parse(_encryptionService.Decrypt(encryptedOrderId));
-
             var order = await _context.MedicationOrders
                 .Include(o => o.Pharmacist)
                 .FirstOrDefaultAsync(o => o.OrderId == orderId);
@@ -47,9 +55,8 @@ namespace HospitalManagement.Services
             var email = pharmacist.Email;
 
             string baseUrl = "https://hospitalmanagement2025group30-e4hfgeekephkc0fr.southafricanorth-01.azurewebsites.net";
-
-            string encodedOrderId = WebUtility.UrlEncode(encryptedOrderId);
-
+            // Encode the encrypted order ID to be URL safe
+            string encodedOrderId = Base64UrlEncode(encryptedOrderId);
             string receiveOrderLink = $"{baseUrl}/Orders/ReceiveOrder?orderId={encodedOrderId}";
 
             string smsMessage = $"Dear Pharmacist {pharmacist.FirstName}, your order {order.OrderNumber} is now On The Way. " +
