@@ -42,11 +42,9 @@
                 @foreach (var item in Model.OrderItems)
                 {
                     var qrCodeBase64 = item.MedicationStock?.QrCodeImage != null ? Convert.ToBase64String(item.MedicationStock.QrCodeImage) : "";
-
-                    // Normalize path (use forward slashes)
                     var barcodePath = item.MedicationStock?.Medication?.BarcodeImage?.Replace("\\", "/") ?? "";
-                    // Resolve to app relative path for client using Url.Content
                     var barcodeUrl = !string.IsNullOrEmpty(barcodePath) ? Url.Content("~/" + barcodePath) : "";
+
                     <div class="col-12">
                       <div class="card shadow-sm p-3 order-card">
                         <div class="d-flex align-items-center justify-content-between w-100" style="height:100%;">
@@ -68,17 +66,9 @@
                             <div>
                                 <button 
                                     type="button" 
-                                    class="btn btn-outline-primary btn-sm package-item-btn" 
+                                    class="btn btn-outline-primary btn-sm" 
                                     data-bs-toggle="modal" 
-                                    data-bs-target="#packageModal"
-                                    data-order-item-id="@item.OrderItemId"
-                                    data-medication-name="@item.MedicationStock?.Medication?.MedicationName"
-                                    data-quantity="@item.Quantity"
-                                    data-batch-number="@item.MedicationStock?.BatchNumber"
-                                    data-qrcode="@(qrCodeBase64 != "" ? $"data:image/png;base64,{qrCodeBase64}" : "")"
-                                    data-barcode="@barcodeUrl"
-                                    data-order-number="@Model.OrderNumber"
-                                    aria-pressed="false"
+                                    data-bs-target="#packageModal-@item.OrderItemId"
                                     style="white-space: nowrap;"
                                 >
                                     Package
@@ -87,83 +77,65 @@
                         </div>
                       </div>
                     </div>
+
+                    <!-- Modal for this item -->
+                    <div class="modal fade" id="packageModal-@item.OrderItemId" tabindex="-1" aria-labelledby="packageModalLabel-@item.OrderItemId" aria-hidden="true">
+                      <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content rounded-4">
+                          <div class="modal-header" style="background-color:#48AAAD;">
+                            <h5 class="modal-title text-white" id="packageModalLabel-@item.OrderItemId">Confirm Package</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                          </div>
+                          <div class="modal-body text-center d-flex flex-column align-items-center gap-3">
+                            <div>
+                              <h4 style="font-weight:bold" class="mb-1">@item.MedicationStock?.Medication?.MedicationName</h4>
+                              <p style="font-weight:bold" class="mb-1">Batch Number: @item.MedicationStock?.BatchNumber</p>
+                            </div>
+                            <div>
+                              @if (!string.IsNullOrEmpty(qrCodeBase64))
+                              {
+                                  <img src="data:image/png;base64,@qrCodeBase64" alt="QR Code" style="max-width: 150px; max-height: 150px; display: block; margin: 0 auto;" />
+                              }
+                            </div>
+                            <div>
+                              @if (!string.IsNullOrEmpty(barcodeUrl))
+                              {
+                                  <img src="@barcodeUrl" alt="Barcode" style="max-width: 200px; max-height: 70px; display: block; margin: 0 auto;" />
+                              }
+                            </div>
+                            <div class="mt-3">
+                              <p style="font-weight:bold; font-size:18px">@Model.OrderNumber</p>
+                            </div>
+                          </div>
+                          <div class="modal-footer justify-content-center">
+                            <button type="button" class="btn btn-success px-4 package-confirm-btn" data-order-item-id="@item.OrderItemId">Confirm Package</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                 }
             }
         </div>
         </div>
        
-<div class="bill-summary-box bg-white shadow rounded p-3" 
-     style="max-width: 400px; margin-left: auto; margin-right: auto; margin-top: 60px;">
-            <button type="submit" style="background-color:#48AAAD; color:white; width: 100%;" class="btn">
-                <i class="fas fa-boxes fa-lg"></i> Complete Packaging
-            </button>
-        </div>
+        <div class="bill-summary-box bg-white shadow rounded p-3" 
+             style="max-width: 400px; margin-left: auto; margin-right: auto; margin-top: 60px;">
+                <button type="submit" style="background-color:#48AAAD; color:white; width: 100%;" class="btn">
+                    <i class="fas fa-boxes fa-lg"></i> Complete Packaging
+                </button>
+            </div>
     </div>
 </form>
-<div class="modal fade" id="packageModal" tabindex="-1" aria-labelledby="packageModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content rounded-4">
-      <div class="modal-header" style="background-color:#48AAAD;">
-        <h5 class="modal-title text-white" id="packageModalLabel">Confirm Package</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body text-center d-flex flex-column align-items-center gap-3">
-        <div>
-          <h4 style="font-weight:bold" id="modalMedicationName" class="mb-1"></h4>
-          <p  style="font-weight:bold" id="modalBatchNumber" class="mb-1"></p>
-        </div>
-        <div>
-          <img id="modalQrCodeImage" src="" alt="QR Code" style="max-width: 150px; max-height: 150px; display: block; margin: 0 auto;" />
-        </div>
-        <div>
-          <img id="modalBarcodeImage" src="" alt="Barcode" style="max-width: 200px; max-height: 70px; display: block; margin: 0 auto;" />
-        </div>
-        <div class="mt-3">
-          <p style="font-weight:bold; font-size:18px"><span id="modalOrderNumber"></span></p>
-        </div>
-      </div>
-      <div class="modal-footer justify-content-center">
-        <button type="button" id="confirmPackageBtn" class="btn btn-success px-4">Confirm Package</button>
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-      </div>
-    </div>
-  </div>
-</div>
+
 @section Scripts {
 <script>
    $(document).ready(function () {
-    var packageModalElement = document.getElementById('packageModal');
-    var packageModal = new bootstrap.Modal(packageModalElement);
-    var currentOrderItemId = null;
-    var confirmBtn = $('#confirmPackageBtn');
-    var triggeredButton = null;
-    $('.package-item-btn').click(function () {
-        $('.modal-backdrop').remove();
-        $('body').removeClass('modal-open');
-        triggeredButton = $(this);
-        currentOrderItemId = triggeredButton.data('order-item-id');
-        $('#modalMedicationName').text(triggeredButton.data('medication-name'));
-        $('#modalBatchNumber').text("Batch Number: " + triggeredButton.data('batch-number'));
-        var qrCodeSrc = triggeredButton.data('qrcode');
-        if (qrCodeSrc) {
-            $('#modalQrCodeImage').attr('src', qrCodeSrc).show();
-        } else {
-            $('#modalQrCodeImage').hide();
-        }
-        var barcodeSrc = triggeredButton.data('barcode');
-        if (barcodeSrc) {
-            $('#modalBarcodeImage').attr('src', barcodeSrc).show();
-        } else {
-            $('#modalBarcodeImage').hide();
-        }
-        $('#modalOrderNumber').text(triggeredButton.data('order-number'));
-        packageModal.dispose();
-        packageModal = new bootstrap.Modal(packageModalElement);
-        packageModal.show();
-    });
+    var confirmBtn = $('.package-confirm-btn');
     confirmBtn.click(function () {
-        if (!currentOrderItemId) return;
-        confirmBtn.prop('disabled', true).text('Packaging...');
+        var button = $(this);
+        var currentOrderItemId = button.data('order-item-id');
+        button.prop('disabled', true).text('Packaging...');
         $.ajax({
             url: '@Url.Action("PackageOrderItem", "Orders")',
             type: 'POST',
@@ -172,75 +144,25 @@
                 'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
             },
             success: function () {
-                triggeredButton
+                button
+                    .text('Packaged ✔')
+                    .addClass('btn-success')
+                    .prop('disabled', true);
+                button.closest('.modal').modal('hide');
+
+                $('button[data-bs-target="#packageModal-' + currentOrderItemId + '"]')
                     .removeClass('btn-outline-primary')
                     .addClass('btn-success')
                     .attr('aria-pressed', 'true')
                     .prop('disabled', true)
                     .text('Packaged ✔');
-                confirmBtn.prop('disabled', false).text('Confirm Package');
-                
-                packageModal.hide();
             },
             error: function () {
                 alert('Failed to package this item. Please try again.');
-                confirmBtn.prop('disabled', false).text('Confirm Package');
+                button.prop('disabled', false).text('Confirm Package');
             }
         });
     });
-    packageModalElement.addEventListener('hidden.bs.modal', function () {
-        $('.modal-backdrop').remove();
-        $('body').removeClass('modal-open');
-    });
-    function markPackagedButtons(packagedIds) {
-        packagedIds.forEach(function (id) {
-            var btn = $('button.package-item-btn[data-order-item-id="' + id + '"]');
-            if (btn.length) {
-                btn
-                    .removeClass('btn-outline-primary')
-                    .addClass('btn-success')
-                    .attr('aria-pressed', 'true')
-                    .prop('disabled', true)
-                    .text('Packaged ✔');
-            }
-        });
-    }
-    function loadPackagedItems() {
-        var orderId = '@Model.OrderId';
-        $.ajax({
-            url: '@Url.Action("GetPackagedOrderItems", "Orders")',
-            type: 'GET',
-            data: { orderId: orderId },
-            success: function (response) {
-                if (Array.isArray(response)) {
-                    markPackagedButtons(response);
-                }
-            },
-            error: function () {
-                console.error('Failed to load packaged items.');
-            }
-        });
-    }
-    loadPackagedItems();
-    function adjustBillSummaryPosition() {
-        var billBox = document.querySelector('.bill-summary-box');
-        var footer = document.querySelector('footer');
-        if (!billBox || !footer) return;
-        var footerRect = footer.getBoundingClientRect();
-        var windowHeight = window.innerHeight;
-        if (footerRect.top < windowHeight) {
-            var overlap = windowHeight - footerRect.top;
-            billBox.style.bottom = (overlap + 20) + 'px';
-        } else {
-            billBox.style.bottom = '20px';
-        }
-    }
-    window.addEventListener('scroll', adjustBillSummaryPosition);
-    window.addEventListener('resize', adjustBillSummaryPosition);
-    window.addEventListener('load', adjustBillSummaryPosition);
-    setTimeout(function () {
-        $("#tempDataMessage").fadeOut();
-    }, 7000);
-});
+ });
 </script>
 }

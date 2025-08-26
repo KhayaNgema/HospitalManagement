@@ -120,7 +120,7 @@ namespace HospitalManagement.Controllers
                     .FirstOrDefaultAsync();
 
                 ViewBag.SupplierName = supplier.SupplierName;
-                ViewBag.SupplierBage = supplier.SupplierBadge;
+                ViewBag.SupplierBadge = supplier.SupplierBadge;
 
                 return View("SupplierAdministratorDashboard");
             }
