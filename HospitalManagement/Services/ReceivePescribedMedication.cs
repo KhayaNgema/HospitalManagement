@@ -47,7 +47,7 @@ namespace HospitalManagement.Services
             var phone = patient.PhoneNumber;
             var email = patient.Email;
 
-            string baseUrl = "https://hospitalmanagement2025group30-e4hfgeekephkc0fr.southafricanorth-01.azurewebsites.net";
+            string baseUrl = "https://4.222.233.134:2005";
 
             string encodedPackageId = WebUtility.UrlEncode(encryptedPackageId);
 

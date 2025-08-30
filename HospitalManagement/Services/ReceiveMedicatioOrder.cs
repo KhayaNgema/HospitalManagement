@@ -46,7 +46,7 @@ namespace HospitalManagement.Services
             var phone = pharmacist.PhoneNumber;
             var email = pharmacist.Email;
 
-            string baseUrl = "https://hospitalmanagement2025group30-e4hfgeekephkc0fr.southafricanorth-01.azurewebsites.net";
+            string baseUrl = "https://4.222.233.134:2005";
 
             string encodedOrderId = WebUtility.UrlEncode(encryptedOrderId);
 

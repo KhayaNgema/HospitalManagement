@@ -54,14 +54,28 @@ namespace HospitalManagement.Services
                     .AnyAsync(r =>
                         r.MedicationPescriptionId == prescription.MedicationPescriptionId &&
                         r.Status == ReminderStatus.Sent &&
-                        r.ExpiryDate.Date == (prescription.NextCollectionDate ?? DateTime.Now).Date);
+                        r.ExpiryDate.Date == (prescription.NextCollectionDate ?? DateTime.Now.Date).Date);
 
                 if (reminderExists)
                     continue;
 
-                string link = "https://hospitalmanagement2025group30-e4hfgeekephkc0fr.southafricanorth-01.azurewebsites.net/Medications/Reminders";
-                string message = $"Dear {patient.FirstName} {patient.LastName}, your medication will be ready for collection in 3 days on {prescription.NextCollectionDate:dd MMM yyyy}. " +
+                string link = "https://4.222.233.134:2005/Medications/Reminders";
+                string message = $"Dear {patient.FirstName} {patient.LastName}, your medication will be ready for collection in  days on {prescription.NextCollectionDate:dd MMM yyyy}. " +
                                  $"Please ensure timely pickup.\nYou can indicate whether you'll collect it in person or prefer to have it delivered by visiting: {link}";
+
+
+                var reminder = new MedicationReminder
+                {
+                    MedicationPescriptionId = prescription.MedicationPescriptionId,
+                    SentDate = DateTime.Now,
+                    ExpiryDate = prescription.NextCollectionDate ?? DateTime.Now.AddDays(3),
+                    Status = ReminderStatus.Sent,
+                    ReminderMessage = message
+                };
+
+                _context.MedicationReminders.Add(reminder);
+                await _context.SaveChangesAsync();
+
 
                 if (!string.IsNullOrEmpty(patient.PhoneNumber))
                 {
@@ -91,20 +105,8 @@ namespace HospitalManagement.Services
                         Console.WriteLine($"Failed to send email to {patient.Email}: {emailEx.Message}");
                     }
                 }
-
-                var reminder = new MedicationReminder
-                {
-                    MedicationPescriptionId = prescription.MedicationPescriptionId,
-                    SentDate = DateTime.Now,
-                    ExpiryDate = prescription.NextCollectionDate ?? DateTime.Now.AddDays(3),
-                    Status = ReminderStatus.Sent,
-                    ReminderMessage = message
-                };
-
-                _context.MedicationReminders.Add(reminder);
             }
 
-            await _context.SaveChangesAsync();
         }
     }
 }

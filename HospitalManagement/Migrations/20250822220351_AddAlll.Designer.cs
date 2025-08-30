@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HospitalManagement.Migrations
 {
     [DbContext(typeof(HospitalManagementDbContext))]
-    [Migration("20250824212239_UpdateAllNow")]
-    partial class UpdateAllNow
+    [Migration("20250822220351_AddAlll")]
+    partial class AddAlll
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

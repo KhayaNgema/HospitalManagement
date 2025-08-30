@@ -7,7 +7,7 @@ namespace HospitalManagement.Services
 {
     public class FileUploadService
     {
-        private readonly string _uploadsDirectory = Path.Combine(Directory.GetCurrentDirectory(), "UploadedFiles");
+        private readonly string _uploadsDirectory = @"C:\inetpub\UploadedFiles";
 
         public FileUploadService()
         {

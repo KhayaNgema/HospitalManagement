@@ -77,6 +77,8 @@ else
                         {
                             var med = item.Medication;
                             var isPackaged = item.IsPackaged;
+                            var barcodePath = item.Medication?.BarcodeImage?.Replace("\\", "/") ?? "";
+                            var barcodeUrl = !string.IsNullOrEmpty(barcodePath) ? Url.Content("~/" + barcodePath) : "";
 
                             <div class="col-12">
                                 <div class="card shadow-sm p-3 order-card">
@@ -97,7 +99,7 @@ else
                                                 data-bs-target="#packageModal"
                                                 data-package-item-id="@item.DeliveryPackageItemId"
                                                 data-medication-name="@med.MedicationName"
-                                                data-barcode="@med.BarcodeImage"
+                                                data-barcode="/~@med.BarcodeImage"
                                                 aria-pressed="false"
                                                 style="white-space: nowrap;">
                                                 @(isPackaged ? "Packaged ✔" : "Package")
@@ -130,7 +132,7 @@ else
                     <h4 style="font-weight:bold" id="modalMedicationName" class="mb-1"></h4>
 
                     <div>
-                        <img id="modalBarcodeImage" src="" alt="Barcode" style="max-width: 200px; max-height: 70px; margin:0 auto; display: block;" />
+                        <img src="barcodeUrl" alt="Barcode" style="max-width: 200px; max-height: 70px; margin:0 auto; display: block;" />
                     </div>
                 </div>
                 <div class="modal-footer justify-content-center">

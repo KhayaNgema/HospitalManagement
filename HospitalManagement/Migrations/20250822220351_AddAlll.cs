@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace HospitalManagement.Migrations
 {
     /// <inheritdoc />
-    public partial class UpdateAllNow : Migration
+    public partial class AddAlll : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

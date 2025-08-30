@@ -374,12 +374,42 @@ namespace HospitalManagement.Controllers
         [HttpPost]
         public async Task<IActionResult> PackageMedicationItem(int packageItemId)
         {
-            var item = await _context.DeliveryPackageItems.FindAsync(packageItemId);
+            var user = await _userManager.GetUserAsync(User);
+
+            var item = await _context.DeliveryPackageItems
+                .Include(i => i.DeliveryRequest)
+                .ThenInclude(i => i.MedicationPescription)
+                .Include(i => i.Medication)
+                .Where(i => i.DeliveryPackageItemId == packageItemId)
+                .FirstOrDefaultAsync();
+
             if (item == null)
                 return NotFound();
 
+            var itemInventory = await _context.MedicationInventory
+                .Where(i => i.MedicationId == item.MedicationId)
+                .FirstOrDefaultAsync();
+
+            var medicationPrescription = item.DeliveryRequest.MedicationPescription;
+
+            itemInventory.Quantity--;
+
+            var usageLog = new MedicationUsageLog
+            {
+                MedicationId = itemInventory.MedicationId,
+                MedicationPescriptionId = medicationPrescription.MedicationPescriptionId,
+                QuantityDispensed = 1,
+                DispensedById = user.Id,
+                DispensedOn = DateTime.Now,
+                Notes = "Medication dispensed from prescription request."
+            };
+            _context.MedicationUsageLogs.Add(usageLog);
+            await _context.SaveChangesAsync();
+
             item.IsPackaged = true;
             item.PackagedAt = DateTime.UtcNow;
+
+            _context.Update(itemInventory);
             await _context.SaveChangesAsync();
 
             return Ok();
